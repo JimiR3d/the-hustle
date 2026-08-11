@@ -16,8 +16,8 @@ window.addEventListener('resize', fitStageToWindow);
 window.addEventListener('DOMContentLoaded', fitStageToWindow);
 
 let previousScores = {};
-let previousDisqualified = {};
-let animatingDqIds = new Set();
+let activeAnimationIds = new Set();
+let completedDisqualifiedIds = new Set();
 let hasFiredZeroFlash = false;
 
 // Synthesize Spy Game Show Countdown Finish Alarm Sound via Web Audio API
@@ -66,18 +66,29 @@ function renderDisplay(state, meta = {}) {
 
   if (!topRow || !bottomRow) return;
 
-  const activeGroups = state.groups.filter(g => !g.isDisqualified);
-  const disqualifiedGroups = state.groups.filter(g => g.isDisqualified);
+  // Active groups exclude completed disqualified teams AND in-flight animation teams
+  const activeGroups = state.groups.filter(g => !g.isDisqualified && !completedDisqualifiedIds.has(g.id));
+  const disqualifiedGroups = state.groups.filter(g => g.isDisqualified || completedDisqualifiedIds.has(g.id));
 
-  // Always ensure bottom-right stack is rendered cleanly
-  renderDisqualifiedStack(disqualifiedGroups);
+  // Sync completed disqualified set with state (handles reset/restore)
+  state.groups.forEach(g => {
+    if (!g.isDisqualified) {
+      completedDisqualifiedIds.delete(g.id);
+      activeAnimationIds.delete(g.id);
+    }
+  });
 
-  // Clear obsolete elements from top & bottom rows
+  // Render bottom-right mini-slots with completed disqualified teams
+  renderDisqualifiedStack(disqualifiedGroups.filter(g => completedDisqualifiedIds.has(g.id)));
+
+  // Clear obsolete elements from top & bottom rows ONLY if not animating or pending DQ animation
   const activeIds = new Set(activeGroups.map(g => g.id));
+  const pendingDqIds = new Set(disqualifiedGroups.filter(g => g.isDisqualified && !completedDisqualifiedIds.has(g.id)).map(g => g.id));
+
   [topRow, bottomRow].forEach(row => {
     Array.from(row.children).forEach(child => {
       const id = child.id.replace('group-wrap-', '');
-      if (!activeIds.has(id) && !animatingDqIds.has(id)) {
+      if (!activeIds.has(id) && !activeAnimationIds.has(id) && !pendingDqIds.has(id)) {
         child.remove();
       }
     });
@@ -85,7 +96,6 @@ function renderDisplay(state, meta = {}) {
 
   // Distribute active groups dynamically (up to 3 in top row, remaining in bottom row)
   const topActive = activeGroups.slice(0, 3);
-  const bottomActive = activeGroups.slice(3);
 
   activeGroups.forEach((group) => {
     const isTopRow = topActive.some(g => g.id === group.id);
@@ -104,13 +114,13 @@ function renderDisplay(state, meta = {}) {
       groupWrapper.id = `group-wrap-${group.id}`;
       groupWrapper.className = 'group-panel-wrapper active-group';
       parentRow.appendChild(groupWrapper);
-    } else if (groupWrapper.parentElement !== parentRow && !animatingDqIds.has(group.id)) {
+    } else if (groupWrapper.parentElement !== parentRow && !activeAnimationIds.has(group.id)) {
       parentRow.appendChild(groupWrapper);
     }
 
     groupWrapper.classList.toggle('is-popup', Boolean(group.isPopUp));
     groupWrapper.classList.toggle('active-group', true);
-    groupWrapper.classList.remove('phase1-breaking', 'phase2-dropping');
+    groupWrapper.classList.remove('phase1-breaking', 'phase2-tearing', 'phase3-flight');
 
     const renderPlayerCard = (player, slotClass) => `
       <div class="player-card-slot ${slotClass}">
@@ -153,59 +163,66 @@ function renderDisplay(state, meta = {}) {
     }
   });
 
-  // Handle 3-Step Live Motion Disqualification Sequence
-  disqualifiedGroups.forEach((group) => {
-    const wasActive = previousDisqualified[group.id] === false;
-    previousDisqualified[group.id] = true;
+  // Handle Cinematic 3-Phase Disqualification Live Motion (2.8s Total)
+  state.groups.forEach((group) => {
+    if (!group.isDisqualified) return;
+
+    // If already fully completed or currently animating, do not restart
+    if (completedDisqualifiedIds.has(group.id) || activeAnimationIds.has(group.id)) {
+      return;
+    }
 
     let groupWrapper = document.getElementById(`group-wrap-${group.id}`);
+    if (!groupWrapper) return;
 
-    if (wasActive && groupWrapper && !animatingDqIds.has(group.id)) {
-      animatingDqIds.add(group.id);
+    activeAnimationIds.add(group.id);
 
-      // Target mini-slot index in bottom-right corner
-      const targetIndex = disqualifiedGroups.findIndex(g => g.id === group.id);
-      const targetSlot = document.getElementById(`dq-slot-${targetIndex >= 0 ? targetIndex : 0}`);
+    // Calculate dynamic flight vector (--target-x, --target-y)
+    const currentCompleted = Array.from(completedDisqualifiedIds);
+    const targetIndex = currentCompleted.length;
+    const targetSlot = document.getElementById(`dq-slot-${targetIndex < 5 ? targetIndex : 4}`);
 
-      if (targetSlot) {
-        const wrapRect = groupWrapper.getBoundingClientRect();
-        const slotRect = targetSlot.getBoundingClientRect();
+    if (targetSlot) {
+      const wrapRect = groupWrapper.getBoundingClientRect();
+      const slotRect = targetSlot.getBoundingClientRect();
+      const deltaX = slotRect.left - wrapRect.left;
+      const deltaY = slotRect.top - wrapRect.top;
 
-        // Calculate offset flight vector (dx, dy)
-        const deltaX = slotRect.left - wrapRect.left;
-        const deltaY = slotRect.top - wrapRect.top;
+      groupWrapper.style.setProperty('--target-x', `${deltaX}px`);
+      groupWrapper.style.setProperty('--target-y', `${deltaY}px`);
+    }
 
-        groupWrapper.style.setProperty('--target-x', `${deltaX}px`);
-        groupWrapper.style.setProperty('--target-y', `${deltaY}px`);
+    // Phase 1: Neon Red Flash Aura (0.6s)
+    groupWrapper.classList.add('phase1-breaking');
+
+    setTimeout(() => {
+      // Phase 2: Slow Smooth Diagonal Card Tear Cut in Place (1.0s)
+      if (groupWrapper) {
+        groupWrapper.classList.remove('phase1-breaking');
+        groupWrapper.classList.add('phase2-tearing');
       }
 
-      // Step 1: Red Flash & Card Split Cut in Place (0.8s)
-      groupWrapper.classList.add('phase1-breaking');
-
       setTimeout(() => {
-        // Step 2: Smooth Gliding Flight Trajectory across Screen to Corner Slot (1.0s)
+        // Phase 3: Apple Genie Curved Flight Arc to Bottom Right (1.2s)
         if (groupWrapper) {
-          groupWrapper.classList.remove('phase1-breaking');
-          groupWrapper.classList.add('phase2-dropping');
+          groupWrapper.classList.remove('phase2-tearing');
+          groupWrapper.classList.add('phase3-flight');
         }
 
         setTimeout(() => {
-          // Step 3: Slot Arrival & Active Team Re-centering
+          // Sequence complete: Move into completed stack
           if (groupWrapper && groupWrapper.parentElement) {
             groupWrapper.remove();
           }
-          animatingDqIds.delete(group.id);
-          renderDisqualifiedStack(disqualifiedGroups);
-          // Re-render display to cleanly re-center active teams
+          activeAnimationIds.delete(group.id);
+          completedDisqualifiedIds.add(group.id);
+
           renderDisplay(gameStateStore.getState());
-        }, 1000);
+        }, 1200);
 
-      }, 800);
-    }
-  });
+      }, 1000);
 
-  state.groups.forEach(g => {
-    previousDisqualified[g.id] = g.isDisqualified;
+    }, 600);
   });
 
   // Handle Timer Zoom Dynamics
@@ -241,10 +258,10 @@ function renderDisqualifiedStack(disqualifiedGroups) {
       slot.innerHTML = `
         <div class="mini-card-pair-wrapper">
           <div class="mini-card-half left">
-            <span style="font-size: 10px; color: #ff1744;">💔</span>
+            <img src="${dqGroup.player1.image}" alt="${escapeHtml(dqGroup.player1.name)}" class="mini-player-img" />
           </div>
           <div class="mini-card-half right">
-            <span style="font-size: 10px; color: #ff1744;">💔</span>
+            <img src="${dqGroup.player2.image}" alt="${escapeHtml(dqGroup.player2.name)}" class="mini-player-img" />
           </div>
           <div class="mini-card-tear-line"></div>
           <span class="mini-dq-team-name">${escapeHtml(dqGroup.name)}</span>

@@ -255,7 +255,7 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 1.0s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .card-half-left {
@@ -430,60 +430,83 @@ html, body {
 }
 
 /* ==========================================================================
-   FLUID 3-STEP DISQUALIFICATION ANIMATIONS
-   Step 1: Red Flash Aura + Card Split Cut in Place (0.8s)
-   Step 2: Fluid Flight Motion Gliding directly to Bottom-Right Corner (1.0s)
+   CINEMATIC 3-PHASE DISQUALIFICATION ANIMATIONS (2.8 Seconds Total)
+   Phase 1: Neon Red Flash Aura (0.6s)
+   Phase 2: Slow Smooth Diagonal Card Tear Cut in Place (1.0s)
+   Phase 3: Apple Genie Curved Flight Arc to Bottom-Right Corner (1.2s)
    ========================================================================== */
 
-/* Step 1: Red Flash Aura & Card Tear Split Cut Right In Place */
+/* Phase 1: Neon Red Flash Aura */
 .group-panel-wrapper.phase1-breaking {
-  z-index: 9999 !important;
+  z-index: 99999 !important;
   pointer-events: none;
 }
 
 .group-panel-wrapper.phase1-breaking .group-panel-container {
   border-color: #ff1744 !important;
-  box-shadow: 0 0 70px #ff1744, inset 0 0 40px #ff1744 !important;
-  animation: container-red-flash-intense 0.8s ease forwards;
+  box-shadow: 0 0 80px #ff1744, inset 0 0 45px #ff1744 !important;
+  animation: red-flash-pulse 0.6s ease-in-out infinite alternate;
 }
 
-.group-panel-wrapper.phase1-breaking .card-half-left {
-  transform: translateX(-20px) translateY(22px) rotate(-10deg);
+@keyframes red-flash-pulse {
+  0% { filter: brightness(1) drop-shadow(0 0 20px #ff1744); }
+  100% { filter: brightness(1.6) drop-shadow(0 0 90px #ff1744); }
 }
 
-.group-panel-wrapper.phase1-breaking .card-half-right {
-  transform: translateX(20px) translateY(-18px) rotate(10deg);
-}
-
-@keyframes container-red-flash-intense {
-  0% { filter: brightness(1) drop-shadow(0 0 0px transparent); }
-  35% { filter: brightness(1.5) drop-shadow(0 0 80px #ff1744); }
-  100% { filter: brightness(0.7) drop-shadow(0 0 45px #ff1744); }
-}
-
-/* Step 2: Fluid Flight Trajectory Gliding across Screen into Bottom-Right Slot */
-.group-panel-wrapper.phase2-dropping {
-  z-index: 9999 !important;
+/* Phase 2: Slow Smooth Diagonal Card Tear Cut in Place */
+.group-panel-wrapper.phase2-tearing {
+  z-index: 99999 !important;
   pointer-events: none;
-  animation: fluid-flight-glide 1.0s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-@keyframes fluid-flight-glide {
+.group-panel-wrapper.phase2-tearing .group-panel-container {
+  border-color: #ff1744 !important;
+  box-shadow: 0 0 90px #ff1744, inset 0 0 50px #ff1744 !important;
+}
+
+.group-panel-wrapper.phase2-tearing .card-half-left {
+  transform: translateX(-24px) translateY(24px) rotate(-12deg);
+}
+
+.group-panel-wrapper.phase2-tearing .card-half-right {
+  transform: translateX(24px) translateY(-20px) rotate(12deg);
+}
+
+/* Phase 3: Apple Genie Curved Flight Arc across Screen */
+.group-panel-wrapper.phase3-flight {
+  z-index: 99999 !important;
+  pointer-events: none;
+  animation: apple-genie-flight 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.group-panel-wrapper.phase3-flight .card-half-left {
+  transform: translateX(-24px) translateY(24px) rotate(-12deg);
+}
+
+.group-panel-wrapper.phase3-flight .card-half-right {
+  transform: translateX(24px) translateY(-20px) rotate(12deg);
+}
+
+@keyframes apple-genie-flight {
   0% {
-    transform: translate(0, 0) scale(1);
+    transform: translate(0, 0) scale(1) rotate(0deg);
     opacity: 1;
+    filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.65));
   }
-  70% {
-    opacity: 0.9;
+  50% {
+    transform: translate(calc(var(--target-x) * 0.45), calc(var(--target-y) * 0.35 + 60px)) scale(0.65) rotate(12deg);
+    opacity: 0.85;
+    filter: drop-shadow(0 20px 40px rgba(255, 23, 68, 0.7));
   }
   100% {
-    transform: translate(var(--target-x, 600px), var(--target-y, 400px)) scale(0.18);
-    opacity: 0.1;
+    transform: translate(var(--target-x), var(--target-y)) scale(0.22) rotate(24deg);
+    opacity: 0.3;
+    filter: drop-shadow(0 5px 15px rgba(255, 23, 68, 0.3));
   }
 }
 
 /* ==========================================================================
-   MINI BROKEN CARD PAIR STACK (Bottom-Right Corner — Display Demo v3.png)
+   MINI DISQUALIFIED CARD PAIR STACK (Bottom-Right Corner — Display Demo v3.png)
    ========================================================================== */
 .disqualified-stack-container {
   position: absolute;
@@ -497,31 +520,38 @@ html, body {
 
 .disqualified-slot {
   position: relative;
-  width: 76px;
-  height: 96px;
+  width: 84px;
+  height: 104px;
   border-radius: 10px;
   border: 1px dashed rgba(255, 255, 255, 0.12);
   background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   overflow: hidden;
 }
 
 .disqualified-slot.occupied {
-  border: 1px solid rgba(255, 23, 68, 0.7);
-  background: rgba(18, 10, 18, 0.85);
-  box-shadow: 0 6px 20px rgba(255, 23, 68, 0.4);
+  border: 1.5px solid rgba(255, 23, 68, 0.8);
+  background: rgba(22, 10, 20, 0.85);
+  box-shadow: 0 8px 24px rgba(255, 23, 68, 0.45);
+  opacity: 0.78;
   animation: slot-appear-glow 0.6s ease forwards;
 }
 
-@keyframes slot-appear-glow {
-  0% { transform: scale(0.6); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+.disqualified-slot.occupied:hover {
+  opacity: 1;
+  transform: scale(1.15) translateY(-5px);
+  z-index: 200;
 }
 
-/* Mini 2-Card Broken Split Pair inside Slot */
+@keyframes slot-appear-glow {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 0.78; }
+}
+
+/* Miniature Player Card Faces inside Mini-Slot */
 .mini-card-pair-wrapper {
   position: relative;
   width: 100%;
@@ -529,50 +559,62 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   padding: 4px;
 }
 
 .mini-card-half {
   position: relative;
-  width: 32px;
-  height: 54px;
-  border-radius: 4px;
-  background: #2a2530;
-  border: 1px solid rgba(255, 23, 68, 0.6);
+  width: 36px;
+  height: 58px;
+  border-radius: 5px;
+  background: #1a1520;
+  border: 1px solid rgba(255, 23, 68, 0.7);
   overflow: hidden;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  filter: grayscale(70%) brightness(50%);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.8);
 }
 
-.mini-card-half.left { transform: rotate(-6deg) translateY(2px); }
-.mini-card-half.right { transform: rotate(6deg) translateY(-2px); }
+.mini-card-half.left { transform: rotate(-7deg) translateY(3px); }
+.mini-card-half.right { transform: rotate(7deg) translateY(-3px); }
+
+.mini-player-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(40%) contrast(110%);
+}
 
 .mini-card-tear-line {
   position: absolute;
   top: 0;
   bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: 2px;
   background: #ff1744;
-  box-shadow: 0 0 6px #ff1744;
+  box-shadow: 0 0 8px #ff1744;
+  z-index: 5;
 }
 
 .mini-dq-team-name {
   position: absolute;
-  bottom: 4px;
+  bottom: 3px;
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--pixel-font);
   font-size: 8px;
-  color: #aaaaaa;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 0 6px #ff1744;
   white-space: nowrap;
-  width: 70px;
+  width: 78px;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
+  z-index: 10;
 }
 
 /* Footer Status Bar */
