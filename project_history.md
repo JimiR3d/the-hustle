@@ -51,19 +51,14 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-11 — v2 Redesign, Pixel Fonts, Disqualification Drop Stack & Sheen Fix
+### Session 2026-08-11 — Full Background Fit, 2-Phase Disqualification Cut & Drop Animation, Broken Mini-Stack & Enlarged Timer
 **Tasks completed:**
-- Tagged `v1-live-stable` and created `v2-redesign` git branch to protect live Vercel site for stakeholder meeting.
-- Updated background to `background_v2.png` (casino table with deck, chips, and dice).
-- Replaced score pill with updated wide curved capsule `score_board.png`.
-- Imported Google pixelated fonts (`VT323`, `Silkscreen`) for LED score values with custom digit spacing.
-- Implemented high-contrast white rounded glass containers with tilted card pairs (`-4.5deg` / `+4.5deg`) matching `Single Group layout v2.png`.
-- Enhanced 3D sway breathing tilt intensity (`rotateX(4.5deg) rotateY(-4.5deg)`).
-- Built red flash container animation (`filter: drop-shadow(0 0 60px #ff1744)`) and card split drop animation into bottom-right mini-slots.
-- Rendered 5 mini grayed-out disqualified card slots in the bottom-right corner matching `Display Demo v3.png`.
-- Enabled dynamic center alignment for remaining active team cards when a group is eliminated.
-- Fixed card light sheen sweep reset bug on point changes by preserving DOM structure.
+- Updated background sizing to `100% 100%` so all bottom-left casino assets (glasses with ice, facedown deck, chips, and dice) are 100% visible.
+- Built 2-phase sequential disqualification animation: Phase 1 (0.8s red flash & jagged card split cut in place) followed by Phase 2 (0.8s shrink & translate into bottom-right corner stack).
+- Replicated bottom-right mini-slots with 2 broken miniature card halves with a red tear line and team label matching `Display Demo v3.png`.
+- Enlarged HUD game timer badge with bold 38px pixel LED clock.
+- Updated GEMINI.md, project_history.md, task.md, and walkthrough.md.
 
 **Key decisions:**
-- Isolating v2 work on `v2-redesign` branch protects live Vercel production URL for client demos.
-- Separating DOM structure key from score points prevents CSS keyframe animation resets during point updates.
+- 2-phase sequential animation (break in place -> shrink & drop to corner) creates high-impact cinematic feedback for arena audiences.
+- Sizing background to `100% 100%` guarantees full visibility of table elements across all monitor viewports.

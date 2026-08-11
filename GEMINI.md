@@ -36,29 +36,30 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 ├── public/assets/       # Static assets (logo.png, background_v2.png, back_glass.png, score_board.png, *.png)
 ├── src/
 │   ├── css/
-│   │   ├── main.css     # Design tokens, background_v2, white rounded glass, 1.7x timer zoom, DQ drop stack
+│   │   ├── main.css     # Design tokens, background_v2 100% 100%, white glass, 2-phase DQ animation, mini-stack
 │   │   └── admin.css    # Responsive host controller styling with Start/Pause/Stop/Reset timer buttons
 │   └── js/
 │       ├── state.js     # 5 Team state, ALL_PLAYERS dictionary, tickTimer, pause/stop/reset & dual-channel sync engine
-│       ├── display.js   # Renderer, card animation controller, DQ drop stack & Web Audio spy alarm synthesizer
+│       ├── display.js   # Renderer, 2-phase DQ animation controller, mini-stack & Web Audio spy alarm synthesizer
 │       └── admin.js     # Host control panel logic, select dropdowns, quick presets & explicit timer buttons
 ```
 
 ## Conventions
 - 5 Team Groups (Teams of 2 Players each = 10 competitors) arranged matching `Display Demo v3.png`.
 - Dynamic player reshuffling via Admin select dropdowns for Player 1 and Player 2.
-- Casino board background (`background_v2.png` with `background-size: cover`) featuring facedown deck, chips, and dice.
+- Full-bleed casino board background (`background_v2.png` with `100% 100%` fit) showing all bottom-left glasses, ice, deck, chips, and dice.
 - High-contrast white rounded glass containers (`Single Group layout v2.png`) with organic card angles (`rotate(-4.5deg)` / `rotate(4.5deg)`).
 - Updated wide curved capsule Score Board pill (`score_board.png`) with pixelated LED score numbers (`VT323`).
-- Explicit timer controls (**Start**, **Pause**, **Stop**, **Reset Timer**) on Admin bar; timer auto-zooms to 1.7x scale when active.
-- Disqualifications trigger an intense red flash (`#ff1744`), breaking split, and drop down to the 5 mini slots at the bottom-right corner.
+- Explicit timer controls (**Start**, **Pause**, **Stop**, **Reset Timer**) on Admin bar; enlarged HUD timer badge with bold 38px clock.
+- Disqualifications trigger a 2-phase sequential animation: Phase 1 (0.8s red flash & jagged card split cut in place) followed by Phase 2 (0.8s shrink & translate down into bottom-right mini-slots).
+- Bottom-right mini-slots render 2 broken miniature card halves with a red tear line and team label matching `Display Demo v3.png`.
 - Remaining active team panels dynamically re-center themselves on the stage layout.
 - Card light sheen sweeps (`.card-white-light-reflection`) persist smoothly without resetting on point changes.
 - Web Audio API spy countdown finish buzzer sound plays on `00:00` alongside ambient green flash.
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, red flash drop disqualifications to bottom-right mini slots, dynamic center alignment, and bug-free card light sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring full-bleed `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, 2-phase disqualification cut & drop animation, bottom-right broken mini-stack, dynamic center alignment, enlarged HUD timer, and bug-free card sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.
