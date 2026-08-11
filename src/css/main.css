@@ -234,7 +234,7 @@ html, body {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65);
   background: #fffbf7;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .player-card-slot.slot-p1 { transform: rotate(-4.5deg); }
@@ -430,45 +430,56 @@ html, body {
 }
 
 /* ==========================================================================
-   2-PHASE DISQUALIFICATION ANIMATIONS (Phase 1: Red Flash Cut, Phase 2: Corner Drop)
+   FLUID 3-STEP DISQUALIFICATION ANIMATIONS
+   Step 1: Red Flash Aura + Card Split Cut in Place (0.8s)
+   Step 2: Fluid Flight Motion Gliding directly to Bottom-Right Corner (1.0s)
    ========================================================================== */
 
-/* Phase 1: Intense Red Flash & Jagged Split Cut (0.8s) */
+/* Step 1: Red Flash Aura & Card Tear Split Cut Right In Place */
 .group-panel-wrapper.phase1-breaking {
-  z-index: 999;
+  z-index: 9999 !important;
   pointer-events: none;
 }
 
 .group-panel-wrapper.phase1-breaking .group-panel-container {
   border-color: #ff1744 !important;
-  box-shadow: 0 0 65px #ff1744, inset 0 0 35px #ff1744 !important;
-  animation: container-red-flash 0.8s ease forwards;
+  box-shadow: 0 0 70px #ff1744, inset 0 0 40px #ff1744 !important;
+  animation: container-red-flash-intense 0.8s ease forwards;
 }
 
 .group-panel-wrapper.phase1-breaking .card-half-left {
-  transform: translateX(-16px) translateY(18px) rotate(-8deg);
+  transform: translateX(-20px) translateY(22px) rotate(-10deg);
 }
 
 .group-panel-wrapper.phase1-breaking .card-half-right {
-  transform: translateX(16px) translateY(22px) rotate(8deg);
+  transform: translateX(20px) translateY(-18px) rotate(10deg);
 }
 
-@keyframes container-red-flash {
+@keyframes container-red-flash-intense {
   0% { filter: brightness(1) drop-shadow(0 0 0px transparent); }
-  30% { filter: brightness(1.4) drop-shadow(0 0 70px #ff1744); }
-  100% { filter: brightness(0.6) drop-shadow(0 0 40px #ff1744); }
+  35% { filter: brightness(1.5) drop-shadow(0 0 80px #ff1744); }
+  100% { filter: brightness(0.7) drop-shadow(0 0 45px #ff1744); }
 }
 
-/* Phase 2: Shrink & Drop Down to Bottom-Right Stack (0.8s) */
+/* Step 2: Fluid Flight Trajectory Gliding across Screen into Bottom-Right Slot */
 .group-panel-wrapper.phase2-dropping {
-  z-index: 999;
+  z-index: 9999 !important;
   pointer-events: none;
-  animation: group-dq-drop-corner 0.8s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+  animation: fluid-flight-glide 1.0s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-@keyframes group-dq-drop-corner {
-  0% { transform: scale(1) translate(0, 0) rotate(0deg); opacity: 1; }
-  100% { transform: scale(0.12) translate(1300px, 850px) rotate(35deg); opacity: 0; }
+@keyframes fluid-flight-glide {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--target-x, 600px), var(--target-y, 400px)) scale(0.18);
+    opacity: 0.1;
+  }
 }
 
 /* ==========================================================================
@@ -489,23 +500,23 @@ html, body {
   width: 76px;
   height: 96px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(18, 10, 18, 0.85);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
   transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
   overflow: hidden;
 }
 
 .disqualified-slot.occupied {
-  border-color: rgba(255, 23, 68, 0.7);
+  border: 1px solid rgba(255, 23, 68, 0.7);
+  background: rgba(18, 10, 18, 0.85);
   box-shadow: 0 6px 20px rgba(255, 23, 68, 0.4);
-  animation: slot-appear 0.6s ease forwards;
+  animation: slot-appear-glow 0.6s ease forwards;
 }
 
-@keyframes slot-appear {
+@keyframes slot-appear-glow {
   0% { transform: scale(0.6); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
@@ -525,10 +536,10 @@ html, body {
 .mini-card-half {
   position: relative;
   width: 32px;
-  height: 52px;
+  height: 54px;
   border-radius: 4px;
   background: #2a2530;
-  border: 1px solid rgba(255, 23, 68, 0.5);
+  border: 1px solid rgba(255, 23, 68, 0.6);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -555,10 +566,10 @@ html, body {
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--pixel-font);
-  font-size: 7px;
+  font-size: 8px;
   color: #aaaaaa;
   white-space: nowrap;
-  width: 68px;
+  width: 70px;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;

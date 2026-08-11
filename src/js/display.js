@@ -69,6 +69,9 @@ function renderDisplay(state, meta = {}) {
   const activeGroups = state.groups.filter(g => !g.isDisqualified);
   const disqualifiedGroups = state.groups.filter(g => g.isDisqualified);
 
+  // Always ensure bottom-right stack is rendered cleanly
+  renderDisqualifiedStack(disqualifiedGroups);
+
   // Clear obsolete elements from top & bottom rows
   const activeIds = new Set(activeGroups.map(g => g.id));
   [topRow, bottomRow].forEach(row => {
@@ -150,7 +153,7 @@ function renderDisplay(state, meta = {}) {
     }
   });
 
-  // Handle 2-Phase Sequential Disqualification Animation
+  // Handle 3-Step Live Motion Disqualification Sequence
   disqualifiedGroups.forEach((group) => {
     const wasActive = previousDisqualified[group.id] === false;
     previousDisqualified[group.id] = true;
@@ -160,27 +163,44 @@ function renderDisplay(state, meta = {}) {
     if (wasActive && groupWrapper && !animatingDqIds.has(group.id)) {
       animatingDqIds.add(group.id);
 
-      // Phase 1: Red Flash & Card Split Cut in Place (0.8s)
+      // Target mini-slot index in bottom-right corner
+      const targetIndex = disqualifiedGroups.findIndex(g => g.id === group.id);
+      const targetSlot = document.getElementById(`dq-slot-${targetIndex >= 0 ? targetIndex : 0}`);
+
+      if (targetSlot) {
+        const wrapRect = groupWrapper.getBoundingClientRect();
+        const slotRect = targetSlot.getBoundingClientRect();
+
+        // Calculate offset flight vector (dx, dy)
+        const deltaX = slotRect.left - wrapRect.left;
+        const deltaY = slotRect.top - wrapRect.top;
+
+        groupWrapper.style.setProperty('--target-x', `${deltaX}px`);
+        groupWrapper.style.setProperty('--target-y', `${deltaY}px`);
+      }
+
+      // Step 1: Red Flash & Card Split Cut in Place (0.8s)
       groupWrapper.classList.add('phase1-breaking');
 
       setTimeout(() => {
-        // Phase 2: Shrink & Translate to Corner Stack (0.8s)
+        // Step 2: Smooth Gliding Flight Trajectory across Screen to Corner Slot (1.0s)
         if (groupWrapper) {
           groupWrapper.classList.remove('phase1-breaking');
           groupWrapper.classList.add('phase2-dropping');
         }
 
         setTimeout(() => {
+          // Step 3: Slot Arrival & Active Team Re-centering
           if (groupWrapper && groupWrapper.parentElement) {
             groupWrapper.remove();
           }
           animatingDqIds.delete(group.id);
           renderDisqualifiedStack(disqualifiedGroups);
-        }, 800);
+          // Re-render display to cleanly re-center active teams
+          renderDisplay(gameStateStore.getState());
+        }, 1000);
 
       }, 800);
-    } else {
-      renderDisqualifiedStack(disqualifiedGroups);
     }
   });
 

@@ -51,14 +51,15 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-11 — Full Background Fit, 2-Phase Disqualification Cut & Drop Animation, Broken Mini-Stack & Enlarged Timer
+### Session 2026-08-11 — Full Background Fit, Fluid 3-Step Live Motion Disqualifications & Mini-Slot Bug Fix
 **Tasks completed:**
+- Fixed initial mini-slot bug so all 5 bottom-right slots start 100% clean and empty when zero teams are disqualified.
+- Built fluid 3-step live motion disqualification sequence: Step 1 (0.8s red flash & jagged card split cut in place on stage) -> Step 2 (1.0s real-time gliding flight motion across screen to corner slot) -> Step 3 (mini-slot arrival & active teams re-centering).
 - Updated background sizing to `100% 100%` so all bottom-left casino assets (glasses with ice, facedown deck, chips, and dice) are 100% visible.
-- Built 2-phase sequential disqualification animation: Phase 1 (0.8s red flash & jagged card split cut in place) followed by Phase 2 (0.8s shrink & translate into bottom-right corner stack).
 - Replicated bottom-right mini-slots with 2 broken miniature card halves with a red tear line and team label matching `Display Demo v3.png`.
 - Enlarged HUD game timer badge with bold 38px pixel LED clock.
 - Updated GEMINI.md, project_history.md, task.md, and walkthrough.md.
 
 **Key decisions:**
-- 2-phase sequential animation (break in place -> shrink & drop to corner) creates high-impact cinematic feedback for arena audiences.
-- Sizing background to `100% 100%` guarantees full visibility of table elements across all monitor viewports.
+- 3-step live motion flight (red flash tear in place -> gliding flight -> slot arrival) provides continuous, fluid visual feedback without any instant teleportation.
+- Explicitly clearing `renderDisqualifiedStack` on initial render eliminates ghost card slots.
