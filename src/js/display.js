@@ -66,17 +66,17 @@ function renderDisplay(state, meta = {}) {
 
   if (!topRow || !bottomRow) return;
 
-  // Active groups exclude completed disqualified teams AND in-flight animation teams
-  const activeGroups = state.groups.filter(g => !g.isDisqualified && !completedDisqualifiedIds.has(g.id));
-  const disqualifiedGroups = state.groups.filter(g => g.isDisqualified || completedDisqualifiedIds.has(g.id));
-
-  // Sync completed disqualified set with state (handles reset/restore)
+  // 1. Sync completed disqualified set with state FIRST (handles reset/restore)
   state.groups.forEach(g => {
     if (!g.isDisqualified) {
       completedDisqualifiedIds.delete(g.id);
       activeAnimationIds.delete(g.id);
     }
   });
+
+  // 2. Active groups exclude completed disqualified teams AND in-flight animation teams
+  const activeGroups = state.groups.filter(g => !g.isDisqualified && !completedDisqualifiedIds.has(g.id));
+  const disqualifiedGroups = state.groups.filter(g => g.isDisqualified || completedDisqualifiedIds.has(g.id));
 
   // Render bottom-right mini-slots with completed disqualified teams
   renderDisqualifiedStack(disqualifiedGroups.filter(g => completedDisqualifiedIds.has(g.id)));
