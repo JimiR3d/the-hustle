@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Host Control Panel — THE HUSTLE Love & MONEY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/css/admin.css">
+</head>
+<body>
+
+  <!-- Admin Control Panel Header -->
+  <header class="admin-header">
+    <div class="admin-title-group">
+      <h1>THE HUSTLE Love & MONEY</h1>
+      <p>Host Controller — 5 Team Groups (2 Players per Team)</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-gold" id="btn-launch-display">
+        📺 Launch Arena Display Window
+      </button>
+      <button class="btn btn-outline" id="btn-reset-all">
+        🔄 Reset All Data
+      </button>
+    </div>
+  </header>
+
+  <!-- Timer Controls Section (Start, Pause, Stop, Reset Timer) -->
+  <section class="timer-control-panel">
+    <div class="timer-display-box">
+      <span style="font-size: 12px; color: #a090a0; font-weight: 700; letter-spacing: 1px;">HUD TIMER</span>
+      <div class="timer-val" id="admin-timer-val">05:00</div>
+    </div>
+
+    <!-- Quick Presets (5m, 10m) & Custom Input -->
+    <div class="timer-custom-set">
+      <div class="timer-presets">
+        <button class="btn btn-outline btn-sm" data-action="preset-timer" data-seconds="300">⚡ 5m</button>
+        <button class="btn btn-outline btn-sm" data-action="preset-timer" data-seconds="600">⚡ 10m</button>
+      </div>
+      <input type="text" class="timer-input" id="input-custom-timer" value="05:00" placeholder="MM:SS" />
+      <button class="btn btn-outline btn-sm" id="btn-set-custom-timer">Set</button>
+    </div>
+
+    <!-- Explicit Controls: Start, Pause, Stop, Reset -->
+    <div class="btn-group">
+      <button class="btn btn-green" id="btn-timer-start">▶ Start</button>
+      <button class="btn btn-outline" id="btn-timer-pause">⏸ Pause</button>
+      <button class="btn btn-red" id="btn-timer-stop">⏹ Stop</button>
+      <button class="btn btn-gold" id="btn-timer-reset">🔄 Reset Timer</button>
+    </div>
+  </section>
+
+  <!-- Competitor Teams Control Panel -->
+  <main class="competitors-panel">
+    <div class="panel-heading">
+      <h2>Team Groups (5 Teams of 2 Players)</h2>
+      <span style="font-size: 12px; color: #ffd700; opacity: 0.8;">Instant Sync via BroadcastChannel + Storage</span>
+    </div>
+
+    <div class="competitors-list" id="competitors-list">
+      <!-- Dynamically rendered team rows with player select dropdowns -->
+    </div>
+  </main>
+
+  <!-- Disqualification Safety Confirmation Modal -->
+  <div class="modal-backdrop" id="disqualify-modal">
+    <div class="modal-card">
+      <h3>⚠️ Confirm Disqualification</h3>
+      <p>Are you sure you want to eliminate <strong id="modal-group-name" style="color: #ffd700;">Team</strong>?<br>Both player cards will break and split apart.</p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="btn-cancel-disqualify">Cancel</button>
+        <button class="btn btn-red" id="btn-confirm-disqualify">Yes, Disqualify Now</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/js/admin.js"></script>
+</body>
+</html>

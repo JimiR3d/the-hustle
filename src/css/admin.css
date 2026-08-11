@@ -1,0 +1,426 @@
+/* ==========================================================================
+   ELLIS DIGITAL GAME SHOW BOARD - Admin Control Screen Styles (5 Teams)
+   ========================================================================== */
+
+:root {
+  --admin-bg: #12030e;
+  --admin-card-bg: #1e0719;
+  --admin-accent-gold: #ffd700;
+  --admin-accent-red: #ff3366;
+  --admin-accent-green: #00e676;
+  --admin-border: rgba(255, 215, 0, 0.2);
+  --admin-font: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--admin-bg);
+  color: #f0f0f5;
+  font-family: var(--admin-font);
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  padding: 14px 20px;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.admin-title-group h1 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--admin-accent-gold);
+  letter-spacing: 0.5px;
+}
+
+.admin-title-group p {
+  font-size: 12px;
+  color: #a090a0;
+  margin-top: 2px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Timer Control Panel Bar */
+.timer-control-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  padding: 14px 20px;
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+
+.timer-display-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.timer-val {
+  font-size: 28px;
+  font-weight: 900;
+  font-family: monospace;
+  color: var(--admin-accent-gold);
+  background: rgba(0,0,0,0.4);
+  padding: 4px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.timer-presets {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timer-custom-set {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timer-input {
+  width: 75px;
+  background: #0d0108;
+  border: 1px solid var(--admin-border);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Base Button Styles */
+.btn {
+  font-family: var(--admin-font);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+  color: #1a0312;
+  box-shadow: 0 4px 14px rgba(255, 215, 0, 0.3);
+}
+
+.btn-gold:hover {
+  filter: brightness(1.1);
+}
+
+.btn-green {
+  background: var(--admin-accent-green);
+  color: #042410;
+}
+
+.btn-red {
+  background: var(--admin-accent-red);
+  color: #ffffff;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--admin-border);
+  color: #e0d0e0;
+}
+
+.btn-outline:hover {
+  border-color: var(--admin-accent-gold);
+  color: #fff;
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+/* Competitors Panel */
+.competitors-panel {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.panel-heading h2 {
+  font-size: 16px;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.competitors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Responsive Competitor Row for Half-Screen / Split Windows */
+.competitor-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  background: rgba(10, 2, 8, 0.6);
+  border: 1px solid rgba(255, 215, 0, 0.1);
+  padding: 12px 16px;
+  border-radius: 12px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.competitor-row:hover {
+  border-color: rgba(255, 215, 0, 0.3);
+  background: rgba(30, 7, 25, 0.9);
+}
+
+.competitor-row.is-popup {
+  border-color: var(--admin-accent-gold);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+}
+
+.competitor-row.is-disqualified {
+  opacity: 0.5;
+  filter: grayscale(60%);
+}
+
+/* Player Reshuffling & Team Info Container */
+.comp-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 220px;
+  flex: 1 1 220px;
+}
+
+.comp-team-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.comp-team-label {
+  font-size: 11px;
+  color: var(--admin-accent-gold);
+  letter-spacing: 1px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.player-select-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.player-select {
+  background: #0d0108;
+  border: 1px solid var(--admin-border);
+  color: #ffffff;
+  font-family: var(--admin-font);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.player-select:focus {
+  border-color: var(--admin-accent-gold);
+  outline: none;
+}
+
+/* Points Adjuster Component */
+.points-control-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.pts-input {
+  width: 65px;
+  background: #0d0108;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-accent-gold);
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+  padding: 5px 2px;
+  border-radius: 6px;
+}
+
+.pts-input:focus {
+  border-color: var(--admin-accent-gold);
+  outline: none;
+}
+
+.quick-pts-btn {
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-pts-btn.add {
+  background: rgba(0, 230, 118, 0.15);
+  border-color: rgba(0, 230, 118, 0.3);
+  color: #00e676;
+}
+
+.quick-pts-btn.add:hover {
+  background: #00e676;
+  color: #000;
+}
+
+.quick-pts-btn.sub {
+  background: rgba(255, 23, 68, 0.15);
+  border-color: rgba(255, 23, 68, 0.3);
+  color: #ff1744;
+}
+
+.quick-pts-btn.sub:hover {
+  background: #ff1744;
+  color: #fff;
+}
+
+/* Actions Group */
+.row-actions-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-spotlight {
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  font-size: 12px;
+}
+
+.btn-spotlight.active {
+  background: #ffd700;
+  color: #1a0312;
+  font-weight: 900;
+}
+
+.btn-disqualify {
+  background: rgba(255, 23, 68, 0.15);
+  color: #ff1744;
+  border: 1px solid rgba(255, 23, 68, 0.3);
+  font-size: 12px;
+}
+
+.btn-disqualify:hover {
+  background: #ff1744;
+  color: #fff;
+}
+
+/* Confirmation Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: var(--admin-card-bg);
+  border: 2px solid var(--admin-accent-red);
+  border-radius: 18px;
+  padding: 24px;
+  width: 400px;
+  text-align: center;
+  box-shadow: 0 15px 40px rgba(255, 23, 68, 0.3);
+  transform: scale(0.9);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-backdrop.open .modal-card {
+  transform: scale(1);
+}
+
+.modal-card h3 {
+  font-size: 20px;
+  color: var(--admin-accent-red);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.modal-card p {
+  font-size: 14px;
+  color: #d0c0d0;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}

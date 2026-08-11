@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THE HUSTLE Love & MONEY — Game Show Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/css/main.css">
+</head>
+<body>
+
+  <!-- 1920x1080 Scaled Arena Display Stage -->
+  <div id="app-stage">
+    
+    <!-- Top Header with Custom Logo Image & Dynamic HUD Timer -->
+    <header class="display-header">
+      <div class="logo-container">
+        <img src="/assets/logo.png" alt="THE HUSTLE Love & MONEY" class="logo-img" />
+      </div>
+
+      <!-- Central HUD Game Countdown Timer -->
+      <div class="hud-timer-badge" id="hud-timer-badge">
+        <span class="hud-timer-label">GAME TIMER</span>
+        <span class="hud-timer-clock" id="hud-clock">05:00</span>
+      </div>
+    </header>
+
+    <!-- Main Stage Container (5 Team Groups in 2 Rows) -->
+    <main class="groups-stage-container" id="groups-stage-container">
+      <!-- Top Row (3 Groups) -->
+      <div class="groups-row" id="groups-row-top"></div>
+
+      <!-- Bottom Row (2 Groups Centered) -->
+      <div class="groups-row" id="groups-row-bottom"></div>
+    </main>
+
+    <!-- Footer Status Bar -->
+    <footer class="display-footer">
+      <div class="arena-status-badge">● LIVE ARENA BOARD</div>
+      <div class="arena-watermark">THE HUSTLE LOVE & MONEY © 2026</div>
+    </footer>
+
+  </div>
+
+  <script type="module" src="/src/js/display.js"></script>
+</body>
+</html>

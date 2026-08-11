@@ -1,0 +1,319 @@
+// Centralized State Management for 5 Team Groups with Instant Dual-Channel Sync
+
+const STORAGE_KEY = 'ellis_game_show_state_v3';
+const CHANNEL_NAME = 'ellis_game_show_channel_v3';
+
+export const ALL_PLAYERS = {
+  'Adrian': '/assets/Adrian.png',
+  'Aphro': '/assets/Aphro.png',
+  'Chidera': '/assets/Chidera.png',
+  'Chinazom': '/assets/Chinazom.png',
+  'EZ': '/assets/EZ.png',
+  'Kitan': '/assets/Kitan.png',
+  'Marty': '/assets/Marty.png',
+  'Tayo': '/assets/Tayo.png',
+  'Teslim': '/assets/Teslim.png',
+  'kIA': '/assets/kIA.png',
+};
+
+const DEFAULT_GROUPS = [
+  {
+    id: 'group-1',
+    name: 'ADRIAN & APHRO',
+    player1: { name: 'Adrian', image: ALL_PLAYERS['Adrian'] },
+    player2: { name: 'Aphro', image: ALL_PLAYERS['Aphro'] },
+    points: 75,
+    isPopUp: false,
+    isDisqualified: false,
+  },
+  {
+    id: 'group-2',
+    name: 'CHIDERA & CHINAZOM',
+    player1: { name: 'Chidera', image: ALL_PLAYERS['Chidera'] },
+    player2: { name: 'Chinazom', image: ALL_PLAYERS['Chinazom'] },
+    points: 75,
+    isPopUp: false,
+    isDisqualified: false,
+  },
+  {
+    id: 'group-3',
+    name: 'EZ & KITAN',
+    player1: { name: 'EZ', image: ALL_PLAYERS['EZ'] },
+    player2: { name: 'Kitan', image: ALL_PLAYERS['Kitan'] },
+    points: 75,
+    isPopUp: false,
+    isDisqualified: false,
+  },
+  {
+    id: 'group-4',
+    name: 'MARTY & TAYO',
+    player1: { name: 'Marty', image: ALL_PLAYERS['Marty'] },
+    player2: { name: 'Tayo', image: ALL_PLAYERS['Tayo'] },
+    points: 75,
+    isPopUp: false,
+    isDisqualified: false,
+  },
+  {
+    id: 'group-5',
+    name: 'TESLIM & KIA',
+    player1: { name: 'Teslim', image: ALL_PLAYERS['Teslim'] },
+    player2: { name: 'kIA', image: ALL_PLAYERS['kIA'] },
+    points: 75,
+    isPopUp: false,
+    isDisqualified: false,
+  },
+];
+
+const DEFAULT_STATE = {
+  groups: DEFAULT_GROUPS,
+  timer: {
+    seconds: 300,
+    initialSeconds: 300,
+    isRunning: false,
+    isExpanded: false,
+  },
+  lastUpdated: Date.now(),
+  lastTxId: null,
+  lastScoreEvent: null,
+};
+
+class GameStateStore {
+  constructor() {
+    this.listeners = new Set();
+    this.lastProcessedTxId = null;
+    this.broadcastChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : null;
+    
+    this.state = this.loadStateFromStorage() || DEFAULT_STATE;
+
+    // Dual-Channel Sync Engine (BroadcastChannel + LocalStorage Storage Event)
+    const handleIncomingState = (newState, eventType, source) => {
+      if (!newState || !newState.lastTxId) return;
+      if (newState.lastTxId === this.lastProcessedTxId) return; // Deduplicate
+      
+      // Check if points changed compared to current state
+      let pointsChanged = false;
+      if (this.state && this.state.groups && newState.groups) {
+        newState.groups.forEach((group, idx) => {
+          const oldGroup = this.state.groups[idx];
+          if (oldGroup && oldGroup.points !== group.points) {
+            pointsChanged = true;
+          }
+        });
+      }
+
+      this.lastProcessedTxId = newState.lastTxId;
+      this.state = newState;
+
+      const resolvedEventType = (eventType === 'storage_update' && pointsChanged) ? 'points_update' : (eventType || 'update');
+      this.notifyListeners({ source, eventType: resolvedEventType });
+    };
+
+    if (this.broadcastChannel) {
+      this.broadcastChannel.onmessage = (event) => {
+        if (event.data && event.data.state) {
+          handleIncomingState(event.data.state, event.data.eventType, 'broadcast');
+        }
+      };
+    }
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          handleIncomingState(parsed, 'storage_update', 'storage');
+        } catch (err) {
+          console.error('Error parsing stored state:', err);
+        }
+      }
+    });
+  }
+
+  loadStateFromStorage() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.warn('Could not access localStorage', e);
+    }
+    return null;
+  }
+
+  saveAndBroadcast(eventType = 'update') {
+    const txId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this.state.lastUpdated = Date.now();
+    this.state.lastTxId = txId;
+    this.lastProcessedTxId = txId;
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+    } catch (e) {
+      console.warn('LocalStorage save failed', e);
+    }
+
+    if (this.broadcastChannel) {
+      this.broadcastChannel.postMessage({
+        state: this.state,
+        eventType,
+        timestamp: Date.now(),
+      });
+    }
+
+    this.notifyListeners({ source: 'local', eventType });
+  }
+
+  onStateChange(callback) {
+    this.listeners.add(callback);
+    return () => this.listeners.delete(callback);
+  }
+
+  notifyListeners(meta = {}) {
+    this.listeners.forEach((callback) => callback(this.state, meta));
+  }
+
+  getState() {
+    return this.state;
+  }
+
+  // --- Actions ---
+
+  updateGroupPoints(id, delta) {
+    const group = this.state.groups.find((g) => g.id === id);
+    if (!group || group.isDisqualified) return;
+
+    group.points = Math.max(0, group.points + delta);
+
+    if (delta !== 0) {
+      this.state.lastScoreEvent = {
+        groupId: id,
+        delta,
+        timestamp: Date.now(),
+      };
+    }
+
+    this.saveAndBroadcast('points_update');
+  }
+
+  setGroupPoints(id, value) {
+    const group = this.state.groups.find((g) => g.id === id);
+    if (!group || group.isDisqualified) return;
+    const target = Math.max(0, parseInt(value, 10) || 0);
+    const delta = target - group.points;
+    group.points = target;
+
+    if (delta !== 0) {
+      this.state.lastScoreEvent = {
+        groupId: id,
+        delta,
+        timestamp: Date.now(),
+      };
+    }
+
+    this.saveAndBroadcast('points_update');
+  }
+
+  updateGroupPlayer(groupId, slot, newPlayerName) {
+    const group = this.state.groups.find((g) => g.id === groupId);
+    if (!group || !ALL_PLAYERS[newPlayerName]) return;
+
+    if (slot === 'player1') {
+      group.player1 = { name: newPlayerName, image: ALL_PLAYERS[newPlayerName] };
+    } else if (slot === 'player2') {
+      group.player2 = { name: newPlayerName, image: ALL_PLAYERS[newPlayerName] };
+    }
+
+    group.name = `${group.player1.name} & ${group.player2.name}`.toUpperCase();
+    this.saveAndBroadcast('player_reshuffle');
+  }
+
+  togglePopUp(id) {
+    this.state.groups.forEach((g) => {
+      if (g.id === id) {
+        g.isPopUp = !g.isPopUp;
+      } else {
+        g.isPopUp = false;
+      }
+    });
+    this.saveAndBroadcast('popup_toggle');
+  }
+
+  disqualifyGroup(id) {
+    const group = this.state.groups.find((g) => g.id === id);
+    if (group) {
+      group.isDisqualified = true;
+      group.isPopUp = false;
+      this.saveAndBroadcast('disqualify');
+    }
+  }
+
+  restoreGroup(id) {
+    const group = this.state.groups.find((g) => g.id === id);
+    if (group) {
+      group.isDisqualified = false;
+      this.saveAndBroadcast('restore');
+    }
+  }
+
+  updateGroupName(id, newName) {
+    const group = this.state.groups.find((g) => g.id === id);
+    if (group && newName.trim()) {
+      group.name = newName.trim().toUpperCase();
+      this.saveAndBroadcast('rename');
+    }
+  }
+
+  updateTimer(seconds, isRunning) {
+    this.state.timer.seconds = Math.max(0, seconds);
+    this.state.timer.isRunning = isRunning;
+    this.saveAndBroadcast('timer_update');
+  }
+
+  pauseTimer() {
+    this.state.timer.isRunning = false;
+    this.saveAndBroadcast('timer_update');
+  }
+
+  stopTimer() {
+    this.state.timer.isRunning = false;
+    this.state.timer.seconds = this.state.timer.initialSeconds || 300;
+    this.saveAndBroadcast('timer_update');
+  }
+
+  resetTimer() {
+    this.state.timer.isRunning = false;
+    this.state.timer.seconds = this.state.timer.initialSeconds || 300;
+    this.state.timer.isExpanded = false;
+    this.saveAndBroadcast('timer_update');
+  }
+
+  tickTimer() {
+    if (this.state.timer.isRunning && this.state.timer.seconds > 0) {
+      this.state.timer.seconds -= 1;
+      if (this.state.timer.seconds === 0) {
+        this.state.timer.isRunning = false;
+      }
+      this.saveAndBroadcast('timer_tick');
+    }
+  }
+
+  setTimerDuration(seconds) {
+    const targetSecs = Math.max(0, parseInt(seconds, 10) || 0);
+    this.state.timer.seconds = targetSecs;
+    this.state.timer.initialSeconds = targetSecs;
+    this.state.timer.isRunning = false;
+    this.saveAndBroadcast('timer_duration');
+  }
+
+  toggleTimerExpansion(forceState) {
+    this.state.timer.isExpanded = typeof forceState === 'boolean' ? forceState : !this.state.timer.isExpanded;
+    this.saveAndBroadcast('timer_expand');
+  }
+
+  resetAll() {
+    this.state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    this.saveAndBroadcast('reset');
+  }
+}
+
+export const gameStateStore = new GameStateStore();

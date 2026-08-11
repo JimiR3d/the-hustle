@@ -1,0 +1,480 @@
+/* ==========================================================================
+   ELLIS DIGITAL GAME SHOW BOARD - 2-Player Team Arena Display Styles (1920x1080)
+   Casino / Gambling Theme: "THE HUSTLE Love & MONEY"
+   ========================================================================== */
+
+:root {
+  --font-family: 'Cinzel', 'Outfit', 'Courier New', system-ui, -apple-system, sans-serif;
+  --pill-bg: #1c0312;
+  --pill-border: rgba(255, 215, 0, 0.6);
+  --suit-red: #c0133c;
+  --suit-black: #1a1a24;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #0d0108 url('/assets/background.png') no-repeat center center / cover;
+  font-family: var(--font-family);
+  color: #ffffff;
+}
+
+/* 1920x1080 Viewport Auto-Scale Stage — 100% Line-Free & Borderless */
+#app-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform: translate(-50%, -50%) scale(1);
+  transform-origin: center center;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 40px 20px 40px;
+  box-shadow: none;
+  border: none;
+  outline: none;
+  transition: filter 0.3s ease;
+}
+
+/* Toned-Down Soft Green Ambient Flash when Timer Finishes (00:00) */
+#app-stage.timer-finished-flash {
+  animation: full-page-green-flash 2.5s cubic-bezier(0.15, 0.85, 0.35, 1.2);
+}
+
+@keyframes full-page-green-flash {
+  0% {
+    filter: brightness(1.35) drop-shadow(0 0 50px #00ff77);
+  }
+  30% {
+    filter: brightness(1.45) drop-shadow(0 0 70px #00ff77);
+  }
+  60% {
+    filter: brightness(1.2) drop-shadow(0 0 30px #00ff77);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+/* ==========================================================================
+   HEADER SECTION - Custom Logo Image & Dynamic HUD Timer
+   ========================================================================== */
+.display-header {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.logo-img {
+  height: 110px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 15px rgba(0,0,0,0.8));
+}
+
+/* Central HUD Timer Badge */
+.hud-timer-badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(20, 3, 13, 0.88);
+  border: 2px solid #ffd700;
+  border-radius: 40px;
+  padding: 6px 28px;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), inset 0 0 10px rgba(255, 215, 0, 0.2);
+  backdrop-filter: blur(10px);
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.6s ease;
+}
+
+.hud-timer-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #ffd700;
+  text-transform: uppercase;
+}
+
+.hud-timer-clock {
+  font-size: 32px;
+  font-weight: 900;
+  font-family: 'Courier New', monospace;
+  color: #ffffff;
+  letter-spacing: 2px;
+}
+
+/* Dynamic Timer Scale-Up / Zoom Mode (1.7x Scale) */
+.hud-timer-badge.timer-expanded {
+  transform: scale(1.7) translateY(22px);
+  box-shadow: 0 0 60px rgba(255, 215, 0, 0.95), inset 0 0 25px rgba(255, 215, 0, 0.6);
+  z-index: 100;
+}
+
+/* ==========================================================================
+   5-GROUP TEAM LAYOUT (3 Top Row, 2 Bottom Row Centered)
+   ========================================================================== */
+.groups-stage-container {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+  margin-top: 10px;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.groups-stage-container.timer-shifted {
+  transform: translateY(42px);
+}
+
+.groups-row {
+  display: flex;
+  justify-content: center;
+  gap: 45px;
+}
+
+/* ==========================================================================
+   GROUP PANEL CONTAINER - Liquid Back Glass (back_glass.png) & White/Pink Edge
+   ========================================================================== */
+.group-panel-wrapper {
+  position: relative;
+  width: 440px;
+  height: 340px;
+  perspective: 1200px;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), z-index 0.3s ease;
+}
+
+.group-panel-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  background: url('/assets/back_glass.png') no-repeat center center / 100% 100%;
+  padding: 16px 20px 45px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  overflow: visible;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
+  transform-style: preserve-3d;
+}
+
+/* Translucent White/Pink Glass Gradient Blob Edge Animation */
+.group-panel-wrapper .gradient-blob-edge {
+  position: absolute;
+  inset: -6px;
+  border-radius: 26px;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+  opacity: 0.9;
+}
+
+.group-panel-wrapper .gradient-blob-edge::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  filter: blur(14px);
+  background: linear-gradient(to right, #ffffff 0%, #ff66b2 50%, #ffffff 100%);
+  box-shadow: 0 0 30px rgba(255, 102, 178, 0.8);
+  animation: blob-edge-orbit 6s linear infinite;
+}
+
+@keyframes blob-edge-orbit {
+  0% { transform: translate(-100%, -100%); }
+  25% { transform: translate(0%, -100%); }
+  50% { transform: translate(0%, 0%); }
+  75% { transform: translate(-100%, 0%); }
+  100% { transform: translate(-100%, -100%); }
+}
+
+.group-panel-wrapper:nth-child(2n) .gradient-blob-edge::after { animation-delay: 1.5s; }
+.group-panel-wrapper:nth-child(3n) .gradient-blob-edge::after { animation-delay: 3s; }
+
+/* Continuous 3D Sway / Tilt Breathing Loop for Active Group Panels */
+.group-panel-wrapper.active-group .group-panel-container {
+  animation: group-3d-idle-tilt 8s ease-in-out infinite alternate;
+}
+
+@keyframes group-3d-idle-tilt {
+  0% { transform: rotateX(-2deg) rotateY(2.5deg); }
+  50% { transform: rotateX(2.5deg) rotateY(-2deg); }
+  100% { transform: rotateX(-1.5deg) rotateY(-2.5deg); }
+}
+
+.group-panel-wrapper:nth-child(2n) .group-panel-container { animation-delay: 1.8s; }
+.group-panel-wrapper:nth-child(3n) .group-panel-container { animation-delay: 3.6s; }
+
+/* ==========================================================================
+   INDIVIDUAL PLAYER CARDS & RANDOMIZED WHITE LIGHT REFLECTION
+   ========================================================================== */
+.player-card-slot {
+  position: relative;
+  width: 185px;
+  height: 265px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  background: #fffbf7;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.player-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Wide Transparent White Light Reflection Sweep (Randomized per card) */
+.card-white-light-reflection {
+  position: absolute;
+  inset: -60%;
+  pointer-events: none;
+  background: linear-gradient(
+    125deg,
+    transparent 0%,
+    transparent 28%,
+    rgba(255, 255, 255, 0.15) 35%,
+    rgba(255, 255, 255, 0.6) 45%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(255, 255, 255, 0.6) 55%,
+    rgba(255, 255, 255, 0.15) 65%,
+    transparent 72%,
+    transparent 100%
+  );
+  transform: rotate(20deg);
+  z-index: 4;
+  opacity: 0.85;
+  animation: white-reflection-sweep 9.5s ease-in-out infinite;
+}
+
+@keyframes white-reflection-sweep {
+  0% { transform: translateX(-110%) translateY(-40%) rotate(20deg); }
+  45%, 100% { transform: translateX(110%) translateY(40%) rotate(20deg); }
+}
+
+.player-card-slot.slot-p1 .card-white-light-reflection { animation-delay: 0.5s; animation-duration: 9s; }
+.player-card-slot.slot-p2 .card-white-light-reflection { animation-delay: 4.2s; animation-duration: 10.5s; }
+
+/* ==========================================================================
+   WIDER GROUP SCORE BOARD (score_board.png) & LED SCORE
+   ========================================================================== */
+.group-score-pill {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 62px;
+  background: url('/assets/score_board.png') no-repeat center center / 100% 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  padding: 0 16px 2px 16px;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.8));
+  transition: filter 0.3s ease, transform 0.2s ease;
+}
+
+.group-name-text {
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  width: 210px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 4px;
+}
+
+.score-led-value {
+  font-size: 24px;
+  font-weight: 900;
+  font-family: 'Courier New', 'Consolas', monospace;
+  color: #ff3385;
+  text-shadow: 0 0 10px #ff0066, 0 0 20px #ff0066;
+  line-height: 1;
+  letter-spacing: 2px;
+}
+
+/* Point Increase Flash (Green) */
+.group-score-pill.pulse-green {
+  filter: drop-shadow(0 0 25px #00ff77) drop-shadow(0 0 45px #00ff77);
+  animation: score-green-bounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.group-score-pill.pulse-green .score-led-value {
+  color: #00ff77 !important;
+  text-shadow: 0 0 12px #00ff77, 0 0 25px #00ff77 !important;
+}
+
+/* Point Decrease Flash (Red) */
+.group-score-pill.pulse-red {
+  filter: drop-shadow(0 0 25px #ff1744) drop-shadow(0 0 45px #ff1744);
+  animation: score-red-bounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.group-score-pill.pulse-red .score-led-value {
+  color: #ff1744 !important;
+  text-shadow: 0 0 12px #ff1744, 0 0 25px #ff1744 !important;
+}
+
+@keyframes score-green-bounce {
+  0% { transform: translateX(-50%) scale(1.25); }
+  50% { transform: translateX(-50%) scale(1.12); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+@keyframes score-red-bounce {
+  0% { transform: translateX(-50%) scale(1.25); }
+  50% { transform: translateX(-50%) scale(1.12); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* Floating Delta Number Popups (+1, +5 Green / -1, -5 Red) */
+.score-delta-popup {
+  position: absolute;
+  bottom: 45px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 32px;
+  font-weight: 900;
+  pointer-events: none;
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.score-delta-popup.positive {
+  color: #00ff77;
+  text-shadow: 0 0 16px #00ff77, 0 0 32px #00e676, 0 2px 10px rgba(0,0,0,0.9);
+  animation: float-up-green-flash 1.3s cubic-bezier(0.15, 0.85, 0.35, 1.2) forwards;
+}
+
+.score-delta-popup.negative {
+  color: #ff1744;
+  text-shadow: 0 0 16px #ff1744, 0 0 32px #ff1744, 0 2px 10px rgba(0,0,0,0.9);
+  animation: float-down-red-flash 1.3s cubic-bezier(0.15, 0.85, 0.35, 1.2) forwards;
+}
+
+@keyframes float-up-green-flash {
+  0% { opacity: 0; transform: translateX(-50%) translateY(0) scale(0.6); }
+  20% { opacity: 1; transform: translateX(-50%) translateY(-22px) scale(1.35); }
+  70% { opacity: 1; transform: translateX(-50%) translateY(-48px) scale(1.1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-65px) scale(0.9); }
+}
+
+@keyframes float-down-red-flash {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(0.6); }
+  20% { opacity: 1; transform: translateX(-50%) translateY(-10px) scale(1.35); }
+  70% { opacity: 1; transform: translateX(-50%) translateY(15px) scale(1.1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(35px) scale(0.9); }
+}
+
+/* ==========================================================================
+   3D POP-UP SPOTLIGHT INTERACTION
+   ========================================================================== */
+.group-panel-wrapper.is-popup {
+  z-index: 1000 !important;
+  transform: scale(1.22) translateY(-25px);
+}
+
+.group-panel-wrapper.is-popup .group-panel-container {
+  box-shadow: 0 35px 80px rgba(0, 0, 0, 0.9), 0 0 60px rgba(255, 255, 255, 0.85);
+}
+
+/* ==========================================================================
+   DISQUALIFICATION TEARING & TILT
+   ========================================================================== */
+.group-panel-wrapper.is-disqualified {
+  pointer-events: none;
+}
+
+.group-panel-wrapper.is-disqualified .gradient-blob-edge {
+  display: none !important;
+}
+
+.group-panel-wrapper.is-disqualified .group-panel-container {
+  animation: none !important;
+  opacity: 0.45;
+  filter: grayscale(90%) brightness(35%);
+  transition: opacity 1.2s ease, filter 1.2s ease;
+}
+
+.card-half {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.card-half-left {
+  clip-path: polygon(
+    0% 0%, 52% 0%, 44% 20%, 56% 40%, 42% 60%, 55% 80%, 46% 100%, 0% 100%
+  );
+}
+
+.card-half-right {
+  clip-path: polygon(
+    52% 0%, 100% 0%, 100% 100%, 46% 100%, 55% 80%, 42% 60%, 56% 40%, 44% 20%
+  );
+}
+
+.player-card-slot.is-disqualified-card .card-half-left {
+  transform: translateX(-10px) translateY(14px) rotate(-6deg);
+}
+
+.player-card-slot.is-disqualified-card .card-half-right {
+  transform: translateX(10px) translateY(18px) rotate(6deg);
+}
+
+/* Footer Status Bar */
+.display-footer {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 10px;
+}
+
+.arena-status-badge {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: rgba(255, 215, 0, 0.7);
+  text-transform: uppercase;
+}
+
+.arena-watermark {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 1px;
+}
