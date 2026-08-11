@@ -17,11 +17,12 @@
   user-select: none;
 }
 
+/* Full-Bleed 100% 100% Background — All Bottom-Left Casino Assets 100% Visible */
 html, body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: #0d0108 url('/assets/background_v2.png') no-repeat center center / cover;
+  background: #0d0108 url('/assets/background_v2.png') no-repeat center center / 100% 100%;
   font-family: var(--font-family);
   color: #ffffff;
 }
@@ -60,7 +61,7 @@ html, body {
 }
 
 /* ==========================================================================
-   HEADER SECTION - Custom Logo Image & Dynamic HUD Timer
+   HEADER SECTION - Custom Logo Image & Prominent Dynamic HUD Timer
    ========================================================================== */
 .display-header {
   position: relative;
@@ -68,7 +69,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin-top: 2px;
 }
 
@@ -79,22 +80,22 @@ html, body {
   filter: drop-shadow(0 4px 15px rgba(0,0,0,0.8));
 }
 
-/* Central HUD Timer Badge */
+/* Central HUD Timer Badge (Enlarged & Prominent) */
 .hud-timer-badge {
   display: flex;
   align-items: center;
-  gap: 14px;
-  background: rgba(20, 3, 13, 0.88);
+  gap: 16px;
+  background: rgba(20, 3, 13, 0.92);
   border: 2px solid #ffd700;
   border-radius: 40px;
-  padding: 6px 28px;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), inset 0 0 10px rgba(255, 215, 0, 0.2);
+  padding: 8px 32px;
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.45), inset 0 0 12px rgba(255, 215, 0, 0.25);
   backdrop-filter: blur(10px);
   transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.6s ease;
 }
 
 .hud-timer-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 2px;
   color: #ffd700;
@@ -102,7 +103,7 @@ html, body {
 }
 
 .hud-timer-clock {
-  font-size: 34px;
+  font-size: 38px;
   font-weight: 700;
   font-family: var(--pixel-font);
   letter-spacing: 3px;
@@ -222,7 +223,7 @@ html, body {
 }
 
 /* ==========================================================================
-   INDIVIDUAL PLAYER CARDS - Organic Tilted Angles (Single Group layout v2.png)
+   INDIVIDUAL PLAYER CARDS - Organic Tilted Angles & Card Split Halves
    ========================================================================== */
 .player-card-slot {
   position: relative;
@@ -236,20 +237,33 @@ html, body {
   transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* Player 1 Tilted Left (-4.5deg), Player 2 Tilted Right (+4.5deg) */
-.player-card-slot.slot-p1 {
-  transform: rotate(-4.5deg);
-}
-
-.player-card-slot.slot-p2 {
-  transform: rotate(4.5deg);
-}
+.player-card-slot.slot-p1 { transform: rotate(-4.5deg); }
+.player-card-slot.slot-p2 { transform: rotate(4.5deg); }
 
 .player-card-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* Card Split Tear Halves */
+.card-half {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.card-half-left {
+  clip-path: polygon(0% 0%, 52% 0%, 44% 20%, 56% 40%, 42% 60%, 55% 80%, 46% 100%, 0% 100%);
+}
+
+.card-half-right {
+  clip-path: polygon(52% 0%, 100% 0%, 100% 100%, 46% 100%, 55% 80%, 42% 60%, 56% 40%, 44% 20%);
 }
 
 /* Wide Transparent White Light Reflection Sweep */
@@ -416,38 +430,53 @@ html, body {
 }
 
 /* ==========================================================================
-   ENHANCED DISQUALIFICATION RED FLASH & STACK DROP ANIMATION
+   2-PHASE DISQUALIFICATION ANIMATIONS (Phase 1: Red Flash Cut, Phase 2: Corner Drop)
    ========================================================================== */
-.group-panel-wrapper.animating-dq {
+
+/* Phase 1: Intense Red Flash & Jagged Split Cut (0.8s) */
+.group-panel-wrapper.phase1-breaking {
   z-index: 999;
   pointer-events: none;
-  animation: group-dq-drop 1.4s cubic-bezier(0.5, 0, 0.75, 0) forwards;
 }
 
-.group-panel-wrapper.animating-dq .group-panel-container {
+.group-panel-wrapper.phase1-breaking .group-panel-container {
   border-color: #ff1744 !important;
-  box-shadow: 0 0 50px #ff1744, inset 0 0 30px #ff1744 !important;
-  animation: container-red-flash 0.8s ease forwards !important;
+  box-shadow: 0 0 65px #ff1744, inset 0 0 35px #ff1744 !important;
+  animation: container-red-flash 0.8s ease forwards;
+}
+
+.group-panel-wrapper.phase1-breaking .card-half-left {
+  transform: translateX(-16px) translateY(18px) rotate(-8deg);
+}
+
+.group-panel-wrapper.phase1-breaking .card-half-right {
+  transform: translateX(16px) translateY(22px) rotate(8deg);
 }
 
 @keyframes container-red-flash {
   0% { filter: brightness(1) drop-shadow(0 0 0px transparent); }
-  30% { filter: brightness(1.4) drop-shadow(0 0 60px #ff1744); }
-  100% { filter: brightness(0.6) drop-shadow(0 0 30px #ff1744); }
+  30% { filter: brightness(1.4) drop-shadow(0 0 70px #ff1744); }
+  100% { filter: brightness(0.6) drop-shadow(0 0 40px #ff1744); }
 }
 
-@keyframes group-dq-drop {
+/* Phase 2: Shrink & Drop Down to Bottom-Right Stack (0.8s) */
+.group-panel-wrapper.phase2-dropping {
+  z-index: 999;
+  pointer-events: none;
+  animation: group-dq-drop-corner 0.8s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+}
+
+@keyframes group-dq-drop-corner {
   0% { transform: scale(1) translate(0, 0) rotate(0deg); opacity: 1; }
-  30% { transform: scale(1.1) translate(0, -20px) rotate(-3deg); opacity: 1; }
-  100% { transform: scale(0.15) translate(1200px, 800px) rotate(35deg); opacity: 0; }
+  100% { transform: scale(0.12) translate(1300px, 850px) rotate(35deg); opacity: 0; }
 }
 
 /* ==========================================================================
-   DISQUALIFIED STACK CONTAINER (Bottom-Right Corner — Display Demo v3.png)
+   MINI BROKEN CARD PAIR STACK (Bottom-Right Corner — Display Demo v3.png)
    ========================================================================== */
 .disqualified-stack-container {
   position: absolute;
-  bottom: 22px;
+  bottom: 25px;
   right: 45px;
   display: flex;
   align-items: center;
@@ -457,13 +486,12 @@ html, body {
 
 .disqualified-slot {
   position: relative;
-  width: 58px;
-  height: 80px;
-  border-radius: 8px;
+  width: 76px;
+  height: 96px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.25);
   background: rgba(18, 10, 18, 0.85);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
@@ -482,32 +510,58 @@ html, body {
   100% { transform: scale(1); opacity: 1; }
 }
 
-.mini-dq-card {
+/* Mini 2-Card Broken Split Pair inside Slot */
+.mini-card-pair-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 4px;
+}
+
+.mini-card-half {
+  position: relative;
+  width: 32px;
+  height: 52px;
+  border-radius: 4px;
+  background: #2a2530;
+  border: 1px solid rgba(255, 23, 68, 0.5);
+  overflow: hidden;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 5px 3px;
-  background: #2a2530;
-  filter: grayscale(80%) brightness(50%);
+  justify-content: center;
+  filter: grayscale(70%) brightness(50%);
 }
 
-.mini-dq-icon {
-  font-size: 18px;
-  color: #ff1744;
-  line-height: 1;
+.mini-card-half.left { transform: rotate(-6deg) translateY(2px); }
+.mini-card-half.right { transform: rotate(6deg) translateY(-2px); }
+
+.mini-card-tear-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #ff1744;
+  box-shadow: 0 0 6px #ff1744;
 }
 
-.mini-dq-label {
+.mini-dq-team-name {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
   font-family: var(--pixel-font);
-  font-size: 8px;
-  color: #888899;
-  text-align: center;
-  line-height: 1;
+  font-size: 7px;
+  color: #aaaaaa;
   white-space: nowrap;
+  width: 68px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Footer Status Bar */

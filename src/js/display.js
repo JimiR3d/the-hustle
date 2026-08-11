@@ -17,6 +17,7 @@ window.addEventListener('DOMContentLoaded', fitStageToWindow);
 
 let previousScores = {};
 let previousDisqualified = {};
+let animatingDqIds = new Set();
 let hasFiredZeroFlash = false;
 
 // Synthesize Spy Game Show Countdown Finish Alarm Sound via Web Audio API
@@ -73,7 +74,7 @@ function renderDisplay(state, meta = {}) {
   [topRow, bottomRow].forEach(row => {
     Array.from(row.children).forEach(child => {
       const id = child.id.replace('group-wrap-', '');
-      if (!activeIds.has(id) && !child.classList.contains('animating-dq')) {
+      if (!activeIds.has(id) && !animatingDqIds.has(id)) {
         child.remove();
       }
     });
@@ -100,18 +101,23 @@ function renderDisplay(state, meta = {}) {
       groupWrapper.id = `group-wrap-${group.id}`;
       groupWrapper.className = 'group-panel-wrapper active-group';
       parentRow.appendChild(groupWrapper);
-    } else if (groupWrapper.parentElement !== parentRow && !groupWrapper.classList.contains('animating-dq')) {
+    } else if (groupWrapper.parentElement !== parentRow && !animatingDqIds.has(group.id)) {
       parentRow.appendChild(groupWrapper);
     }
 
     groupWrapper.classList.toggle('is-popup', Boolean(group.isPopUp));
     groupWrapper.classList.toggle('active-group', true);
-    groupWrapper.classList.remove('is-disqualified', 'animating-dq');
+    groupWrapper.classList.remove('phase1-breaking', 'phase2-dropping');
 
     const renderPlayerCard = (player, slotClass) => `
       <div class="player-card-slot ${slotClass}">
         <div class="card-white-light-reflection" aria-hidden="true"></div>
-        <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img" />
+        <div class="card-half card-half-left">
+          <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img" />
+        </div>
+        <div class="card-half card-half-right">
+          <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img" />
+        </div>
       </div>
     `;
 
@@ -128,14 +134,12 @@ function renderDisplay(state, meta = {}) {
       </div>
     `;
 
-    // Structure key excludes points to prevent resetting CSS sheen light animations!
     const structureKey = `${group.name}_${group.player1.name}_${group.player2.name}_${group.isPopUp}`;
     if (groupWrapper.dataset.renderedStructure !== structureKey) {
       groupWrapper.innerHTML = innerHTML;
       groupWrapper.dataset.renderedStructure = structureKey;
     }
 
-    // Update LED score value without destroying DOM or interrupting light sheen loop
     const scoreLed = document.getElementById(`score-led-${group.id}`);
     if (scoreLed && scoreLed.textContent !== String(group.points)) {
       scoreLed.textContent = group.points;
@@ -146,21 +150,35 @@ function renderDisplay(state, meta = {}) {
     }
   });
 
-  // Handle Disqualified Groups Stack & Red Flash Drop Animation
+  // Handle 2-Phase Sequential Disqualification Animation
   disqualifiedGroups.forEach((group) => {
     const wasActive = previousDisqualified[group.id] === false;
     previousDisqualified[group.id] = true;
 
     let groupWrapper = document.getElementById(`group-wrap-${group.id}`);
-    if (wasActive && groupWrapper && !groupWrapper.classList.contains('animating-dq')) {
-      // Trigger red flash and drop animation before removing from active row
-      groupWrapper.classList.add('animating-dq');
+
+    if (wasActive && groupWrapper && !animatingDqIds.has(group.id)) {
+      animatingDqIds.add(group.id);
+
+      // Phase 1: Red Flash & Card Split Cut in Place (0.8s)
+      groupWrapper.classList.add('phase1-breaking');
+
       setTimeout(() => {
-        if (groupWrapper && groupWrapper.parentElement) {
-          groupWrapper.remove();
+        // Phase 2: Shrink & Translate to Corner Stack (0.8s)
+        if (groupWrapper) {
+          groupWrapper.classList.remove('phase1-breaking');
+          groupWrapper.classList.add('phase2-dropping');
         }
-        renderDisqualifiedStack(disqualifiedGroups);
-      }, 1300);
+
+        setTimeout(() => {
+          if (groupWrapper && groupWrapper.parentElement) {
+            groupWrapper.remove();
+          }
+          animatingDqIds.delete(group.id);
+          renderDisqualifiedStack(disqualifiedGroups);
+        }, 800);
+
+      }, 800);
     } else {
       renderDisqualifiedStack(disqualifiedGroups);
     }
@@ -201,9 +219,15 @@ function renderDisqualifiedStack(disqualifiedGroups) {
     if (dqGroup) {
       slot.classList.add('occupied');
       slot.innerHTML = `
-        <div class="mini-dq-card">
-          <span class="mini-dq-icon">💔</span>
-          <span class="mini-dq-label">${escapeHtml(dqGroup.name)}</span>
+        <div class="mini-card-pair-wrapper">
+          <div class="mini-card-half left">
+            <span style="font-size: 10px; color: #ff1744;">💔</span>
+          </div>
+          <div class="mini-card-half right">
+            <span style="font-size: 10px; color: #ff1744;">💔</span>
+          </div>
+          <div class="mini-card-tear-line"></div>
+          <span class="mini-dq-team-name">${escapeHtml(dqGroup.name)}</span>
         </div>
       `;
     } else {
