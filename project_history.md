@@ -1,4 +1,4 @@
-# Project History — Ellis Game Show Board
+# Project History — The Hustle Game Show Board
 
 ## Session Log
 
@@ -43,6 +43,14 @@
 - Added explicit **▶ Start**, **⏸ Pause**, **⏹ Stop**, and **🔄 Reset Timer** buttons on the Admin control panel.
 - Synthesized a dramatic Web Audio API spy countdown finish buzzer sound that triggers simultaneously with the green flash when the timer reaches `00:00`.
 
+### Session 2026-08-11 — Rename to 'the-hustle', GitHub Repository & Vercel Integration
+**Tasks completed:**
+- Renamed project from `ellis-game-show-board` to `the-hustle` in `package.json` and Vercel configuration.
+- Created public GitHub repository [JimiR3d/the-hustle](https://github.com/JimiR3d/the-hustle) and pushed full codebase.
+- Connected Vercel project `the-hustle` directly to GitHub repository `JimiR3d/the-hustle` for automatic CI/CD deployments on git push.
+- Moved player card assets to `public/assets/` for static Vercel production bundle serving.
+- Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
+
 **Key decisions:**
-- Web Audio API synthesis eliminates external audio file fetching delays and ensures instant 00:00 playback across all browsers.
-- Line-free stage styling guarantees seamless background rendering regardless of monitor resolution or stage scaling.
+- Serving card assets via `public/assets/` resolves Vite dynamic asset resolution in production builds.
+- Linking GitHub repository to Vercel provides seamless git-push deployment automation.
