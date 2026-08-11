@@ -51,6 +51,19 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
+### Session 2026-08-11 — v2 Redesign, Pixel Fonts, Disqualification Drop Stack & Sheen Fix
+**Tasks completed:**
+- Tagged `v1-live-stable` and created `v2-redesign` git branch to protect live Vercel site for stakeholder meeting.
+- Updated background to `background_v2.png` (casino table with deck, chips, and dice).
+- Replaced score pill with updated wide curved capsule `score_board.png`.
+- Imported Google pixelated fonts (`VT323`, `Silkscreen`) for LED score values with custom digit spacing.
+- Implemented high-contrast white rounded glass containers with tilted card pairs (`-4.5deg` / `+4.5deg`) matching `Single Group layout v2.png`.
+- Enhanced 3D sway breathing tilt intensity (`rotateX(4.5deg) rotateY(-4.5deg)`).
+- Built red flash container animation (`filter: drop-shadow(0 0 60px #ff1744)`) and card split drop animation into bottom-right mini-slots.
+- Rendered 5 mini grayed-out disqualified card slots in the bottom-right corner matching `Display Demo v3.png`.
+- Enabled dynamic center alignment for remaining active team cards when a group is eliminated.
+- Fixed card light sheen sweep reset bug on point changes by preserving DOM structure.
+
 **Key decisions:**
-- Serving card assets via `public/assets/` resolves Vite dynamic asset resolution in production builds.
-- Linking GitHub repository to Vercel provides seamless git-push deployment automation.
+- Isolating v2 work on `v2-redesign` branch protects live Vercel production URL for client demos.
+- Separating DOM structure key from score points prevents CSS keyframe animation resets during point updates.

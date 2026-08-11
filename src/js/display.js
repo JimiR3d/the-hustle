@@ -16,6 +16,7 @@ window.addEventListener('resize', fitStageToWindow);
 window.addEventListener('DOMContentLoaded', fitStageToWindow);
 
 let previousScores = {};
+let previousDisqualified = {};
 let hasFiredZeroFlash = false;
 
 // Synthesize Spy Game Show Countdown Finish Alarm Sound via Web Audio API
@@ -64,9 +65,26 @@ function renderDisplay(state, meta = {}) {
 
   if (!topRow || !bottomRow) return;
 
-  // Render 5 Team Group Panels (3 in top row, 2 in bottom row)
-  state.groups.forEach((group, index) => {
-    const isTopRow = index < 3;
+  const activeGroups = state.groups.filter(g => !g.isDisqualified);
+  const disqualifiedGroups = state.groups.filter(g => g.isDisqualified);
+
+  // Clear obsolete elements from top & bottom rows
+  const activeIds = new Set(activeGroups.map(g => g.id));
+  [topRow, bottomRow].forEach(row => {
+    Array.from(row.children).forEach(child => {
+      const id = child.id.replace('group-wrap-', '');
+      if (!activeIds.has(id) && !child.classList.contains('animating-dq')) {
+        child.remove();
+      }
+    });
+  });
+
+  // Distribute active groups dynamically (up to 3 in top row, remaining in bottom row)
+  const topActive = activeGroups.slice(0, 3);
+  const bottomActive = activeGroups.slice(3);
+
+  activeGroups.forEach((group) => {
+    const isTopRow = topActive.some(g => g.id === group.id);
     const parentRow = isTopRow ? topRow : bottomRow;
 
     let groupWrapper = document.getElementById(`group-wrap-${group.id}`);
@@ -82,45 +100,27 @@ function renderDisplay(state, meta = {}) {
       groupWrapper.id = `group-wrap-${group.id}`;
       groupWrapper.className = 'group-panel-wrapper active-group';
       parentRow.appendChild(groupWrapper);
+    } else if (groupWrapper.parentElement !== parentRow && !groupWrapper.classList.contains('animating-dq')) {
+      parentRow.appendChild(groupWrapper);
     }
 
     groupWrapper.classList.toggle('is-popup', Boolean(group.isPopUp));
-    groupWrapper.classList.toggle('is-disqualified', Boolean(group.isDisqualified));
-    groupWrapper.classList.toggle('active-group', !group.isDisqualified);
+    groupWrapper.classList.toggle('active-group', true);
+    groupWrapper.classList.remove('is-disqualified', 'animating-dq');
 
-    // Player Card Template with Slot Class for Staggered Sheen Sweeps
-    const renderPlayerCard = (player, slotClass) => {
-      if (group.isDisqualified) {
-        return `
-          <div class="player-card-slot ${slotClass} is-disqualified-card">
-            <div class="card-half card-half-left">
-              <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img" />
-            </div>
-            <div class="card-half card-half-right">
-              <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img" />
-            </div>
-          </div>
-        `;
-      } else {
-        return `
-          <div class="player-card-slot ${slotClass}">
-            <div class="card-white-light-reflection" aria-hidden="true"></div>
-            <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img" />
-          </div>
-        `;
-      }
-    };
+    const renderPlayerCard = (player, slotClass) => `
+      <div class="player-card-slot ${slotClass}">
+        <div class="card-white-light-reflection" aria-hidden="true"></div>
+        <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img" />
+      </div>
+    `;
 
     const innerHTML = `
-      <!-- Animated Translucent White/Pink Glass Edge Effect -->
       <div class="gradient-blob-edge" aria-hidden="true"></div>
-
-      <!-- Liquid Back Glass Container (back_glass.png) -->
       <div class="group-panel-container" id="group-container-${group.id}">
         ${renderPlayerCard(group.player1, 'slot-p1')}
         ${renderPlayerCard(group.player2, 'slot-p2')}
 
-        <!-- Central Group Score Board Badge (score_board.png — 240px wide) -->
         <div class="group-score-pill" id="group-score-pill-${group.id}">
           <span class="group-name-text">${escapeHtml(group.name)}</span>
           <span class="score-led-value" id="score-led-${group.id}">${group.points}</span>
@@ -128,11 +128,17 @@ function renderDisplay(state, meta = {}) {
       </div>
     `;
 
-    // Stable stateKey excluding isScoreChanged to prevent innerHTML re-render wiping out popups
-    const stateKey = `${group.name}_${group.player1.name}_${group.player2.name}_${group.points}_${group.isDisqualified}_${group.isPopUp}`;
-    if (groupWrapper.dataset.renderedState !== stateKey) {
+    // Structure key excludes points to prevent resetting CSS sheen light animations!
+    const structureKey = `${group.name}_${group.player1.name}_${group.player2.name}_${group.isPopUp}`;
+    if (groupWrapper.dataset.renderedStructure !== structureKey) {
       groupWrapper.innerHTML = innerHTML;
-      groupWrapper.dataset.renderedState = stateKey;
+      groupWrapper.dataset.renderedStructure = structureKey;
+    }
+
+    // Update LED score value without destroying DOM or interrupting light sheen loop
+    const scoreLed = document.getElementById(`score-led-${group.id}`);
+    if (scoreLed && scoreLed.textContent !== String(group.points)) {
+      scoreLed.textContent = group.points;
     }
 
     if (isScoreChanged) {
@@ -140,23 +146,42 @@ function renderDisplay(state, meta = {}) {
     }
   });
 
-  // Handle Timer Zoom Dynamics (Auto-Zoom whenever timer is running or expanded)
+  // Handle Disqualified Groups Stack & Red Flash Drop Animation
+  disqualifiedGroups.forEach((group) => {
+    const wasActive = previousDisqualified[group.id] === false;
+    previousDisqualified[group.id] = true;
+
+    let groupWrapper = document.getElementById(`group-wrap-${group.id}`);
+    if (wasActive && groupWrapper && !groupWrapper.classList.contains('animating-dq')) {
+      // Trigger red flash and drop animation before removing from active row
+      groupWrapper.classList.add('animating-dq');
+      setTimeout(() => {
+        if (groupWrapper && groupWrapper.parentElement) {
+          groupWrapper.remove();
+        }
+        renderDisqualifiedStack(disqualifiedGroups);
+      }, 1300);
+    } else {
+      renderDisqualifiedStack(disqualifiedGroups);
+    }
+  });
+
+  state.groups.forEach(g => {
+    previousDisqualified[g.id] = g.isDisqualified;
+  });
+
+  // Handle Timer Zoom Dynamics
   const isExpanded = Boolean(state.timer.isExpanded || state.timer.isRunning);
+  if (timerBadge) timerBadge.classList.toggle('timer-expanded', isExpanded);
+  if (groupsContainer) groupsContainer.classList.toggle('timer-shifted', isExpanded);
 
-  if (timerBadge) {
-    timerBadge.classList.toggle('timer-expanded', isExpanded);
-  }
-  if (groupsContainer) {
-    groupsContainer.classList.toggle('timer-shifted', isExpanded);
-  }
-
-  // Trigger softened full-page green flash & Web Audio buzzer when timer hits 0
+  // Trigger full-page green flash & Web Audio buzzer when timer hits 0
   if (state.timer.seconds === 0 && !hasFiredZeroFlash) {
     hasFiredZeroFlash = true;
     playZeroBuzzerSound();
     if (stage) {
       stage.classList.remove('timer-finished-flash');
-      void stage.offsetWidth; // Trigger reflow
+      void stage.offsetWidth;
       stage.classList.add('timer-finished-flash');
       setTimeout(() => stage.classList.remove('timer-finished-flash'), 2600);
     }
@@ -165,6 +190,27 @@ function renderDisplay(state, meta = {}) {
   }
 
   renderTimer(state.timer);
+}
+
+function renderDisqualifiedStack(disqualifiedGroups) {
+  for (let i = 0; i < 5; i++) {
+    const slot = document.getElementById(`dq-slot-${i}`);
+    if (!slot) continue;
+    const dqGroup = disqualifiedGroups[i];
+
+    if (dqGroup) {
+      slot.classList.add('occupied');
+      slot.innerHTML = `
+        <div class="mini-dq-card">
+          <span class="mini-dq-icon">💔</span>
+          <span class="mini-dq-label">${escapeHtml(dqGroup.name)}</span>
+        </div>
+      `;
+    } else {
+      slot.classList.remove('occupied');
+      slot.innerHTML = '';
+    }
+  }
 }
 
 function triggerPointAnimation(groupId, delta) {
@@ -186,7 +232,7 @@ function triggerPointAnimation(groupId, delta) {
   if (scorePill) {
     const pulseClass = delta > 0 ? 'pulse-green' : 'pulse-red';
     scorePill.classList.remove('pulse-green', 'pulse-red');
-    void scorePill.offsetWidth; // Trigger reflow
+    void scorePill.offsetWidth;
     scorePill.classList.add(pulseClass);
     setTimeout(() => {
       scorePill.classList.remove('pulse-green', 'pulse-red');

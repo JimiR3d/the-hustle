@@ -6,7 +6,7 @@
   <title>THE HUSTLE Love & MONEY — Game Show Board</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Outfit:wght@600;800;900&family=Silkscreen&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/css/main.css">
 </head>
 <body>
@@ -27,14 +27,23 @@
       </div>
     </header>
 
-    <!-- Main Stage Container (5 Team Groups in 2 Rows) -->
+    <!-- Main Stage Container (Active Team Groups Centered Dynamic Grid) -->
     <main class="groups-stage-container" id="groups-stage-container">
-      <!-- Top Row (3 Groups) -->
+      <!-- Top Row -->
       <div class="groups-row" id="groups-row-top"></div>
 
-      <!-- Bottom Row (2 Groups Centered) -->
+      <!-- Bottom Row -->
       <div class="groups-row" id="groups-row-bottom"></div>
     </main>
+
+    <!-- Disqualified Team Card Stack (Bottom-Right Corner) -->
+    <aside class="disqualified-stack-container" id="disqualified-stack-container">
+      <div class="disqualified-slot" id="dq-slot-0"></div>
+      <div class="disqualified-slot" id="dq-slot-1"></div>
+      <div class="disqualified-slot" id="dq-slot-2"></div>
+      <div class="disqualified-slot" id="dq-slot-3"></div>
+      <div class="disqualified-slot" id="dq-slot-4"></div>
+    </aside>
 
     <!-- Footer Status Bar -->
     <footer class="display-footer">
