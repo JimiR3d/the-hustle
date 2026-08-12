@@ -51,13 +51,12 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-11 — Apple Genie Disqualification Flight, Recognizable Mini Photos & Restore Bug Fix
+### Session 2026-08-12 — Team 1-5 Container Overlays & v2 Background Integration
 **Tasks completed:**
-- Fixed `completedDisqualifiedIds` restore order-of-operations bug in `display.js` so restoring disqualified teams immediately returns all 5 team cards to the stage layout (3 top row, 2 bottom row).
-- Fixed `pendingDqIds` DOM cleanup race condition so dual state sync events (`BroadcastChannel` + `localStorage`) never skip disqualification animations.
-- Built cinematic 2.8s 3-phase slow motion sequence: Phase 1 (0.6s neon red flash aura) -> Phase 2 (1.0s slow smooth diagonal card tear cut in place on stage) -> Phase 3 (1.2s Apple Genie curved flight trajectory gliding across screen directly to bottom-right slot).
-- Rendered recognizable miniature player card photos (`player1.image` and `player2.image`) split diagonally with team labels in bottom-right slots.
+- Applied transparent white container frame overlays (`team_container_t1.png` .. `team_container_t5.png`) featuring pixelated "TEAM N" header pills to each of the 5 group card panels matching `Display Demo v3 (1).png` and `Single Group layout v2 (1).png`.
+- Updated page background to `background_v2 (1).png` with full-bleed `100% 100%` fit.
+- Updated default team pairings in `state.js`: Team 1 (Teslim & Chidera), Team 2 (Adrian & Tayo), Team 3 (EZ & Aphro), Team 4 (Chinazom & Marty), Team 5 (Kia & Kitan).
 - Updated GEMINI.md, project_history.md, task.md, and walkthrough.md.
 
 **Key decisions:**
-- Re-ordering `completedDisqualifiedIds` cleanup before `activeGroups` filtering guarantees 100% reliable restoration of all 5 team cards.
+- Using per-team container frame PNGs (`team_container_t1.png` .. `team_container_t5.png`) ensures exact pixel match with design assets while maintaining dynamic card positioning.

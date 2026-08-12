@@ -33,10 +33,10 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 ```
 ├── index.html           # Main Display Screen (1920x1080 Arena view with VT323 pixel fonts & DQ stack)
 ├── admin.html           # Admin Control Screen (Host controller)
-├── public/assets/       # Static assets (logo.png, background_v2.png, back_glass.png, score_board.png, *.png)
+├── public/assets/       # Static assets (logo.png, background_v2.png, team_container_t1..t5.png, score_board.png, *.png)
 ├── src/
 │   ├── css/
-│   │   ├── main.css     # Design tokens, background_v2 100% 100%, white glass, Apple Genie DQ flight, mini-stack
+│   │   ├── main.css     # Design tokens, background_v2 100% 100%, Team 1-5 container frames, DQ flight, mini-stack
 │   │   └── admin.css    # Responsive host controller styling with Start/Pause/Stop/Reset timer buttons
 │   └── js/
 │       ├── state.js     # 5 Team state, ALL_PLAYERS dictionary, tickTimer, pause/stop/reset & dual-channel sync engine
@@ -45,14 +45,15 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 ```
 
 ## Conventions
-- 5 Team Groups (Teams of 2 Players each = 10 competitors) arranged matching `Display Demo v3.png`.
+- 5 Team Groups (Teams of 2 Players each = 10 competitors) arranged matching `Display Demo v3 (1).png`.
+- Per-team container frame overlays (`team_container_t1.png` .. `team_container_t5.png`) with pixelated "TEAM N" header pills.
 - Dynamic player reshuffling via Admin select dropdowns for Player 1 and Player 2.
 - Full-bleed casino board background (`background_v2.png` with `100% 100%` fit) showing all bottom-left glasses, ice, deck, chips, and dice.
-- High-contrast white rounded glass containers (`Single Group layout v2.png`) with organic card angles (`rotate(-4.5deg)` / `rotate(4.5deg)`).
+- High-contrast white rounded glass containers (`Single Group layout v2 (1).png`) with organic card angles (`rotate(-4.5deg)` / `rotate(4.5deg)`).
 - Updated wide curved capsule Score Board pill (`score_board.png`) with pixelated LED score numbers (`VT323`).
 - Explicit timer controls (**Start**, **Pause**, **Stop**, **Reset Timer**) on Admin bar; enlarged HUD timer badge with bold 38px clock.
 - Disqualifications trigger a 2.8s 3-phase live motion sequence: Phase 1 (0.6s neon red flash aura) -> Phase 2 (1.0s slow smooth diagonal card tear cut in place on stage) -> Phase 3 (1.2s Apple Genie curved flight trajectory gliding across screen directly to bottom-right slot).
-- Bottom-right mini-slots start 100% clean and empty when zero teams are disqualified; render recognizable miniature player card photos (`player1.image` and `player2.image`) with team labels when occupied matching `Display Demo v3.png`.
+- Bottom-right mini-slots start 100% clean and empty when zero teams are disqualified; render recognizable miniature player card photos (`player1.image` and `player2.image`) with team labels when occupied.
 - Remaining active team panels dynamically re-center themselves on the stage layout.
 - Restoring disqualified teams immediately returns all 5 team cards to the active stage layout (3 top row, 2 bottom row).
 - Card light sheen sweeps (`.card-white-light-reflection`) persist smoothly without resetting on point changes.
@@ -60,7 +61,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring full-bleed `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, Apple Genie disqualification flight, clean initial mini-slots, recognizable mini player card photos, 100% reliable 5-card restore, dynamic center alignment, enlarged HUD timer, and bug-free card sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring Team 1-5 container frame overlays (`team_container_t1.png` .. `team_container_t5.png`), full-bleed `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, Apple Genie disqualification flight, clean initial mini-slots, recognizable mini player card photos, 100% reliable 5-card restore, dynamic center alignment, enlarged HUD timer, and bug-free card sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.
