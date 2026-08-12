@@ -1,7 +1,7 @@
 // Centralized State Management for 5 Team Groups with Instant Dual-Channel Sync
 
-const STORAGE_KEY = 'ellis_game_show_state_v3';
-const CHANNEL_NAME = 'ellis_game_show_channel_v3';
+const STORAGE_KEY = 'ellis_game_show_state_v4';
+const CHANNEL_NAME = 'ellis_game_show_channel_v4';
 
 export const ALL_PLAYERS = {
   'Adrian': '/assets/Adrian.png',
@@ -19,45 +19,45 @@ export const ALL_PLAYERS = {
 const DEFAULT_GROUPS = [
   {
     id: 'group-1',
-    name: 'ADRIAN & APHRO',
-    player1: { name: 'Adrian', image: ALL_PLAYERS['Adrian'] },
-    player2: { name: 'Aphro', image: ALL_PLAYERS['Aphro'] },
+    name: 'TESLIM & CHIDERA',
+    player1: { name: 'Teslim', image: ALL_PLAYERS['Teslim'] },
+    player2: { name: 'Chidera', image: ALL_PLAYERS['Chidera'] },
     points: 75,
     isPopUp: false,
     isDisqualified: false,
   },
   {
     id: 'group-2',
-    name: 'CHIDERA & CHINAZOM',
-    player1: { name: 'Chidera', image: ALL_PLAYERS['Chidera'] },
-    player2: { name: 'Chinazom', image: ALL_PLAYERS['Chinazom'] },
-    points: 75,
-    isPopUp: false,
-    isDisqualified: false,
-  },
-  {
-    id: 'group-3',
-    name: 'EZ & KITAN',
-    player1: { name: 'EZ', image: ALL_PLAYERS['EZ'] },
-    player2: { name: 'Kitan', image: ALL_PLAYERS['Kitan'] },
-    points: 75,
-    isPopUp: false,
-    isDisqualified: false,
-  },
-  {
-    id: 'group-4',
-    name: 'MARTY & TAYO',
-    player1: { name: 'Marty', image: ALL_PLAYERS['Marty'] },
+    name: 'ADRIAN & TAYO',
+    player1: { name: 'Adrian', image: ALL_PLAYERS['Adrian'] },
     player2: { name: 'Tayo', image: ALL_PLAYERS['Tayo'] },
     points: 75,
     isPopUp: false,
     isDisqualified: false,
   },
   {
+    id: 'group-3',
+    name: 'EZ & APHRO',
+    player1: { name: 'EZ', image: ALL_PLAYERS['EZ'] },
+    player2: { name: 'Aphro', image: ALL_PLAYERS['Aphro'] },
+    points: 75,
+    isPopUp: false,
+    isDisqualified: false,
+  },
+  {
+    id: 'group-4',
+    name: 'CHINAZOM & MARTY',
+    player1: { name: 'Chinazom', image: ALL_PLAYERS['Chinazom'] },
+    player2: { name: 'Marty', image: ALL_PLAYERS['Marty'] },
+    points: 75,
+    isPopUp: false,
+    isDisqualified: false,
+  },
+  {
     id: 'group-5',
-    name: 'TESLIM & KIA',
-    player1: { name: 'Teslim', image: ALL_PLAYERS['Teslim'] },
-    player2: { name: 'kIA', image: ALL_PLAYERS['kIA'] },
+    name: 'KIA & KITAN',
+    player1: { name: 'kIA', image: ALL_PLAYERS['kIA'] },
+    player2: { name: 'Kitan', image: ALL_PLAYERS['Kitan'] },
     points: 75,
     isPopUp: false,
     isDisqualified: false,

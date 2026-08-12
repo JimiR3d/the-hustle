@@ -162,10 +162,13 @@ html, body {
   width: 100%;
   height: 100%;
   border-radius: 28px;
-  border: 4px solid rgba(255, 255, 255, 0.95);
-  background: rgba(20, 3, 13, 0.35);
-  backdrop-filter: blur(10px);
-  padding: 16px 20px 48px 20px;
+  border: none;
+  background-color: rgba(20, 3, 13, 0.25);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 100% 100%;
+  backdrop-filter: blur(8px);
+  padding: 26px 20px 48px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -173,6 +176,23 @@ html, body {
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.65);
   transform-style: preserve-3d;
   transition: border-color 0.4s ease, box-shadow 0.4s ease, filter 0.5s ease;
+}
+
+/* Team Container Specific Frame Overlays (Team 1 through Team 5) */
+.group-panel-wrapper.team-1 .group-panel-container {
+  background-image: url('/assets/team_container_t1.png');
+}
+.group-panel-wrapper.team-2 .group-panel-container {
+  background-image: url('/assets/team_container_t2.png');
+}
+.group-panel-wrapper.team-3 .group-panel-container {
+  background-image: url('/assets/team_container_t3.png');
+}
+.group-panel-wrapper.team-4 .group-panel-container {
+  background-image: url('/assets/team_container_t4.png');
+}
+.group-panel-wrapper.team-5 .group-panel-container {
+  background-image: url('/assets/team_container_t5.png');
 }
 
 /* Enhanced Vivid 3D Sway / Tilt Breathing Loop for Active Group Panels */

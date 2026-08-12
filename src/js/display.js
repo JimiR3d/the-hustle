@@ -109,15 +109,17 @@ function renderDisplay(state, meta = {}) {
 
     previousScores[group.id] = group.points;
 
+    const teamNum = group.id.replace('group-', '');
     if (!groupWrapper) {
       groupWrapper = document.createElement('div');
       groupWrapper.id = `group-wrap-${group.id}`;
-      groupWrapper.className = 'group-panel-wrapper active-group';
+      groupWrapper.className = `group-panel-wrapper active-group team-${teamNum}`;
       parentRow.appendChild(groupWrapper);
     } else if (groupWrapper.parentElement !== parentRow && !activeAnimationIds.has(group.id)) {
       parentRow.appendChild(groupWrapper);
     }
 
+    groupWrapper.classList.add(`team-${teamNum}`);
     groupWrapper.classList.toggle('is-popup', Boolean(group.isPopUp));
     groupWrapper.classList.toggle('active-group', true);
     groupWrapper.classList.remove('phase1-breaking', 'phase2-tearing', 'phase3-flight');
