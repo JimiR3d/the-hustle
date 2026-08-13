@@ -51,11 +51,13 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-14 — Buffer Calibration, Sign Gradient Layering & Cinematic Auto-Scroll
+### Session 2026-08-14 — Taller Ground Asset Integration & Top Horizon Anchoring
 **Tasks completed:**
-- Synchronized updated `Ground.png` asset to `public/assets/parallax/Ground.png`.
+- Synchronized new taller `Ground.png` asset to `public/assets/parallax/Ground.png`.
+- Anchored `.layer-ground` from its top horizon position (`top: 67vh;`) instead of bottom, preserving the exact visible horizon while allowing all extra image height to extend downward as overscan.
+- Maintained GSAP upward ground parallax scrub (`yPercent: -38`), eliminating empty space or gaps underneath when the ground moves upward.
 - Adjusted `.transition-buffer-section` height to `42vh` (min-height `340px`) for balanced transition timing between sections.
 - Positioned billboard/sign (`.layer-sign` at `z-index: 4;`) behind `.main-menu__bottom-fade` (`z-index: 5;`) so it smoothly darkens into black along with the background environment without any parallax displacement.
 - Kept Hosts (`z-index: 12`) and Sponsor Logos (`z-index: 12`) clearly above the bottom gradient.
-- Slowed down "ENTER GAME SHOW ARENA" button auto-scroll to 3.0s with smooth `easeInOutCubic` Lenis easing, giving the user a cinematic scroll that fully showcases the GSAP multi-plane parallax timeline.
+- Slowed down "ENTER GAME SHOW ARENA" button auto-scroll to 3.0s with smooth `easeInOutCubic` Lenis easing.
 - Pushed updates to GitHub `v2-redesign`.
