@@ -163,7 +163,10 @@ html, body {
   height: 100%;
   border-radius: 28px;
   border: none;
-  background: transparent;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 100% 100%;
   backdrop-filter: none;
   padding: 52px 20px 48px 20px;
   display: flex;
@@ -348,8 +351,34 @@ html, body {
   justify-content: center;
   z-index: 30;
   padding: 2px 18px 2px 18px;
+  overflow: hidden;
   filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.85));
-  transition: filter 0.3s ease, transform 0.2s ease;
+  transition: filter 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+/* Liquid Metal Sheen Reflection Overlay (Liquid Metal button.txt) */
+.group-score-pill::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 38%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0.05) 62%,
+    transparent 100%
+  );
+  pointer-events: none;
+  animation: liquid-metal-sheen 6.5s ease-in-out infinite;
+}
+
+@keyframes liquid-metal-sheen {
+  0% { transform: translateX(-100%) translateY(-20%) rotate(25deg); }
+  50%, 100% { transform: translateX(100%) translateY(20%) rotate(25deg); }
 }
 
 .group-name-text {
