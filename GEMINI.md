@@ -1,7 +1,7 @@
 # The Hustle — Digital Game Show Board
 
 ## Overview
-A single-page digital game show board application designed for arena displays (1920x1080) and host admin show controls. Built around a 2-player team card format inspired by "THE HUSTLE Love & MONEY". Features an opening 8-layer GSAP + Lenis Intro Parallax Screen that seamlessly scrolls down to reveal the Main Arena Board, with real-time state synchronization across dual screens (Main Arena Display and Admin Control Screen) via BroadcastChannel and LocalStorage.
+A single-page digital game show board application designed for arena displays (1920x1080) and host admin show controls. Built around a 2-player team card format inspired by "THE HUSTLE Love & MONEY". Features an opening 8-layer GSAP + Lenis Intro Parallax Screen with a gently swinging hanging glass cash piggy bank that seamlessly scrolls down to reveal the Main Arena Board, with real-time state synchronization across dual screens (Main Arena Display and Admin Control Screen) via BroadcastChannel and LocalStorage.
 
 ## Live Deployment & GitHub
 - **Main Arena Board (v1 Live Stable):** [https://the-hustle-eight.vercel.app/](https://the-hustle-eight.vercel.app/)
@@ -37,7 +37,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 │   └── parallax/        # Parallax assets (sky.png, Buildings.png, Ground.png, PiggyBank.png, homeLogo.png, Hosts.png, signHustle.png, sponsoreLogoss.png)
 ├── src/
 │   ├── css/
-│   │   ├── main.css     # Design tokens, custom pink scrollbar, card shimmer mask, parallax scrolling layers, background_v2, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight
+│   │   ├── main.css     # Design tokens, custom pink scrollbar, card shimmer mask, piggy pendulum swing, parallax scrolling layers, background_v2, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight
 │   │   └── admin.css    # Responsive host controller styling with Start/Pause/Stop/Reset timer buttons
 │   └── js/
 │       ├── parallax.js  # GSAP ScrollTrigger multi-depth scrub timeline & Lenis smooth scrolling controller
@@ -47,6 +47,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 ```
 
 ## Conventions
+- **Hanging Piggy Bank Pendulum Sway:** Fixed anchor point at `transform-origin: 50% 0%` where strings meet top of screen, swaying gently in front of the main logo (`z-index: 5`) with 4.8s `ease-in-out` continuous alternate rotation between `-3.5deg` and `+3.5deg`.
 - **Parallax Composition & Layering:**
   - Main Logo: Sized to reference (`max-width: 580px; top: 33vh`), natural lighting preserved with zero added CSS glow bloom (`filter: none`).
   - Piggy Bank: Enlarged (`max-width: 480px; top: -2vh`) and layered in front of the logo at `z-index: 5` (logo is at `z-index: 4`), overlapping the top marquee diamond.
@@ -89,7 +90,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring updated `Ground.png` and `Buildings.png` assets, accurate logo sizing without added glow, enlarged piggy bank in front of logo, lowered ground level revealing Vegas scenery, clean separation between arena button and sponsor logos, dedicated `.card-shimmer-mask` layer clipping shimmer strictly within card boundaries with zero bleed, unclipped `object-fit: contain` player cards, smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, soft atmospheric section blend fade behind content, non-cropped proportional parallax artwork layers, opening 8-layer GSAP + Lenis Intro Parallax Screen, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring gentle swinging hanging piggy bank from top anchor point, updated `Ground.png` and `Buildings.png` assets, accurate logo sizing without added glow, enlarged piggy bank in front of logo, lowered ground level revealing Vegas scenery, clean separation between arena button and sponsor logos, dedicated `.card-shimmer-mask` layer clipping shimmer strictly within card boundaries with zero bleed, unclipped `object-fit: contain` player cards, smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, soft atmospheric section blend fade behind content, non-cropped proportional parallax artwork layers, opening 8-layer GSAP + Lenis Intro Parallax Screen, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.
