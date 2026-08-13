@@ -137,8 +137,9 @@ html, body {
 .layer-piggy-wrapper {
   position: absolute;
   top: -2vh;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
   width: 25vw;
   max-width: 480px;
   height: auto;
