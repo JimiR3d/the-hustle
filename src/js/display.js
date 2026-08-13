@@ -83,6 +83,16 @@ function renderDisplay(state, meta = {}) {
   // Render bottom-right mini-slots with completed disqualified teams
   renderDisqualifiedStack(disqualifiedGroups.filter(g => completedDisqualifiedIds.has(g.id)));
 
+  // Toggle theatrical spotlight backdrop dimmer
+  const spotlightBackdrop = document.getElementById('spotlight-backdrop');
+  const hasSpotlight = state.groups.some(g => g.isPopUp && !g.isDisqualified);
+  if (spotlightBackdrop) {
+    spotlightBackdrop.classList.toggle('active', hasSpotlight);
+  }
+  if (stage) {
+    stage.classList.toggle('has-spotlight', hasSpotlight);
+  }
+
   // Clear obsolete elements from top & bottom rows ONLY if not animating or pending DQ animation
   const activeIds = new Set(activeGroups.map(g => g.id));
   const pendingDqIds = new Set(disqualifiedGroups.filter(g => g.isDisqualified && !completedDisqualifiedIds.has(g.id)).map(g => g.id));
@@ -129,11 +139,12 @@ function renderDisplay(state, meta = {}) {
     const renderPlayerCard = (player, slotClass) => `
       <div class="player-card-slot ${slotClass}">
         <div class="card-white-light-reflection" aria-hidden="true"></div>
-        <div class="card-half card-half-left">
-          <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img" />
+        <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img card-full-face" />
+        <div class="card-half card-half-left" aria-hidden="true">
+          <img src="${player.image}" alt="" class="player-card-img" />
         </div>
-        <div class="card-half card-half-right">
-          <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img" />
+        <div class="card-half card-half-right" aria-hidden="true">
+          <img src="${player.image}" alt="" class="player-card-img" />
         </div>
       </div>
     `;

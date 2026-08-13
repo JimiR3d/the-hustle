@@ -65,7 +65,7 @@ html, body {
    ========================================================================== */
 .display-header {
   position: relative;
-  z-index: 20;
+  z-index: 100;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -118,17 +118,49 @@ html, body {
 }
 
 /* ==========================================================================
+   THEATRICAL SPOTLIGHT BACKDROP DIMMER
+   ========================================================================== */
+.spotlight-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: brightness(0.65);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 45;
+  transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.spotlight-backdrop.active {
+  opacity: 1;
+}
+
+/* Dim all non-spotlighted teams to match Spotlight.jpg */
+#app-stage.has-spotlight .group-panel-wrapper:not(.is-popup) {
+  opacity: 0.35;
+  filter: brightness(0.5);
+  transition: opacity 0.5s ease, filter 0.5s ease;
+}
+
+#app-stage.has-spotlight .disqualified-stack-container {
+  opacity: 0.35;
+  filter: brightness(0.5);
+  transition: opacity 0.5s ease, filter 0.5s ease;
+}
+
+/* ==========================================================================
    DYNAMIC CENTER ALIGNMENT - Active Team Groups Container
    ========================================================================== */
 .groups-stage-container {
   position: relative;
-  z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 25px;
-  margin-top: 10px;
+  gap: 38px;
+  margin-top: 15px;
   transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
   width: 100%;
 }
@@ -141,7 +173,7 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 45px;
+  gap: 65px;
   width: 100%;
   transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -326,7 +358,19 @@ html, body {
   display: block;
 }
 
-/* Card Split Tear Halves */
+.card-full-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Card Split Tear Halves (Hidden on active cards to eliminate subpixel cracks) */
 .card-half {
   position: absolute;
   top: 0;
@@ -334,6 +378,8 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  display: none;
+  z-index: 2;
   transition: transform 1.0s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
@@ -343,6 +389,20 @@ html, body {
 
 .card-half-right {
   clip-path: polygon(52% 0%, 100% 0%, 100% 100%, 46% 100%, 55% 80%, 42% 60%, 56% 40%, 44% 20%);
+}
+
+/* When breaking or tearing during DQ, show split halves and hide full face */
+.group-panel-wrapper.phase1-breaking .card-full-face,
+.group-panel-wrapper.phase2-tearing .card-full-face,
+.group-panel-wrapper.phase3-flight .card-full-face {
+  opacity: 0;
+  display: none;
+}
+
+.group-panel-wrapper.phase1-breaking .card-half,
+.group-panel-wrapper.phase2-tearing .card-half,
+.group-panel-wrapper.phase3-flight .card-half {
+  display: block;
 }
 
 /* Wide Transparent White Light Reflection Sweep */
@@ -528,15 +588,27 @@ html, body {
 }
 
 /* ==========================================================================
-   3D POP-UP SPOTLIGHT INTERACTION
+   3D POP-UP SPOTLIGHT INTERACTION (Matching Spotlight.jpg)
    ========================================================================== */
 .group-panel-wrapper.is-popup {
-  z-index: 1000 !important;
-  transform: scale(1.22) translateY(-25px);
+  position: relative;
+  z-index: 120 !important;
+  opacity: 1 !important;
+  transform: scale(1.05) translateY(-6px);
+  filter: brightness(1.08) drop-shadow(0 0 30px rgba(255, 215, 0, 0.8)) !important;
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .group-panel-wrapper.is-popup .group-panel-container {
-  box-shadow: 0 35px 80px rgba(0, 0, 0, 0.9), 0 0 60px rgba(255, 255, 255, 0.85);
+  box-shadow: none !important;
+}
+
+.group-panel-wrapper.is-popup .team-container-base {
+  opacity: 1 !important;
+}
+
+.group-panel-wrapper.is-popup .team-container-glow-mask {
+  filter: drop-shadow(0 0 15px #ffd700) drop-shadow(0 0 35px #ffb300) drop-shadow(0 0 65px rgba(255, 180, 0, 0.95)) !important;
 }
 
 /* ==========================================================================
