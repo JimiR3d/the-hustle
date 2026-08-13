@@ -11,50 +11,94 @@
 </head>
 <body>
 
-  <!-- 1920x1080 Scaled Arena Display Stage -->
-  <div id="app-stage">
-    
-    <!-- Theatrical Spotlight Backdrop Dimmer -->
-    <div class="spotlight-backdrop" id="spotlight-backdrop" aria-hidden="true"></div>
+  <!-- ==========================================================================
+       INTRO PARALLAX SCROLLING SECTION (Opening Landing Page)
+       ========================================================================== -->
+  <section class="parallax-intro-section" id="intro-parallax-section">
+    <div class="parallax-visuals" data-parallax-layers>
+      <!-- Layer 1: Starry Sky Background -->
+      <img src="/assets/parallax/sky.png" alt="Starry Sky" class="parallax-layer-img layer-sky" data-parallax-layer="sky" />
 
-    <!-- Top Header with Custom Logo Image & Dynamic HUD Timer -->
-    <header class="display-header">
-      <div class="logo-container">
-        <img src="/assets/logo.png" alt="THE HUSTLE Love & MONEY" class="logo-img" />
-      </div>
+      <!-- Layer 2: Las Vegas City Skyline -->
+      <img src="/assets/parallax/Buildings.png" alt="Las Vegas Skyline" class="parallax-layer-img layer-buildings" data-parallax-layer="buildings" />
 
-      <!-- Central HUD Game Countdown Timer -->
-      <div class="hud-timer-badge" id="hud-timer-badge">
-        <span class="hud-timer-label">GAME TIMER</span>
-        <span class="hud-timer-clock" id="hud-clock">05:00</span>
-      </div>
-    </header>
+      <!-- Layer 3: Desert Landscape / Ground -->
+      <img src="/assets/parallax/Ground.png" alt="Desert Ground" class="parallax-layer-img layer-ground" data-parallax-layer="ground" />
 
-    <!-- Main Stage Container (Active Team Groups Centered Dynamic Grid) -->
-    <main class="groups-stage-container" id="groups-stage-container">
-      <!-- Top Row -->
-      <div class="groups-row" id="groups-row-top"></div>
+      <!-- Layer 4: Top Hanging Glass Piggy Bank -->
+      <img src="/assets/parallax/PiggyBank.png" alt="Hanging Piggy Bank" class="parallax-layer-img layer-piggy" data-parallax-layer="piggy" />
 
-      <!-- Bottom Row -->
-      <div class="groups-row" id="groups-row-bottom"></div>
-    </main>
+      <!-- Layer 5: Main Marquee Sign Center -->
+      <img src="/assets/parallax/homeLogo.png" alt="Welcome to The Hustle Love & Money" class="parallax-layer-img layer-logo" data-parallax-layer="logo" />
 
-    <!-- Disqualified Team Card Stack (Bottom-Right Corner) -->
-    <aside class="disqualified-stack-container" id="disqualified-stack-container">
-      <div class="disqualified-slot" id="dq-slot-0"></div>
-      <div class="disqualified-slot" id="dq-slot-1"></div>
-      <div class="disqualified-slot" id="dq-slot-2"></div>
-      <div class="disqualified-slot" id="dq-slot-3"></div>
-      <div class="disqualified-slot" id="dq-slot-4"></div>
-    </aside>
+      <!-- Layer 6: Hosts Cards (Bottom Left) -->
+      <img src="/assets/parallax/Hosts.png" alt="Hosts Osmond and Esther" class="parallax-layer-img layer-hosts" data-parallax-layer="hosts" />
 
-    <!-- Footer Status Bar -->
-    <footer class="display-footer">
-      <div class="arena-status-badge">● LIVE ARENA BOARD</div>
-      <div class="arena-watermark">THE HUSTLE LOVE & MONEY © 2026</div>
-    </footer>
+      <!-- Layer 7: Motorclub Houston Roadside Sign (Bottom Right) -->
+      <img src="/assets/parallax/signHustle.png" alt="Motorclub Houston Sign" class="parallax-layer-img layer-sign" data-parallax-layer="sign" />
 
-  </div>
+      <!-- Layer 8: Sponsors Bar (Bottom Center) -->
+      <img src="/assets/parallax/sponsoreLogoss.png" alt="Sponsors" class="parallax-layer-img layer-sponsors" data-parallax-layer="sponsors" />
+
+      <!-- Bottom Seamless Gradient Fade -->
+      <div class="parallax__fade" aria-hidden="true"></div>
+
+      <!-- Pulsating Scroll Prompt -->
+      <button class="scroll-to-arena-btn" id="scroll-to-arena-btn" type="button">
+        <span class="scroll-btn-text">ENTER GAME SHOW ARENA</span>
+        <span class="scroll-btn-arrow">↓</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       MAIN ARENA SECTION (1920x1080 Scaled Arena Display Stage)
+       ========================================================================== -->
+  <section class="main-arena-section" id="main-arena-section">
+    <div id="app-stage">
+      
+      <!-- Theatrical Spotlight Backdrop Dimmer -->
+      <div class="spotlight-backdrop" id="spotlight-backdrop" aria-hidden="true"></div>
+
+      <!-- Top Header with Custom Logo Image & Dynamic HUD Timer -->
+      <header class="display-header">
+        <div class="logo-container">
+          <img src="/assets/logo.png" alt="THE HUSTLE Love & MONEY" class="logo-img" />
+        </div>
+
+        <!-- Central HUD Game Countdown Timer -->
+        <div class="hud-timer-badge" id="hud-timer-badge">
+          <span class="hud-timer-label">GAME TIMER</span>
+          <span class="hud-timer-clock" id="hud-clock">05:00</span>
+        </div>
+      </header>
+
+      <!-- Main Stage Container (Active Team Groups Centered Dynamic Grid) -->
+      <main class="groups-stage-container" id="groups-stage-container">
+        <!-- Top Row -->
+        <div class="groups-row" id="groups-row-top"></div>
+
+        <!-- Bottom Row -->
+        <div class="groups-row" id="groups-row-bottom"></div>
+      </main>
+
+      <!-- Disqualified Team Card Stack (Bottom-Right Corner) -->
+      <aside class="disqualified-stack-container" id="disqualified-stack-container">
+        <div class="disqualified-slot" id="dq-slot-0"></div>
+        <div class="disqualified-slot" id="dq-slot-1"></div>
+        <div class="disqualified-slot" id="dq-slot-2"></div>
+        <div class="disqualified-slot" id="dq-slot-3"></div>
+        <div class="disqualified-slot" id="dq-slot-4"></div>
+      </aside>
+
+      <!-- Footer Status Bar -->
+      <footer class="display-footer">
+        <div class="arena-status-badge">● LIVE ARENA BOARD</div>
+        <div class="arena-watermark">THE HUSTLE LOVE & MONEY © 2026</div>
+      </footer>
+
+    </div>
+  </section>
 
   <script type="module" src="/src/js/display.js"></script>
 </body>

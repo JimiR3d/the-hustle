@@ -1,5 +1,6 @@
 import { gameStateStore } from './state.js';
 import { liquidMetalFragmentShader, ShaderMount } from '@paper-design/shaders';
+import { initParallax } from './parallax.js';
 
 // Auto-scaling 1920x1080 stage fitting
 function fitStageToWindow() {
@@ -14,7 +15,10 @@ function fitStageToWindow() {
 }
 
 window.addEventListener('resize', fitStageToWindow);
-window.addEventListener('DOMContentLoaded', fitStageToWindow);
+window.addEventListener('DOMContentLoaded', () => {
+  fitStageToWindow();
+  initParallax();
+});
 
 let previousScores = {};
 let activeAnimationIds = new Set();
