@@ -238,8 +238,10 @@ function renderDisplay(state, meta = {}) {
 
     const renderPlayerCard = (player, slotClass) => `
       <div class="player-card-slot ${slotClass}">
-        <div class="card-white-light-reflection" aria-hidden="true"></div>
         <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img card-full-face" />
+        <div class="card-shimmer-mask" aria-hidden="true">
+          <div class="card-white-light-reflection"></div>
+        </div>
         <div class="card-half card-half-left" aria-hidden="true">
           <img src="${player.image}" alt="" class="player-card-img" />
         </div>

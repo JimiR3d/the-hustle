@@ -588,7 +588,7 @@ html, body {
 .player-card-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
@@ -598,7 +598,7 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   z-index: 1;
   transition: opacity 0.3s ease;
@@ -637,6 +637,20 @@ html, body {
 .group-panel-wrapper.phase2-tearing .card-half,
 .group-panel-wrapper.phase3-flight .card-half {
   display: block;
+}
+
+/* ==========================================================================
+   SHIMMER MASK & REFLECTION SWEEP (Clipped strictly within individual cards)
+   ========================================================================== */
+.card-shimmer-mask {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 3;
 }
 
 /* Wide Transparent White Light Reflection Sweep */
