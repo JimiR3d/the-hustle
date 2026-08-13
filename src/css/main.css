@@ -589,13 +589,13 @@ html, body {
 }
 
 /* ==========================================================================
-   3D POP-UP SPOTLIGHT INTERACTION
+   3D POP-UP SPOTLIGHT INTERACTION (Zoom In)
    ========================================================================== */
 .group-panel-wrapper.is-popup {
   position: relative;
   z-index: 120 !important;
   opacity: 1 !important;
-  transform: scale(1.04) translateY(-4px);
+  transform: scale(1.22) translateY(-20px);
   transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
