@@ -51,14 +51,17 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Parallax Ground Lowering, Piggy Centering & Pendulum Sway
+### Session 2026-08-13 — Parallax Ground Direction, Low Base Ground, Overflow & Fade Transition
 **Tasks completed:**
-- Lowered `.layer-ground` base resting position (`bottom: -22vh;`) and aligned `.layer-buildings` (`bottom: 8vh;`) to reveal more Vegas skyline environment before ground begins with zero gaps.
+- Reversed ground parallax direction (`yPercent: -45`) in `src/js/parallax.js` so scrolling down moves ground upward naturally as foreground passes viewer.
+- Positioned `.layer-ground` base resting position significantly lower (`bottom: -48vh;`) and `.layer-buildings` (`bottom: 0vh;`), revealing full Vegas skyline before ground begins.
+- Set `overflow: visible;` on intro parallax section and visuals container, preventing Host cards and roadside sign from being clipped across section boundaries.
+- Refined atmospheric feathered gradient fade (`height: 320px; z-index: 4;`) layered above ground/sky and behind all foreground UI elements.
 - Centered `.layer-piggy-wrapper` using `left: 0; right: 0; margin: 0 auto;`, completely avoiding any transform conflict with GSAP parallax or CSS rotation.
 - Updated assets with latest `Buildings.png` and `Ground.png`.
 - Added subtle continuous swinging pendulum animation to the hanging piggy bank (`transform-origin: 50% 0%` with `@keyframes piggy-pendulum-swing` 4.8s `ease-in-out` sway between `-3.5deg` and `+3.5deg`).
 - Scaled down main logo to match reference `Layout (Final look).png` and removed added artificial glow/bloom (`filter: none;`).
-- Enlarged hanging piggy bank and layered it in front of the logo at `z-index: 5` so it overlaps the logo's top marquee diamond.
+- Enlarged hanging piggy bank and layered it in front of the logo at `z-index: 12` so it overlaps the logo's top marquee diamond.
 - Positioned "ENTER GAME SHOW ARENA" button above sponsor logos with clear spacing (`bottom: 7.5vh;` vs `bottom: 2vh;`).
 - Implemented dedicated `.card-shimmer-mask` clipping layer for all player cards, strictly clipping the moving light sweep within card boundaries and eliminating background shimmer bleed.
 - Preserved 100% full player card artwork and aspect ratio with `object-fit: contain`.
@@ -69,5 +72,4 @@
 - Balanced layout underneath timers for 1 group (`x: 960px, scale: 1.20`), 2 groups (`x: 690px / 1230px, scale: 1.10`), and 3 groups (`x: 465px / 960px / 1455px, scale: 1.02`) with zero overlap.
 - Fixed DOM insertion lifecycle in `display.js` so elements remain mounted, enabling silky smooth eased animations (`transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)`) moving in and out of spotlight without snapping.
 - Proportional non-cropped scaling applied to all 8 parallax layers (`sky.png`, `Buildings.png`, `Ground.png`, `PiggyBank.png`, `homeLogo.png`, `Hosts.png`, `signHustle.png`, `sponsoreLogoss.png`).
-- Replaced the hard black rectangle divider between sections with a soft atmospheric fade (`.parallax__fade` at `z-index: 2` with `backdrop-filter: blur(2px)`) that sits behind all foreground content and interactive UI.
 - Pushed updates to GitHub `v2-redesign`.
