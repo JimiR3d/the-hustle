@@ -56,7 +56,11 @@
 - Applied transparent white container frame overlays (`team_container_t1.png` .. `team_container_t5.png`) featuring pixelated "TEAM N" header pills to each of the 5 group card panels matching `Display Demo v3 (1).png` and `Single Group layout v2 (1).png`.
 - Updated page background to `background_v2 (1).png` with full-bleed `100% 100%` fit.
 - Updated default team pairings in `state.js`: Team 1 (Teslim & Chidera), Team 2 (Adrian & Tayo), Team 3 (EZ & Aphro), Team 4 (Chinazom & Marty), Team 5 (Kia & Kitan).
-- Updated GEMINI.md, project_history.md, task.md, and walkthrough.md.
 
-**Key decisions:**
-- Using per-team container frame PNGs (`team_container_t1.png` .. `team_container_t5.png`) ensures exact pixel match with design assets while maintaining dynamic card positioning.
+### Session 2026-08-13 — Card Overlap Fix, Direct Card Sway & Orbiting Gradient Blob Effect
+**Tasks completed:**
+- Increased top padding (`padding-top: 52px`) on `.group-panel-container` so cards sit cleanly below the "TEAM N" header pill.
+- Removed 3D sway animation from team container frames (`.group-panel-container`) so they lie 100% flat on the casino table background.
+- Applied organic 3D tilt breathing sway animations (`card-sway-p1` and `card-sway-p2`) directly onto individual player cards.
+- Integrated orbiting gradient blob border effect from `Gradient Bold card.txt` (`linear-gradient(to right, #ec4899, #ef4444, #eab308)` with `filter: blur(16px)` and 5s `@keyframes blob-orbit`).
+- Updated GEMINI.md, project_history.md, task.md, and walkthrough.md.
