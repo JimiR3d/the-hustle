@@ -35,16 +35,16 @@ export function initParallax() {
     },
   });
 
-  // Layer depths
+  // Layer depths (Ground moves upward on scroll down as foreground passes viewer)
   tl.to('[data-parallax-layer="sky"]', { yPercent: 18, ease: 'none' }, 0)
-    .to('[data-parallax-layer="buildings"]', { yPercent: 32, ease: 'none' }, 0)
-    .to('[data-parallax-layer="ground"]', { yPercent: 42, ease: 'none' }, 0)
+    .to('[data-parallax-layer="buildings"]', { yPercent: 28, ease: 'none' }, 0)
+    .to('[data-parallax-layer="ground"]', { yPercent: -45, ease: 'none' }, 0)
     .to('[data-parallax-layer="piggy"]', { yPercent: 58, ease: 'none' }, 0)
     .to('[data-parallax-layer="logo"]', { yPercent: 68, ease: 'none' }, 0)
-    .to('[data-parallax-layer="hosts"]', { yPercent: 82, ease: 'none' }, 0)
-    .to('[data-parallax-layer="sign"]', { yPercent: 82, ease: 'none' }, 0)
-    .to('[data-parallax-layer="sponsors"]', { yPercent: 88, ease: 'none' }, 0)
-    .to('.parallax__fade', { opacity: 0.95, ease: 'power2.in' }, 0.2);
+    .to('[data-parallax-layer="hosts"]', { yPercent: 78, ease: 'none' }, 0)
+    .to('[data-parallax-layer="sign"]', { yPercent: 78, ease: 'none' }, 0)
+    .to('[data-parallax-layer="sponsors"]', { yPercent: 84, ease: 'none' }, 0)
+    .to('.parallax__fade', { opacity: 1, ease: 'power1.inOut' }, 0.1);
 
   // Scroll to Arena button click
   const scrollIndicator = document.getElementById('scroll-to-arena-btn');
