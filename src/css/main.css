@@ -163,10 +163,7 @@ html, body {
   height: 100%;
   border-radius: 28px;
   border: none;
-  background-color: transparent;
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: 100% 100%;
+  background: transparent;
   backdrop-filter: none;
   padding: 52px 20px 48px 20px;
   display: flex;
@@ -179,58 +176,91 @@ html, body {
   transition: filter 0.5s ease;
 }
 
-/* Team Container Specific Frame Overlays (Team 1 through Team 5) */
-.group-panel-wrapper.team-1 .group-panel-container {
-  background-image: url('/assets/team_container_t1.png');
-}
-.group-panel-wrapper.team-2 .group-panel-container {
-  background-image: url('/assets/team_container_t2.png');
-}
-.group-panel-wrapper.team-3 .group-panel-container {
-  background-image: url('/assets/team_container_t3.png');
-}
-.group-panel-wrapper.team-4 .group-panel-container {
-  background-image: url('/assets/team_container_t4.png');
-}
-.group-panel-wrapper.team-5 .group-panel-container {
-  background-image: url('/assets/team_container_t5.png');
-}
-
-/* Flat Casino Container (No Container 3D Sway) */
-.group-panel-wrapper.active-group .group-panel-container {
-  animation: none;
-  transform: none;
-}
-
-/* Moving Border Light Line Track & Beam (Moving border.txt) */
-.moving-border-svg {
+/* Direct Team Container Frame & Exact-contour Glow Beam */
+.team-container-frame {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 2;
-  overflow: visible;
+  z-index: 5;
 }
 
-.moving-border-line {
-  fill: none;
-  stroke: #ffffff;
-  stroke-width: 3.5;
-  stroke-linecap: round;
-  stroke-dasharray: 120 1300;
-  stroke-dashoffset: 0;
-  filter: drop-shadow(0 0 5px #ffffff) drop-shadow(0 0 12px rgba(255, 255, 255, 0.85));
-  animation: moving-border-glide 4.8s linear infinite;
+.team-container-base {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 100% 100%;
+  opacity: 0.5;
 }
 
-@keyframes moving-border-glide {
-  0% {
-    stroke-dashoffset: 0;
+.team-container-glow-mask {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center center;
+  -webkit-mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  mask-position: center center;
+  mask-size: 100% 100%;
+  filter: drop-shadow(0 0 10px #ffffff) drop-shadow(0 0 20px #ffffff) drop-shadow(0 0 35px rgba(255, 255, 255, 1));
+  z-index: 6;
+}
+
+.team-container-glow-beam {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0deg,
+    transparent 270deg,
+    rgba(255, 255, 255, 0.3) 300deg,
+    rgba(255, 255, 255, 0.9) 330deg,
+    #ffffff 350deg,
+    rgba(255, 255, 255, 0.9) 358deg,
+    transparent 360deg
+  );
+  animation: team-border-beam-rotate 4s linear infinite;
+}
+
+@keyframes team-border-beam-rotate {
+  from {
+    transform: rotate(0deg);
   }
-  100% {
-    stroke-dashoffset: -1420;
+  to {
+    transform: rotate(360deg);
   }
+}
+
+/* Team Container Specific Masks and Bases */
+.team-1 .team-container-base { background-image: url('/assets/team_container_t1.png'); }
+.team-1 .team-container-glow-mask { -webkit-mask-image: url('/assets/team_container_t1.png'); mask-image: url('/assets/team_container_t1.png'); }
+
+.team-2 .team-container-base { background-image: url('/assets/team_container_t2.png'); }
+.team-2 .team-container-glow-mask { -webkit-mask-image: url('/assets/team_container_t2.png'); mask-image: url('/assets/team_container_t2.png'); }
+
+.team-3 .team-container-base { background-image: url('/assets/team_container_t3.png'); }
+.team-3 .team-container-glow-mask { -webkit-mask-image: url('/assets/team_container_t3.png'); mask-image: url('/assets/team_container_t3.png'); }
+
+.team-4 .team-container-base { background-image: url('/assets/team_container_t4.png'); }
+.team-4 .team-container-glow-mask { -webkit-mask-image: url('/assets/team_container_t4.png'); mask-image: url('/assets/team_container_t4.png'); }
+
+.team-5 .team-container-base { background-image: url('/assets/team_container_t5.png'); }
+.team-5 .team-container-glow-mask { -webkit-mask-image: url('/assets/team_container_t5.png'); mask-image: url('/assets/team_container_t5.png'); }
+
+/* Flat Casino Container (No Container 3D Sway) */
+.group-panel-wrapper.active-group .group-panel-container {
+  animation: none;
+  transform: none;
 }
 
 /* ==========================================================================
@@ -329,7 +359,7 @@ html, body {
 .player-card-slot.slot-p2 .card-white-light-reflection { animation-delay: 4.2s; animation-duration: 10.5s; }
 
 /* ==========================================================================
-   UPDATED WIDE CAPSULE SCOREBOARD BADGE (score_board.png) & PIXEL LED SCORE
+   LIQUID METAL SCOREBOARD CAPSULE BADGE (@paper-design/shaders)
    ========================================================================== */
 .group-score-pill {
   position: absolute;
@@ -338,18 +368,46 @@ html, body {
   transform: translateX(-50%);
   width: 250px;
   height: 64px;
-  background: url('/assets/score_board.png') no-repeat center center / 100% 100%;
+  border-radius: 100px;
+  background: #09090d url('/assets/score_board.png') no-repeat center center / 100% 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 30;
   padding: 2px 18px 2px 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.85);
   filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.85));
   transition: filter 0.3s ease, transform 0.2s ease;
 }
 
+.score-pill-shader {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 100px;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+.score-pill-shader canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  border-radius: 100px !important;
+}
+
 .group-name-text {
+  position: relative;
+  z-index: 10;
   font-size: 11px;
   font-family: 'Silkscreen', 'VT323', monospace;
   font-weight: 700;
