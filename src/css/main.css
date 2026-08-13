@@ -213,20 +213,14 @@ html, body {
   overflow: visible;
 }
 
-.moving-border-track {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.18);
-  stroke-width: 2.5;
-}
-
 .moving-border-line {
   fill: none;
   stroke: #ffffff;
   stroke-width: 3.5;
   stroke-linecap: round;
-  stroke-dasharray: 140 1350;
+  stroke-dasharray: 120 1300;
   stroke-dashoffset: 0;
-  filter: drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 14px rgba(255, 255, 255, 0.9));
+  filter: drop-shadow(0 0 5px #ffffff) drop-shadow(0 0 12px rgba(255, 255, 255, 0.85));
   animation: moving-border-glide 4.8s linear infinite;
 }
 
@@ -235,7 +229,7 @@ html, body {
     stroke-dashoffset: 0;
   }
   100% {
-    stroke-dashoffset: -1490;
+    stroke-dashoffset: -1420;
   }
 }
 
@@ -351,34 +345,8 @@ html, body {
   justify-content: center;
   z-index: 30;
   padding: 2px 18px 2px 18px;
-  overflow: hidden;
   filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.85));
-  transition: filter 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-/* Liquid Metal Sheen Reflection Overlay (Liquid Metal button.txt) */
-.group-score-pill::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    115deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.05) 38%,
-    rgba(255, 255, 255, 0.4) 50%,
-    rgba(255, 255, 255, 0.05) 62%,
-    transparent 100%
-  );
-  pointer-events: none;
-  animation: liquid-metal-sheen 6.5s ease-in-out infinite;
-}
-
-@keyframes liquid-metal-sheen {
-  0% { transform: translateX(-100%) translateY(-20%) rotate(25deg); }
-  50%, 100% { transform: translateX(100%) translateY(20%) rotate(25deg); }
+  transition: filter 0.3s ease, transform 0.2s ease;
 }
 
 .group-name-text {
