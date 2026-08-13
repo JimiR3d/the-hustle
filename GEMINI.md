@@ -47,6 +47,11 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 ```
 
 ## Conventions
+- **Parallax Composition & Layering:**
+  - Main Logo: Sized to reference (`max-width: 580px; top: 33vh`), natural lighting preserved with zero added CSS glow bloom (`filter: none`).
+  - Piggy Bank: Enlarged (`max-width: 480px; top: -2vh`) and layered in front of the logo at `z-index: 5` (logo is at `z-index: 4`), overlapping the top marquee diamond.
+  - Ground: Positioned lower (`bottom: -10vh`) without scaling down, revealing the Las Vegas skyline, palm trees, and scenery behind it.
+  - Arena Button & Sponsors: "ENTER GAME SHOW ARENA" button sits comfortably at `bottom: 7.5vh`, clearly above the sponsor logos at `bottom: 2vh` with clean breathing room.
 - **Dedicated `.card-shimmer-mask` Layer:** Shimmer reflections are strictly clipped within the card's exact dimensions (`border-radius: 14px; overflow: hidden; pointer-events: none;`) without bleeding into the background or cropping the card image.
 - **Unclipped Proportional Player Cards:** Set `object-fit: contain` on player card artwork so the full original card illustrations, suits, and borders remain 100% visible at all times.
 - **Elimination FLIP Transitions:** When a team is eliminated, remaining active cards smoothly glide with 0.85s eased transitions into their newly centered layout using `animateLayoutFlip()` without snapping or jumping.
@@ -84,7 +89,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring dedicated `.card-shimmer-mask` layer clipping the shimmer reflection strictly within card boundaries with zero bleed, unclipped `object-fit: contain` player cards, smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, soft atmospheric section blend fade behind content, non-cropped proportional parallax artwork layers, opening 8-layer GSAP + Lenis Intro Parallax Screen, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring updated `Ground.png` and `Buildings.png` assets, accurate logo sizing without added glow, enlarged piggy bank in front of logo, lowered ground level revealing Vegas scenery, clean separation between arena button and sponsor logos, dedicated `.card-shimmer-mask` layer clipping shimmer strictly within card boundaries with zero bleed, unclipped `object-fit: contain` player cards, smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, soft atmospheric section blend fade behind content, non-cropped proportional parallax artwork layers, opening 8-layer GSAP + Lenis Intro Parallax Screen, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.

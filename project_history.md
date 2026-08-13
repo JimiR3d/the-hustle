@@ -51,8 +51,13 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Card Shimmer Mask, Elimination FLIP & Proportional Artwork
+### Session 2026-08-13 — Parallax Composition, Shimmer Mask, Elimination FLIP & Proportional Art
 **Tasks completed:**
+- Updated assets with latest `Ground.png` and `Buildings.png`.
+- Scaled down main logo to match reference `Layout (Final look).png` and removed added artificial glow/bloom (`filter: none;`).
+- Enlarged hanging piggy bank and layered it in front of the logo at `z-index: 5` so it overlaps the logo's top marquee diamond.
+- Lowered ground layer (`bottom: -10vh;`) without resizing, revealing significantly more Vegas skyline, palm trees, and scenery.
+- Positioned "ENTER GAME SHOW ARENA" button above sponsor logos with clear spacing (`bottom: 7.5vh;` vs `bottom: 2vh;`).
 - Implemented dedicated `.card-shimmer-mask` clipping layer for all player cards, strictly clipping the moving light sweep within card boundaries and eliminating background shimmer bleed.
 - Preserved 100% full player card artwork and aspect ratio with `object-fit: contain`.
 - Implemented `animateLayoutFlip()` in `display.js` to ensure remaining active team cards smoothly glide into their newly centered layout with 0.85s eased transitions when a team is eliminated (zero snapping/jumping).
