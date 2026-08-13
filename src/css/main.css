@@ -133,8 +133,8 @@ html, body {
   filter: none;
 }
 
-/* Layer 5: Top Hanging Piggy Bank (Larger, layered in front of main logo) */
-.layer-piggy {
+/* Layer 5: Top Hanging Piggy Bank (Hanging & swinging gently from top strings anchor) */
+.layer-piggy-wrapper {
   position: absolute;
   top: -2vh;
   left: 50%;
@@ -142,9 +142,34 @@ html, body {
   width: 25vw;
   max-width: 480px;
   height: auto;
-  object-fit: contain;
   z-index: 5;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  will-change: transform;
+}
+
+.layer-piggy {
+  position: relative;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  transform-origin: 50% 0%;
+  animation: piggy-pendulum-swing 4.8s ease-in-out infinite alternate;
   filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.85));
+  will-change: transform;
+}
+
+@keyframes piggy-pendulum-swing {
+  0% {
+    transform: rotate(-3.5deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(3.5deg);
+  }
 }
 
 /* Layer 6: Host Cards (Bottom Left) */
