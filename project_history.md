@@ -51,12 +51,12 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Team Restore Exact Slot Placement (Slots 1–5)
+### Session 2026-08-13 — Soft Spotlight Overlay & Outer Yellow Outline Removal
 **Tasks completed:**
+- Removed the outer yellow glow outline and heavy drop-shadow rings from the outside of spotlighted team boxes.
+- Softened `.spotlight-backdrop` opacity and brightness (`background: rgba(0, 0, 0, 0.28); backdrop-filter: brightness(0.82);`) so the stage is gently dimmed rather than dark.
+- Softened non-spotlighted teams (`opacity: 0.55; filter: brightness(0.72);`) preserving table visibility.
 - Fixed DOM insertion ordering in `src/js/display.js` so restored teams always return to their exact designated slots (Team 1 &rarr; Slot 1, Team 2 &rarr; Slot 2, Team 3 &rarr; Slot 3, Team 4 &rarr; Slot 4, Team 5 &rarr; Slot 5).
-- Expanded `.spotlight-backdrop` to full-viewport fixed dimensions (`position: fixed; 200vw x 200vh`) so 100% of the screen from far left to far right is covered by the dark transparent curtain.
-- Added radiant glowing box of light (`::before`) around the spotlighted group with gold breathing aura matching `Spotlight.jpg`.
-- Implemented theatrical spotlight focus: only the spotlighted team is 100% lit up while all other teams and background are dimmed, keeping header logo & game timer bright above the dimmer.
 - Eliminated card photo cracks/seams on active cards using `.card-full-face` seamless photo rendering.
 - Increased horizontal spacing between team cards (`gap: 65px`) and vertical row spacing (`gap: 38px; margin-top: 15px`).
 - Layered `.team-container-top-overlay` at `z-index: 10` so "TEAM 1" .. "TEAM 5" black pixel text stays 100% sharp on top of the passing gold light beam.
