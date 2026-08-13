@@ -63,6 +63,41 @@ function playZeroBuzzerSound() {
   }
 }
 
+function animateLayoutFlip(updateDomCallback) {
+  const activeEls = Array.from(document.querySelectorAll('.group-panel-wrapper:not(.phase3-flight)'));
+  const firstPositions = new Map();
+
+  activeEls.forEach((el) => {
+    firstPositions.set(el.id, el.getBoundingClientRect());
+  });
+
+  updateDomCallback();
+
+  requestAnimationFrame(() => {
+    activeEls.forEach((el) => {
+      const firstRect = firstPositions.get(el.id);
+      if (!firstRect || !el.parentElement) return;
+
+      const lastRect = el.getBoundingClientRect();
+      const deltaX = firstRect.left - lastRect.left;
+      const deltaY = firstRect.top - lastRect.top;
+
+      if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
+        // Invert: snap immediately to starting position without animation
+        el.style.transition = 'none';
+        el.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0px)`;
+
+        // Force browser style recalculation
+        void el.offsetWidth;
+
+        // Play: animate smoothly with eased curve into the new position
+        el.style.transition = 'transform 0.85s cubic-bezier(0.22, 1, 0.36, 1)';
+        el.style.transform = 'translate3d(0px, 0px, 0px)';
+      }
+    });
+  });
+}
+
 const HOME_COORDINATES = {
   'group-1': { x: 465, y: 330 },
   'group-2': { x: 960, y: 330 },
@@ -329,14 +364,16 @@ function renderDisplay(state, meta = {}) {
         }
 
         setTimeout(() => {
-          // Sequence complete: Move into completed stack
-          if (groupWrapper && groupWrapper.parentElement) {
-            groupWrapper.remove();
-          }
-          activeAnimationIds.delete(group.id);
-          completedDisqualifiedIds.add(group.id);
+          // Sequence complete: Move into completed stack with smooth FLIP re-centering of remaining teams
+          animateLayoutFlip(() => {
+            if (groupWrapper && groupWrapper.parentElement) {
+              groupWrapper.remove();
+            }
+            activeAnimationIds.delete(group.id);
+            completedDisqualifiedIds.add(group.id);
 
-          renderDisplay(gameStateStore.getState());
+            renderDisplay(gameStateStore.getState());
+          });
         }, 1200);
 
       }, 1000);
