@@ -1,7 +1,7 @@
 # The Hustle — Digital Game Show Board
 
 ## Overview
-A single-page digital game show board application designed for arena displays (1920x1080) and host admin show controls. Built around a 2-player team card format inspired by "THE HUSTLE Love & MONEY". Features an opening 8-layer GSAP + Lenis Intro Parallax Screen with a centered, gently swinging hanging glass cash piggy bank that seamlessly scrolls down to reveal the Main Arena Board, with real-time state synchronization across dual screens (Main Arena Display and Admin Control Screen) via BroadcastChannel and LocalStorage.
+A single-page digital game show board application designed for arena displays (1920x1080) and host admin show controls. Built around a 2-player team card format inspired by "THE HUSTLE Love & MONEY". Features an opening 8-layer GSAP + Lenis Intro Parallax Screen with a centered, gently swinging hanging glass cash piggy bank that seamlessly scrolls down through a cinematic black transition buffer to reveal the Main Arena Board, with real-time state synchronization across dual screens (Main Arena Display and Admin Control Screen) via BroadcastChannel and LocalStorage.
 
 ## Live Deployment & GitHub
 - **Main Arena Board (v1 Live Stable):** [https://the-hustle-eight.vercel.app/](https://the-hustle-eight.vercel.app/)
@@ -31,13 +31,13 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 
 ## Project Structure
 ```
-├── index.html           # Main Display Screen (Intro Parallax Screen + 1920x1080 Arena view)
+├── index.html           # Main Display Screen (Intro Parallax Screen + Buffer Section + 1920x1080 Arena view)
 ├── admin.html           # Admin Control Screen (Host controller)
 ├── public/assets/       # Static assets (logo.png, background_v2.png, team_container_t1..t5.png, score_board.png, *.png)
 │   └── parallax/        # Parallax assets (sky.png, Buildings.png, Ground.png, PiggyBank.png, homeLogo.png, Hosts.png, signHustle.png, sponsoreLogoss.png)
 ├── src/
 │   ├── css/
-│   │   ├── main.css     # Design tokens, custom pink scrollbar, card shimmer mask, piggy pendulum swing, parallax scrolling layers, background_v2, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight
+│   │   ├── main.css     # Design tokens, custom pink scrollbar, card shimmer mask, piggy pendulum swing, 3-section transition, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight
 │   │   └── admin.css    # Responsive host controller styling with Start/Pause/Stop/Reset timer buttons
 │   └── js/
 │       ├── parallax.js  # GSAP ScrollTrigger multi-depth scrub timeline & Lenis smooth scrolling controller
@@ -47,9 +47,11 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 ```
 
 ## Conventions
-- **Ground Scroll Direction & Low Resting Position:** Base resting position starts significantly lower at `bottom: -48vh` with buildings at `bottom: 0vh`, exposing full Vegas environment. Scrolling down triggers negative parallax (`yPercent: -45`), gliding the ground upward as foreground passes the viewer.
-- **Section Overflow & Host/Sign Clipping Protection:** `.parallax-intro-section` and `.parallax-visuals` have `overflow: visible`, allowing Host cards and roadside neon sign at `z-index: 10` to float freely across the transition area without being cropped.
-- **Atmospheric Feathered Section Blend:** Dedicated `.parallax__fade` (`height: 320px; z-index: 4;`) sits behind all foreground UI (Logo, Piggy Bank, Hosts, Sign, Sponsors, Button) and in front of background/ground, smoothly blending the Main Menu into the Game Section without any flat lines or rectangular seams.
+- **3-Section Transition Architecture:**
+  - Section 1 (Main Menu): Strict containment (`overflow: hidden;`) with fixed bottom black gradient overlay (`.main-menu__bottom-fade` at `260px` height) that darkens background and UI before the containment clipping boundary.
+  - Section 2 (Black Buffer): Dedicated solid black cinematic buffer (`.transition-buffer-section` at `25vh` height).
+  - Section 3 (Game Section): Top black gradient overlay (`.game-section__top-fade` at `240px` height) fading smoothly from black into the game board.
+- **Ground & Buildings Elevation:** Ground resting position sits at balanced middle ground (`bottom: -28vh`), intentionally clipped at section bottom while moving upward on scroll down (`yPercent: -38`). Buildings raised slightly to `bottom: 8vh` showcasing Vegas landmarks.
 - **Hanging Piggy Bank Centering & Pendulum Sway:** Positioned with `left: 0; right: 0; margin: 0 auto;` so horizontal centering is 100% immune to transform overwrites. Fixed anchor point at `transform-origin: 50% 0%` where strings meet top of screen, swaying gently in front of the main logo (`z-index: 12`) with 4.8s `ease-in-out` continuous alternate rotation between `-3.5deg` and `+3.5deg`.
 - **Dedicated `.card-shimmer-mask` Layer:** Shimmer reflections are strictly clipped within the card's exact dimensions (`border-radius: 14px; overflow: hidden; pointer-events: none;`) without bleeding into the background or cropping the card image.
 - **Unclipped Proportional Player Cards:** Set `object-fit: contain` on player card artwork so the full original card illustrations, suits, and borders remain 100% visible at all times.
@@ -87,7 +89,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring upward ground scroll parallax motion, lowered resting ground position, overflow visible preventing host/sign boundary cropping, atmospheric feathered fade blend behind UI, centered hanging piggy bank from top anchor point with continuous pendulum sway, accurate logo sizing without added glow, enlarged piggy bank in front of logo, clean separation between arena button and sponsor logos, dedicated `.card-shimmer-mask` layer clipping shimmer strictly within card boundaries with zero bleed, unclipped `object-fit: contain` player cards, smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, soft atmospheric section blend fade behind content, non-cropped proportional parallax artwork layers, opening 8-layer GSAP + Lenis Intro Parallax Screen, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring 3-section transition architecture with black buffer section, strict containment clipping, top/bottom black gradient fades, balanced ground and city skyline elevation, centered hanging piggy bank from top anchor point with continuous pendulum sway, accurate logo sizing without added glow, enlarged piggy bank in front of logo, clean separation between arena button and sponsor logos, dedicated `.card-shimmer-mask` layer clipping shimmer strictly within card boundaries with zero bleed, unclipped `object-fit: contain` player cards, smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.

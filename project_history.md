@@ -51,14 +51,15 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Parallax Ground Direction, Low Base Ground, Overflow & Fade Transition
+### Session 2026-08-14 — 3-Section Transition Architecture, Black Buffer & Containment Gradients
 **Tasks completed:**
-- Reversed ground parallax direction (`yPercent: -45`) in `src/js/parallax.js` so scrolling down moves ground upward naturally as foreground passes viewer.
-- Positioned `.layer-ground` base resting position significantly lower (`bottom: -48vh;`) and `.layer-buildings` (`bottom: 0vh;`), revealing full Vegas skyline before ground begins.
-- Set `overflow: visible;` on intro parallax section and visuals container, preventing Host cards and roadside sign from being clipped across section boundaries.
-- Refined atmospheric feathered gradient fade (`height: 320px; z-index: 4;`) layered above ground/sky and behind all foreground UI elements.
+- Created dedicated solid black transition buffer section (`#transition-buffer-section` at `25vh` height) between Main Menu and Game Section.
+- Added static bottom black gradient fade (`.main-menu__bottom-fade` at `260px` height) inside Main Menu and top black gradient fade (`.game-section__top-fade` at `240px` height) inside Game Section.
+- Enforced strict containment (`overflow: hidden;`) on Main Menu so no elements physically leak into subsequent sections while the bottom fade creates a seamless gradual darkening.
+- Adjusted ground layer to a balanced middle-ground position (`bottom: -28vh;`), allowing intentional bottom cropping by section boundary.
+- Raised city skyline slightly (`bottom: 8vh;`) to showcase Las Vegas landmarks.
+- Preserved GSAP upward ground parallax movement (`yPercent: -38`).
 - Centered `.layer-piggy-wrapper` using `left: 0; right: 0; margin: 0 auto;`, completely avoiding any transform conflict with GSAP parallax or CSS rotation.
-- Updated assets with latest `Buildings.png` and `Ground.png`.
 - Added subtle continuous swinging pendulum animation to the hanging piggy bank (`transform-origin: 50% 0%` with `@keyframes piggy-pendulum-swing` 4.8s `ease-in-out` sway between `-3.5deg` and `+3.5deg`).
 - Scaled down main logo to match reference `Layout (Final look).png` and removed added artificial glow/bloom (`filter: none;`).
 - Enlarged hanging piggy bank and layered it in front of the logo at `z-index: 12` so it overlaps the logo's top marquee diamond.
