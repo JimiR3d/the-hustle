@@ -1,7 +1,7 @@
 # The Hustle — Digital Game Show Board
 
 ## Overview
-A single-page digital game show board application designed for arena displays (1920x1080) and host admin show controls. Built around a 2-player team card format inspired by "THE HUSTLE Love & MONEY". Features real-time state synchronization across dual screens (Main Arena Display and Admin Control Screen) via BroadcastChannel and LocalStorage.
+A single-page digital game show board application designed for arena displays (1920x1080) and host admin show controls. Built around a 2-player team card format inspired by "THE HUSTLE Love & MONEY". Features an opening 8-layer GSAP + Lenis Intro Parallax Screen that seamlessly scrolls down to reveal the Main Arena Board, with real-time state synchronization across dual screens (Main Arena Display and Admin Control Screen) via BroadcastChannel and LocalStorage.
 
 ## Live Deployment & GitHub
 - **Main Arena Board (v1 Live Stable):** [https://the-hustle-eight.vercel.app/](https://the-hustle-eight.vercel.app/)
@@ -9,7 +9,7 @@ A single-page digital game show board application designed for arena displays (1
 - **GitHub Repository:** [https://github.com/JimiR3d/the-hustle](https://github.com/JimiR3d/the-hustle)
 
 ## Stack
-- **Frontend:** HTML5, Modern CSS3 (CSS Grid, Flexbox, 3D Transforms, CSS Masking), Vanilla JavaScript (ES Modules), WebGL (@paper-design/shaders)
+- **Frontend:** HTML5, Modern CSS3 (CSS Grid, Flexbox, 3D Transforms, CSS Masking), Vanilla JavaScript (ES Modules), WebGL (@paper-design/shaders), GSAP, ScrollTrigger, Lenis
 - **Fonts:** Google Fonts (`Cinzel`, `Outfit`, `VT323` pixel LED, `Silkscreen`)
 - **Tooling / Dev Server:** Vite
 - **Deployment & Sync:** Vercel + GitHub Continuous Integration, BroadcastChannel API + LocalStorage dual-channel sync engine
@@ -31,20 +31,24 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 
 ## Project Structure
 ```
-├── index.html           # Main Display Screen (1920x1080 Arena view with VT323 pixel fonts & DQ stack)
+├── index.html           # Main Display Screen (Intro Parallax Screen + 1920x1080 Arena view)
 ├── admin.html           # Admin Control Screen (Host controller)
 ├── public/assets/       # Static assets (logo.png, background_v2.png, team_container_t1..t5.png, score_board.png, *.png)
+│   └── parallax/        # Parallax assets (sky.png, Buildings.png, Ground.png, PiggyBank.png, homeLogo.png, Hosts.png, signHustle.png, sponsoreLogoss.png)
 ├── src/
 │   ├── css/
-│   │   ├── main.css     # Design tokens, background_v2 100% 100%, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight
+│   │   ├── main.css     # Design tokens, parallax scrolling layers, background_v2, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight
 │   │   └── admin.css    # Responsive host controller styling with Start/Pause/Stop/Reset timer buttons
 │   └── js/
+│       ├── parallax.js  # GSAP ScrollTrigger multi-depth scrub timeline & Lenis smooth scrolling controller
 │       ├── state.js     # 5 Team state, ALL_PLAYERS dictionary, tickTimer, pause/stop/reset & dual-channel sync engine
 │       ├── display.js   # Renderer, WebGL Liquid Metal ShaderMount, Apple Genie DQ flight controller, spotlight manager & Web Audio alarm
 │       └── admin.js     # Host control panel logic, select dropdowns, quick presets & explicit timer buttons
 ```
 
 ## Conventions
+- **Opening Intro Parallax Screen:** 8 visual layers composed to match `Layout (Final look).png` with smooth multi-plane depth scrub via GSAP ScrollTrigger and Lenis smooth scrolling.
+- **Pre-loading Strategy:** While viewing the intro screen, game board card images and WebGL Liquid Metal shaders are preloaded in memory, eliminating runtime lag upon scrolling down.
 - 5 Team Groups (Teams of 2 Players each = 10 competitors) arranged matching `Display Demo v3 (1).png`.
 - Designated row & slot layout: Teams 1, 2, 3 in Top Row (Slots 1, 2, 3); Teams 4, 5 in Bottom Row (Slots 4, 5).
 - Restoring any disqualified team immediately returns it to its exact original slot index (e.g. Team 1 &rarr; Slot 1).
@@ -71,7 +75,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring smooth spotlight centering under timer, multi-spotlight side-by-side arrangement, zero DOM re-render 60fps optimization, dimmer isolation (timer does not darken background), exact slot restoration ordering (Teams 1-5 always restore to original positions), spaced-out group layout, seamless crack-free player card photos, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams (`#ffd700`, `#ffb300`, `#ffe57f`), top text overlay keeping "TEAM N" crisp on top of the beam, subtle WebGL Liquid Metal fluid shader from `@paper-design/shaders`, clean wide capsule scoreboard (`score_board.png`), transparent backdrop (no blurry glass), clean header pill spacing, direct card 3D sway breathing, full-bleed `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, Apple Genie disqualification flight, clean initial mini-slots, recognizable mini player card photos, 100% reliable 5-card restore, dynamic center alignment, enlarged HUD timer, and bug-free card sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring the opening 8-layer GSAP + Lenis Intro Parallax Screen matching `Layout (Final look).png`, smooth scrolling reveal into the Main Arena Board, asset pre-loading, smooth spotlight centering under timer, multi-spotlight side-by-side arrangement, zero DOM re-render 60fps optimization, dimmer isolation, exact slot restoration ordering, spaced-out group layout, seamless crack-free player card photos, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, top text overlay keeping "TEAM N" crisp on top of the beam, subtle WebGL Liquid Metal fluid shader from `@paper-design/shaders`, clean wide capsule scoreboard, transparent backdrop, clean header pill spacing, direct card 3D sway breathing, full-bleed `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, Apple Genie disqualification flight, clean initial mini-slots, recognizable mini player card photos, 100% reliable 5-card restore, dynamic center alignment, enlarged HUD timer, and bug-free card sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.

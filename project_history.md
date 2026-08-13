@@ -51,8 +51,12 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Spotlight Centering Under Timer, Multi-Team Support & 60fps Optimization
+### Session 2026-08-13 — Opening Intro Parallax Scrolling & Arena Hand-off
 **Tasks completed:**
+- Built the 8-layer opening Intro Parallax Screen in `index.html` and `src/js/parallax.js` matching `Layout (Final look).png` (`sky.png`, `Buildings.png`, `Ground.png`, `PiggyBank.png`, `homeLogo.png`, `Hosts.png`, `signHustle.png`, `sponsoreLogoss.png`).
+- Integrated GSAP ScrollTrigger multi-depth scrub timeline and Lenis inertial smooth scrolling for a seamless parallax experience.
+- Added a pulsating `"ENTER GAME SHOW ARENA ↓"` button and bottom gradient fade (`.parallax__fade`) transitioning smoothly into the Main Arena Board (`#main-arena-section`).
+- Enabled background asset and shader preloading on the intro page to ensure instant, zero-lag gameplay upon scrolling down.
 - Implemented smooth dynamic positioning bringing spotlighted teams directly to the center underneath the Game Timer (`scale(1.22)`).
 - Added multi-team spotlight support: multiple spotlighted teams dynamically arrange side-by-side centered underneath the timer without overlapping.
 - Eliminated DOM destruction and shader re-mount stalls by removing `isPopUp` and `points` from `structureKey` in `src/js/display.js`, achieving pure GPU-composited 60fps transitions.
