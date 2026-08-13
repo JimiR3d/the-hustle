@@ -48,14 +48,18 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 
 ## Conventions
 - **Opening Intro Parallax Screen:** 8 visual layers composed to match `Layout (Final look).png` with smooth multi-plane depth scrub via GSAP ScrollTrigger and Lenis smooth scrolling.
+- **Proportional Parallax Artwork:** All artwork layers (sky, buildings, ground, piggy bank, logo sign, hosts, roadside billboard, sponsors) scale proportionally without cropping.
+- **Soft Atmospheric Section Blend:** Smooth gradient transition sitting at `z-index: 2` behind all interactive UI, host cards, and text (zero black rectangle divider).
 - **Pre-loading Strategy:** While viewing the intro screen, game board card images and WebGL Liquid Metal shaders are preloaded in memory, eliminating runtime lag upon scrolling down.
+- **Up to 3 Groups Spotlighted Simultaneously:** Selecting additional groups preserves existing spotlighted groups up to a maximum of 3 (selecting a 4th is locked until one is deselected).
+- **Smooth Eased Spotlight Movement:** Hardware-accelerated 0.8s cubic-bezier eased transforms glide groups from their original home slot to the spotlight area underneath the timers and back without snapping or teleporting.
+- **Spotlight Centering Under Timers:**
+  - 1 Group: Centered at `x: 960px`, `scale: 1.20`.
+  - 2 Groups: Side-by-side at `x: 690px` and `x: 1230px`, `scale: 1.10`.
+  - 3 Groups: Balanced 3 across at `x: 465px`, `x: 960px`, and `x: 1455px`, `scale: 1.02`.
+- **Spotlight Dimmer Isolation:** The stage dark overlay activates exclusively when at least one group is spotlighted; starting, pausing, or running the timer never affects background darkness.
+- **Exact Slot Restoration:** Restoring any disqualified team returns it directly to its exact original slot index (e.g. Team 1 &rarr; Slot 1).
 - 5 Team Groups (Teams of 2 Players each = 10 competitors) arranged matching `Display Demo v3 (1).png`.
-- Designated row & slot layout: Teams 1, 2, 3 in Top Row (Slots 1, 2, 3); Teams 4, 5 in Bottom Row (Slots 4, 5).
-- Restoring any disqualified team immediately returns it to its exact original slot index (e.g. Team 1 &rarr; Slot 1).
-- Spotlight Centering: Spotlighted teams smoothly glide directly to the center underneath the Game Timer (`scale(1.22)` for 1 team, side-by-side arrangement for multiple teams with zero overlap).
-- Returning from spotlight smoothly restores teams back to their exact designated home slots (Slots 1–5).
-- 60fps GPU Performance: Persistent DOM nodes (structureKey does not destroy DOM on spotlight/points updates) with hardware-accelerated transforms.
-- Spotlight Dimmer Isolation: The stage dark overlay activates exclusively on spotlighted teams; starting or running the timer never affects background darkness.
 - Spaced out team grid (`gap: 65px` horizontal, `gap: 38px; margin-top: 15px` vertical) occupying arena canvas space with balanced breathing room.
 - Seamless player card photos (`.card-full-face`) with zero subpixel cracks or seams during active play.
 - Per-team container frame overlays (`team_container_t1.png` .. `team_container_t5.png`) lying 100% flat on the transparent casino board table without any blurry glass backdrop.
@@ -75,7 +79,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring the opening 8-layer GSAP + Lenis Intro Parallax Screen matching `Layout (Final look).png`, smooth scrolling reveal into the Main Arena Board, asset pre-loading, smooth spotlight centering under timer, multi-spotlight side-by-side arrangement, zero DOM re-render 60fps optimization, dimmer isolation, exact slot restoration ordering, spaced-out group layout, seamless crack-free player card photos, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, top text overlay keeping "TEAM N" crisp on top of the beam, subtle WebGL Liquid Metal fluid shader from `@paper-design/shaders`, clean wide capsule scoreboard, transparent backdrop, clean header pill spacing, direct card 3D sway breathing, full-bleed `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, Apple Genie disqualification flight, clean initial mini-slots, recognizable mini player card photos, 100% reliable 5-card restore, dynamic center alignment, enlarged HUD timer, and bug-free card sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, soft atmospheric section blend fade behind content, non-cropped proportional parallax artwork layers, opening 8-layer GSAP + Lenis Intro Parallax Screen, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.

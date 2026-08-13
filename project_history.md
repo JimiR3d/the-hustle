@@ -51,19 +51,11 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Opening Intro Parallax Scrolling & Arena Hand-off
+### Session 2026-08-13 — Spotlight Animations (Up to 3 Groups), Parallax Scaling & Soft Section Fade
 **Tasks completed:**
-- Built the 8-layer opening Intro Parallax Screen in `index.html` and `src/js/parallax.js` matching `Layout (Final look).png` (`sky.png`, `Buildings.png`, `Ground.png`, `PiggyBank.png`, `homeLogo.png`, `Hosts.png`, `signHustle.png`, `sponsoreLogoss.png`).
-- Integrated GSAP ScrollTrigger multi-depth scrub timeline and Lenis inertial smooth scrolling for a seamless parallax experience.
-- Added a pulsating `"ENTER GAME SHOW ARENA ↓"` button and bottom gradient fade (`.parallax__fade`) transitioning smoothly into the Main Arena Board (`#main-arena-section`).
-- Enabled background asset and shader preloading on the intro page to ensure instant, zero-lag gameplay upon scrolling down.
-- Implemented smooth dynamic positioning bringing spotlighted teams directly to the center underneath the Game Timer (`scale(1.22)`).
-- Added multi-team spotlight support: multiple spotlighted teams dynamically arrange side-by-side centered underneath the timer without overlapping.
-- Eliminated DOM destruction and shader re-mount stalls by removing `isPopUp` and `points` from `structureKey` in `src/js/display.js`, achieving pure GPU-composited 60fps transitions.
-- Isolated stage background dimmer to spotlight state only (starting or running timer does not alter background darkness).
-- Fixed team restore slot ordering so teams always return to their exact designated slots (Team 1 &rarr; Slot 1, Team 2 &rarr; Slot 2, Team 3 &rarr; Slot 3, Team 4 &rarr; Slot 4, Team 5 &rarr; Slot 5).
-- Eliminated card photo cracks/seams on active cards using `.card-full-face` seamless photo rendering.
-- Increased horizontal spacing between team cards (`gap: 65px`) and vertical row spacing (`gap: 38px; margin-top: 15px`).
-- Layered `.team-container-top-overlay` at `z-index: 10` so "TEAM 1" .. "TEAM 5" black pixel text stays 100% sharp on top of the passing gold light beam.
-- Re-added the WebGL Liquid Metal fluid shader from `@paper-design/shaders` with subtle reduced intensity (`opacity: 0.38; filter: brightness(0.65) contrast(1.1);`) inside each scoreboard capsule pill.
-- Updated GEMINI.md, project_history.md, task.md, and walkthrough.md.
+- Upgraded the spotlight system to support up to 3 groups simultaneously (`state.js`), preventing 4th group selection until one is deselected.
+- Balanced layout underneath timers for 1 group (`x: 960px, scale: 1.20`), 2 groups (`x: 690px / 1230px, scale: 1.10`), and 3 groups (`x: 465px / 960px / 1455px, scale: 1.02`) with zero overlap.
+- Fixed DOM insertion lifecycle in `display.js` so elements remain mounted, enabling silky smooth eased animations (`transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)`) moving in and out of spotlight without snapping.
+- Proportional non-cropped scaling applied to all 8 parallax layers (`sky.png`, `Buildings.png`, `Ground.png`, `PiggyBank.png`, `homeLogo.png`, `Hosts.png`, `signHustle.png`, `sponsoreLogoss.png`).
+- Replaced the hard black rectangle divider between sections with a soft atmospheric fade (`.parallax__fade` at `z-index: 2` with `backdrop-filter: blur(2px)`) that sits behind all foreground content and interactive UI.
+- Pushed updates to GitHub `v2-redesign`.
