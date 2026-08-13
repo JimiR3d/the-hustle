@@ -51,9 +51,10 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Casino Gold Light Animation & Clean Scoreboard Integration
+### Session 2026-08-13 — TEAM N Text Layering & Subtle Liquid Metal Shader
 **Tasks completed:**
-- Removed Liquid Metal shader (`@paper-design/shaders`) and restored clean, crisp wide capsule scoreboard (`score_board.png`) with pixelated LED score numbers.
+- Layered `.team-container-top-overlay` at `z-index: 10` with `mix-blend-mode: multiply` so the black pixelated "TEAM 1" through "TEAM 5" text on the top pill stays 100% sharp and visible on top of the passing gold light beam.
+- Re-added the WebGL Liquid Metal fluid shader from `@paper-design/shaders` with subtle reduced intensity (`opacity: 0.38; filter: brightness(0.65) contrast(1.1);`) inside each scoreboard capsule pill.
 - Changed team container light animation to a rich, warm casino gold color (`#ffd700`, `#ffb300`, `#ffe57f`) that harmonizes with the casino board table background and gold header logo.
 - Applied moving glowing light beam directly to `team_container_t1.png` .. `t5.png` via CSS `mask-image` with zero duplicate lines.
 - Updated GEMINI.md, project_history.md, task.md, and walkthrough.md.
