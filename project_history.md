@@ -53,6 +53,7 @@
 
 ### Session 2026-08-14 — Buffer Calibration, Sign Gradient Layering & Cinematic Auto-Scroll
 **Tasks completed:**
+- Synchronized updated `Ground.png` asset to `public/assets/parallax/Ground.png`.
 - Adjusted `.transition-buffer-section` height to `42vh` (min-height `340px`) for balanced transition timing between sections.
 - Positioned billboard/sign (`.layer-sign` at `z-index: 4;`) behind `.main-menu__bottom-fade` (`z-index: 5;`) so it smoothly darkens into black along with the background environment without any parallax displacement.
 - Kept Hosts (`z-index: 12`) and Sponsor Logos (`z-index: 12`) clearly above the bottom gradient.
