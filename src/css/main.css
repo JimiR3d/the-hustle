@@ -60,11 +60,14 @@ html, body {
 /* ==========================================================================
    INTRO PARALLAX SECTION (Landing Screen matching Layout (Final look).png)
    ========================================================================== */
+/* ==========================================================================
+   INTRO PARALLAX SECTION (Landing Screen matching Layout (Final look).png)
+   ========================================================================== */
 .parallax-intro-section {
   position: relative;
   width: 100vw;
   height: 100vh;
-  overflow: visible;
+  overflow: hidden;
   background: #060109;
 }
 
@@ -72,7 +75,7 @@ html, body {
   position: relative;
   width: 100vw;
   height: 100vh;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .parallax-layer-img {
@@ -93,10 +96,10 @@ html, body {
   z-index: 1;
 }
 
-/* Layer 2: Las Vegas City Skyline (Proportional, Not Cropped) */
+/* Layer 2: Las Vegas City Skyline (Raised slightly upward to showcase skyline) */
 .layer-buildings {
   position: absolute;
-  bottom: 0vh;
+  bottom: 8vh;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
@@ -106,10 +109,10 @@ html, body {
   z-index: 2;
 }
 
-/* Layer 3: Desert Ground / Terrain (Lowered significantly in resting state) */
+/* Layer 3: Desert Ground / Terrain (Balanced middle-ground position, clipped cleanly at section bottom) */
 .layer-ground {
   position: absolute;
-  bottom: -48vh;
+  bottom: -28vh;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
@@ -119,19 +122,26 @@ html, body {
   z-index: 3;
 }
 
-/* Layer 4: Soft Atmospheric Section Blend Fade (Sits at z-index: 4, above ground/sky, behind UI) */
-.parallax__fade {
+/* Main Menu Bottom Black Fade (Gradually darkens into full black before clipping boundary) */
+.main-menu__bottom-fade {
   position: absolute;
-  bottom: -60px;
+  bottom: 0;
   left: 0;
   width: 100%;
-  height: 320px;
-  background: linear-gradient(180deg, transparent 0%, rgba(6, 1, 9, 0.25) 30%, rgba(6, 1, 9, 0.7) 65%, rgba(6, 1, 9, 0.95) 90%, #060109 100%);
-  z-index: 4;
+  height: 260px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(6, 1, 9, 0.25) 30%,
+    rgba(6, 1, 9, 0.75) 65%,
+    rgba(6, 1, 9, 0.98) 90%,
+    #060109 100%
+  );
+  z-index: 15;
   pointer-events: none;
 }
 
-/* Layer 5: Main Marquee Sign Center (Sized accurately, natural lighting, sits above fade) */
+/* Layer 5: Main Marquee Sign Center (Sized accurately, natural lighting, sits in front) */
 .layer-logo {
   position: absolute;
   top: 33vh;
@@ -145,7 +155,7 @@ html, body {
   filter: none;
 }
 
-/* Layer 6: Top Hanging Piggy Bank (Hanging & swinging in front of logo & fade) */
+/* Layer 6: Top Hanging Piggy Bank (Hanging & swinging in front of logo) */
 .layer-piggy-wrapper {
   position: absolute;
   top: -2vh;
@@ -185,7 +195,7 @@ html, body {
   }
 }
 
-/* Layer 7: Host Cards (Bottom Left, sits above fade with zero cropping) */
+/* Layer 7: Host Cards (Bottom Left, contained in Main Menu) */
 .layer-hosts {
   position: absolute;
   bottom: 2.5vh;
@@ -198,7 +208,7 @@ html, body {
   filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.95));
 }
 
-/* Layer 8: Motorclub Houston Sign (Bottom Right, sits above fade with zero cropping) */
+/* Layer 8: Motorclub Houston Sign (Bottom Right, contained in Main Menu) */
 .layer-sign {
   position: absolute;
   bottom: 3.5vh;
@@ -211,7 +221,7 @@ html, body {
   filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.95));
 }
 
-/* Layer 9: Sponsors Bar (Bottom Center, sits above fade underneath button) */
+/* Layer 9: Sponsors Bar (Bottom Center, positioned underneath button) */
 .layer-sponsors {
   position: absolute;
   bottom: 2vh;
@@ -250,6 +260,38 @@ html, body {
   box-shadow: 0 0 30px rgba(255, 215, 0, 0.4), inset 0 0 15px rgba(255, 215, 0, 0.2);
   transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
   animation: scroll-btn-breathe 2.5s ease-in-out infinite alternate;
+}
+
+/* ==========================================================================
+   BLACK TRANSITION BUFFER SECTION (Cinematic solid black buffer)
+   ========================================================================== */
+.transition-buffer-section {
+  position: relative;
+  width: 100vw;
+  height: 25vh;
+  min-height: 180px;
+  background: #060109;
+  z-index: 2;
+}
+
+/* ==========================================================================
+   MAIN ARENA SECTION - Top Black Gradient Fade
+   ========================================================================== */
+.game-section__top-fade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 240px;
+  background: linear-gradient(
+    180deg,
+    #060109 0%,
+    rgba(6, 1, 9, 0.85) 30%,
+    rgba(6, 1, 9, 0.4) 65%,
+    transparent 100%
+  );
+  z-index: 20;
+  pointer-events: none;
 }
 
 .scroll-to-arena-btn:hover {
