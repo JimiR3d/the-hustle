@@ -57,10 +57,11 @@
 - Updated page background to `background_v2 (1).png` with full-bleed `100% 100%` fit.
 - Updated default team pairings in `state.js`: Team 1 (Teslim & Chidera), Team 2 (Adrian & Tayo), Team 3 (EZ & Aphro), Team 4 (Chinazom & Marty), Team 5 (Kia & Kitan).
 
-### Session 2026-08-13 — Card Overlap Fix, Direct Card Sway & Orbiting Gradient Blob Effect
+### Session 2026-08-13 — Moving Border Light Line Track & Transparent Backdrop Integration
 **Tasks completed:**
-- Increased top padding (`padding-top: 52px`) on `.group-panel-container` so cards sit cleanly below the "TEAM N" header pill.
-- Removed 3D sway animation from team container frames (`.group-panel-container`) so they lie 100% flat on the casino table background.
+- Removed blurry glass backdrop (`backdrop-filter: blur(...)`) so the casino table surface is 100% transparent and flat behind the drawn team container border frames.
+- Integrated SVG moving border path track and glowing white light beam (`.moving-border-line`) from `Moving border.txt`.
+- Positioned moving border SVG track at `z-index: 2` so the glowing light beam glides cleanly under the top "TEAM 1" .. "TEAM 5" header pills and under the bottom score board pills without covering text or LED scores.
+- Increased container top padding (`padding-top: 52px`) so player cards sit cleanly below the "TEAM N" header pills without overlap.
 - Applied organic 3D tilt breathing sway animations (`card-sway-p1` and `card-sway-p2`) directly onto individual player cards.
-- Integrated orbiting gradient blob border effect from `Gradient Bold card.txt` (`linear-gradient(to right, #ec4899, #ef4444, #eab308)` with `filter: blur(16px)` and 5s `@keyframes blob-orbit`).
 - Updated GEMINI.md, project_history.md, task.md, and walkthrough.md.
