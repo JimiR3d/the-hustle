@@ -177,9 +177,7 @@ function bindAdminEvents() {
   const btnResetAll = document.getElementById('btn-reset-all');
   if (btnResetAll) {
     btnResetAll.addEventListener('click', () => {
-      if (confirm('Are you sure you want to reset all scores, timer, and cards?')) {
-        gameStateStore.resetAll();
-      }
+      gameStateStore.resetAll();
     });
   }
 

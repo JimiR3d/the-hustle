@@ -126,8 +126,8 @@ html, body {
   left: -50vw;
   width: 200vw;
   height: 200vh;
-  background: rgba(0, 0, 0, 0.28);
-  backdrop-filter: brightness(0.82);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: brightness(0.70);
   opacity: 0;
   pointer-events: none;
   z-index: 45;
@@ -138,16 +138,16 @@ html, body {
   opacity: 1;
 }
 
-/* Dim all non-spotlighted teams gently */
+/* Dim all non-spotlighted teams to let highlighted team stand out */
 #app-stage.has-spotlight .group-panel-wrapper:not(.is-popup) {
-  opacity: 0.55;
-  filter: brightness(0.72);
+  opacity: 0.35;
+  filter: brightness(0.55);
   transition: opacity 0.5s ease, filter 0.5s ease;
 }
 
 #app-stage.has-spotlight .disqualified-stack-container {
-  opacity: 0.55;
-  filter: brightness(0.72);
+  opacity: 0.35;
+  filter: brightness(0.55);
   transition: opacity 0.5s ease, filter 0.5s ease;
 }
 
@@ -166,10 +166,6 @@ html, body {
   width: 100%;
 }
 
-.groups-stage-container.timer-shifted {
-  transform: translateY(42px);
-}
-
 .groups-row {
   display: flex;
   justify-content: center;
@@ -180,14 +176,16 @@ html, body {
 }
 
 /* ==========================================================================
-   GROUP PANEL CONTAINER - White Border Liquid Glass (Single Group layout v2.png)
+   GROUP PANEL CONTAINER - Hardware Accelerated 3D Smooth Positioning
    ========================================================================== */
 .group-panel-wrapper {
   position: relative;
   width: 430px;
   height: 340px;
   perspective: 1200px;
-  transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+  transform: translate3d(var(--spotlight-tx, 0px), var(--spotlight-ty, 0px), 0px) scale(var(--spotlight-scale, 1));
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease, filter 0.5s ease;
+  will-change: transform, opacity;
 }
 
 .group-panel-container {
@@ -589,14 +587,13 @@ html, body {
 }
 
 /* ==========================================================================
-   3D POP-UP SPOTLIGHT INTERACTION (Zoom In)
+   3D POP-UP SPOTLIGHT INTERACTION
    ========================================================================== */
 .group-panel-wrapper.is-popup {
   position: relative;
   z-index: 120 !important;
   opacity: 1 !important;
-  transform: scale(1.22) translateY(-20px);
-  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.75)) !important;
 }
 
 .group-panel-wrapper.is-popup .group-panel-container {

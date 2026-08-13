@@ -59,6 +59,67 @@ function playZeroBuzzerSound() {
   }
 }
 
+const HOME_COORDINATES = {
+  'group-1': { x: 465, y: 330 },
+  'group-2': { x: 960, y: 330 },
+  'group-3': { x: 1455, y: 330 },
+  'group-4': { x: 712.5, y: 710 },
+  'group-5': { x: 1207.5, y: 710 }
+};
+
+function getSpotlightTransform(groupId, spotlightedGroups) {
+  const count = spotlightedGroups.length;
+  const index = spotlightedGroups.findIndex(g => g.id === groupId);
+  if (index === -1) {
+    return { tx: 0, ty: 0, scale: 1 };
+  }
+
+  const home = HOME_COORDINATES[groupId] || { x: 960, y: 330 };
+  let targetX = 960;
+  let targetY = 345;
+  let scale = 1.22;
+
+  if (count === 1) {
+    targetX = 960;
+    targetY = 345;
+    scale = 1.22;
+  } else if (count === 2) {
+    targetX = index === 0 ? 700 : 1220;
+    targetY = 345;
+    scale = 1.14;
+  } else if (count === 3) {
+    targetX = index === 0 ? 465 : index === 1 ? 960 : 1455;
+    targetY = 345;
+    scale = 1.06;
+  } else if (count === 4) {
+    if (index < 2) {
+      targetX = index === 0 ? 700 : 1220;
+      targetY = 320;
+      scale = 1.04;
+    } else {
+      targetX = index === 2 ? 700 : 1220;
+      targetY = 690;
+      scale = 1.04;
+    }
+  } else {
+    if (index < 3) {
+      targetX = index === 0 ? 465 : index === 1 ? 960 : 1455;
+      targetY = 320;
+      scale = 1.02;
+    } else {
+      targetX = index === 3 ? 712.5 : 1207.5;
+      targetY = 690;
+      scale = 1.02;
+    }
+  }
+
+  return {
+    tx: targetX - home.x,
+    ty: targetY - home.y,
+    scale
+  };
+}
+
 function renderDisplay(state, meta = {}) {
   const stage = document.getElementById('app-stage');
   const topRow = document.getElementById('groups-row-top');
@@ -106,6 +167,8 @@ function renderDisplay(state, meta = {}) {
     });
   });
 
+  const spotlightedGroups = activeGroups.filter(g => g.isPopUp);
+
   // Fixed designated row mapping & slot ordering: Teams 1, 2, 3 in Top Row; Teams 4, 5 in Bottom Row
   activeGroups.forEach((group) => {
     const isTopRow = group.id === 'group-1' || group.id === 'group-2' || group.id === 'group-3';
@@ -143,8 +206,16 @@ function renderDisplay(state, meta = {}) {
       }
     }
 
+    // Dynamic smooth 3D spotlight positioning (centered under timer)
+    const isSpotlighted = Boolean(group.isPopUp);
+    const transform = getSpotlightTransform(group.id, spotlightedGroups);
+
+    groupWrapper.style.setProperty('--spotlight-tx', `${Math.round(transform.tx)}px`);
+    groupWrapper.style.setProperty('--spotlight-ty', `${Math.round(transform.ty)}px`);
+    groupWrapper.style.setProperty('--spotlight-scale', `${transform.scale}`);
+
     groupWrapper.classList.add(`team-${teamNum}`);
-    groupWrapper.classList.toggle('is-popup', Boolean(group.isPopUp));
+    groupWrapper.classList.toggle('is-popup', isSpotlighted);
     groupWrapper.classList.toggle('active-group', true);
     groupWrapper.classList.remove('phase1-breaking', 'phase2-tearing', 'phase3-flight');
 
@@ -181,7 +252,8 @@ function renderDisplay(state, meta = {}) {
       </div>
     `;
 
-    const structureKey = `${group.name}_${group.player1.name}_${group.player2.name}_${group.isPopUp}`;
+    // Exclude isPopUp and points from structureKey so DOM is persistent and never destroyed during spotlight
+    const structureKey = `${group.name}_${group.player1.name}_${group.player2.name}_${group.player1.image}_${group.player2.image}`;
     if (groupWrapper.dataset.renderedStructure !== structureKey) {
       groupWrapper.innerHTML = innerHTML;
       groupWrapper.dataset.renderedStructure = structureKey;
@@ -290,10 +362,9 @@ function renderDisplay(state, meta = {}) {
     }, 600);
   });
 
-  // Handle Timer Zoom Dynamics
+  // Handle Timer Zoom Dynamics (Timer running only enlarges the timer badge, never shifts background/darkness)
   const isExpanded = Boolean(state.timer.isExpanded || state.timer.isRunning);
   if (timerBadge) timerBadge.classList.toggle('timer-expanded', isExpanded);
-  if (groupsContainer) groupsContainer.classList.toggle('timer-shifted', isExpanded);
 
   // Trigger full-page green flash & Web Audio buzzer when timer hits 0
   if (state.timer.seconds === 0 && !hasFiredZeroFlash) {
