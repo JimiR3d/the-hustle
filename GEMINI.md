@@ -9,7 +9,7 @@ A single-page digital game show board application designed for arena displays (1
 - **GitHub Repository:** [https://github.com/JimiR3d/the-hustle](https://github.com/JimiR3d/the-hustle)
 
 ## Stack
-- **Frontend:** HTML5, Modern CSS3 (CSS Grid, Flexbox, 3D Transforms, CSS Masking), Vanilla JavaScript (ES Modules), WebGL (@paper-design/shaders)
+- **Frontend:** HTML5, Modern CSS3 (CSS Grid, Flexbox, 3D Transforms, CSS Masking), Vanilla JavaScript (ES Modules)
 - **Fonts:** Google Fonts (`Cinzel`, `Outfit`, `VT323` pixel LED, `Silkscreen`)
 - **Tooling / Dev Server:** Vite
 - **Deployment & Sync:** Vercel + GitHub Continuous Integration, BroadcastChannel API + LocalStorage dual-channel sync engine
@@ -36,19 +36,19 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 ├── public/assets/       # Static assets (logo.png, background_v2.png, team_container_t1..t5.png, score_board.png, *.png)
 ├── src/
 │   ├── css/
-│   │   ├── main.css     # Design tokens, background_v2 100% 100%, Team 1-5 container frame masks, WebGL shader container, DQ flight
+│   │   ├── main.css     # Design tokens, background_v2 100% 100%, Team 1-5 container frame masks, casino gold beam, DQ flight
 │   │   └── admin.css    # Responsive host controller styling with Start/Pause/Stop/Reset timer buttons
 │   └── js/
 │       ├── state.js     # 5 Team state, ALL_PLAYERS dictionary, tickTimer, pause/stop/reset & dual-channel sync engine
-│       ├── display.js   # Renderer, WebGL Liquid Metal ShaderMount, Apple Genie DQ flight controller & Web Audio alarm
+│       ├── display.js   # Renderer, Apple Genie DQ flight controller & Web Audio alarm
 │       └── admin.js     # Host control panel logic, select dropdowns, quick presets & explicit timer buttons
 ```
 
 ## Conventions
 - 5 Team Groups (Teams of 2 Players each = 10 competitors) arranged matching `Display Demo v3 (1).png`.
 - Per-team container frame overlays (`team_container_t1.png` .. `team_container_t5.png`) lying 100% flat on the transparent casino board table without any blurry glass backdrop.
-- Direct light beam animation via CSS `mask-image: url('/assets/team_container_t1.png')` .. `t5.png`, illuminating the exact pixel contours of the container border and top "TEAM N" pill with zero duplicate lines.
-- Real WebGL Liquid Metal fluid shader from `@paper-design/shaders` mounted inside each scoreboard capsule pill (`Liquid Metal button.txt`).
+- Direct casino gold light beam animation via CSS `mask-image: url('/assets/team_container_t1.png')` .. `t5.png`, illuminating the exact pixel contours of the container border and top "TEAM N" pill with zero duplicate lines.
+- Clean, crisp wide capsule Score Board pill (`score_board.png`) with pixelated LED score numbers (`VT323`).
 - Dynamic player reshuffling via Admin select dropdowns for Player 1 and Player 2.
 - Full-bleed casino board background (`background_v2.png` with `100% 100%` fit) showing all bottom-left glasses, ice, deck, chips, and dice.
 - Cards sit cleanly below the "TEAM N" header pill (`padding-top: 52px`) without any overlap.
@@ -63,7 +63,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring flat casino Team 1-5 container frame overlays with direct CSS mask glowing light beams, live WebGL Liquid Metal fluid shader in scoreboard pills from `@paper-design/shaders`, transparent backdrop (no blurry glass), clean header pill spacing, direct card 3D sway breathing, full-bleed `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, Apple Genie disqualification flight, clean initial mini-slots, recognizable mini player card photos, 100% reliable 5-card restore, dynamic center alignment, enlarged HUD timer, and bug-free card sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams (`#ffd700`, `#ffb300`, `#ffe57f`), clean wide capsule scoreboard (`score_board.png`), transparent backdrop (no blurry glass), clean header pill spacing, direct card 3D sway breathing, full-bleed `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, Apple Genie disqualification flight, clean initial mini-slots, recognizable mini player card photos, 100% reliable 5-card restore, dynamic center alignment, enlarged HUD timer, and bug-free card sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.
