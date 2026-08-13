@@ -51,13 +51,13 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Spotlight 3D Zoom In & Soft Dimmer Tuning
+### Session 2026-08-13 — Spotlight Centering Under Timer, Multi-Team Support & 60fps Optimization
 **Tasks completed:**
-- Restored 3D zoom in (`scale(1.22) translateY(-20px)`) on spotlighted team groups.
-- Removed the outer yellow glow outline from the outside of spotlighted team boxes.
-- Softened `.spotlight-backdrop` opacity and brightness (`background: rgba(0, 0, 0, 0.28); backdrop-filter: brightness(0.82);`).
-- Softened non-spotlighted teams (`opacity: 0.55; filter: brightness(0.72);`).
-- Fixed DOM insertion ordering in `src/js/display.js` so restored teams always return to their exact designated slots (Team 1 &rarr; Slot 1, Team 2 &rarr; Slot 2, Team 3 &rarr; Slot 3, Team 4 &rarr; Slot 4, Team 5 &rarr; Slot 5).
+- Implemented smooth dynamic positioning bringing spotlighted teams directly to the center underneath the Game Timer (`scale(1.22)`).
+- Added multi-team spotlight support: multiple spotlighted teams dynamically arrange side-by-side centered underneath the timer without overlapping.
+- Eliminated DOM destruction and shader re-mount stalls by removing `isPopUp` and `points` from `structureKey` in `src/js/display.js`, achieving pure GPU-composited 60fps transitions.
+- Isolated stage background dimmer to spotlight state only (starting or running timer does not alter background darkness).
+- Fixed team restore slot ordering so teams always return to their exact designated slots (Team 1 &rarr; Slot 1, Team 2 &rarr; Slot 2, Team 3 &rarr; Slot 3, Team 4 &rarr; Slot 4, Team 5 &rarr; Slot 5).
 - Eliminated card photo cracks/seams on active cards using `.card-full-face` seamless photo rendering.
 - Increased horizontal spacing between team cards (`gap: 65px`) and vertical row spacing (`gap: 38px; margin-top: 15px`).
 - Layered `.team-container-top-overlay` at `z-index: 10` so "TEAM 1" .. "TEAM 5" black pixel text stays 100% sharp on top of the passing gold light beam.
