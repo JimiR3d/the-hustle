@@ -37,7 +37,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 │   └── parallax/        # Parallax assets (sky.png, Buildings.png, Ground.png, PiggyBank.png, homeLogo.png, Hosts.png, signHustle.png, sponsoreLogoss.png)
 ├── src/
 │   ├── css/
-│   │   ├── main.css     # Design tokens, custom pink scrollbar, parallax scrolling layers, background_v2, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight
+│   │   ├── main.css     # Design tokens, custom pink scrollbar, card shimmer mask, parallax scrolling layers, background_v2, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight
 │   │   └── admin.css    # Responsive host controller styling with Start/Pause/Stop/Reset timer buttons
 │   └── js/
 │       ├── parallax.js  # GSAP ScrollTrigger multi-depth scrub timeline & Lenis smooth scrolling controller
@@ -47,6 +47,8 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 ```
 
 ## Conventions
+- **Dedicated `.card-shimmer-mask` Layer:** Shimmer reflections are strictly clipped within the card's exact dimensions (`border-radius: 14px; overflow: hidden; pointer-events: none;`) without bleeding into the background or cropping the card image.
+- **Unclipped Proportional Player Cards:** Set `object-fit: contain` on player card artwork so the full original card illustrations, suits, and borders remain 100% visible at all times.
 - **Elimination FLIP Transitions:** When a team is eliminated, remaining active cards smoothly glide with 0.85s eased transitions into their newly centered layout using `animateLayoutFlip()` without snapping or jumping.
 - **100% Transparent Card Tear Gaps:** Transparent player card slots ensure the stage background and casino table are clearly visible through the torn gap between card fragments during disqualification (zero white rectangular artifact).
 - **Internal Pink Glowing Scrollbar:** Webpage features custom glowing pink scrollbar styling (`linear-gradient(180deg, #ff3399 0%, #ff0066 50%, #cc0052 100%)`).
@@ -82,7 +84,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, soft atmospheric section blend fade behind content, non-cropped proportional parallax artwork layers, opening 8-layer GSAP + Lenis Intro Parallax Screen, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring dedicated `.card-shimmer-mask` layer clipping the shimmer reflection strictly within card boundaries with zero bleed, unclipped `object-fit: contain` player cards, smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, soft atmospheric section blend fade behind content, non-cropped proportional parallax artwork layers, opening 8-layer GSAP + Lenis Intro Parallax Screen, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.

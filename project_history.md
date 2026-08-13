@@ -51,8 +51,10 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Spotlight Animations (Up to 3 Groups), Elimination FLIP & Transparent Tear
+### Session 2026-08-13 — Card Shimmer Mask, Elimination FLIP & Proportional Artwork
 **Tasks completed:**
+- Implemented dedicated `.card-shimmer-mask` clipping layer for all player cards, strictly clipping the moving light sweep within card boundaries and eliminating background shimmer bleed.
+- Preserved 100% full player card artwork and aspect ratio with `object-fit: contain`.
 - Implemented `animateLayoutFlip()` in `display.js` to ensure remaining active team cards smoothly glide into their newly centered layout with 0.85s eased transitions when a team is eliminated (zero snapping/jumping).
 - Removed solid white background (`#fffbf7`) from `.player-card-slot`, ensuring 100% transparent backgrounds between torn card fragments so underlying game board and table remain visible through the torn gap.
 - Added internal custom pink glowing scrollbar track and thumb matching the casino neon theme.
