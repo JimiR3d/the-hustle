@@ -51,11 +51,13 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Spotlight Theatrical Focus, Spacing & Card Photo Crack Fix
+### Session 2026-08-13 — Full-Viewport Spotlight Curtain & Radiant Light Box Integration
 **Tasks completed:**
-- Implemented theatrical spotlight focus matching `Spotlight.jpg`: only the spotlighted team is 100% lit up while all other teams and background are dimmed, keeping header logo & game timer bright above the dimmer.
+- Expanded `.spotlight-backdrop` to full-viewport fixed dimensions (`position: fixed; 200vw x 200vh`) so 100% of the screen from far left to far right is covered by the dark transparent curtain.
+- Added radiant glowing box of light (`::before`) around the spotlighted group with gold breathing aura matching `Spotlight.jpg`.
+- Implemented theatrical spotlight focus: only the spotlighted team is 100% lit up while all other teams and background are dimmed, keeping header logo & game timer bright above the dimmer.
 - Eliminated card photo cracks/seams on active cards using `.card-full-face` seamless photo rendering.
-- Increased horizontal spacing between team cards (`gap: 65px`) and vertical row spacing (`gap: 38px; margin-top: 15px`) to occupy more canvas space with balanced breathing room.
-- Layered `.team-container-top-overlay` at `z-index: 10` with `mix-blend-mode: multiply` so the black pixelated "TEAM 1" through "TEAM 5" text on the top pill stays 100% sharp and visible on top of the passing gold light beam.
+- Increased horizontal spacing between team cards (`gap: 65px`) and vertical row spacing (`gap: 38px; margin-top: 15px`).
+- Layered `.team-container-top-overlay` at `z-index: 10` so "TEAM 1" .. "TEAM 5" black pixel text stays 100% sharp on top of the passing gold light beam.
 - Re-added the WebGL Liquid Metal fluid shader from `@paper-design/shaders` with subtle reduced intensity (`opacity: 0.38; filter: brightness(0.65) contrast(1.1);`) inside each scoreboard capsule pill.
 - Updated GEMINI.md, project_history.md, task.md, and walkthrough.md.
