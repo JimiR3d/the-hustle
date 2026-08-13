@@ -1,5 +1,4 @@
 import { gameStateStore } from './state.js';
-import { liquidMetalFragmentShader, ShaderMount } from '@paper-design/shaders';
 
 // Auto-scaling 1920x1080 stage fitting
 function fitStageToWindow() {
@@ -20,7 +19,6 @@ let previousScores = {};
 let activeAnimationIds = new Set();
 let completedDisqualifiedIds = new Set();
 let hasFiredZeroFlash = false;
-if (!window.shaderMounts) window.shaderMounts = new Map();
 
 // Synthesize Spy Game Show Countdown Finish Alarm Sound via Web Audio API
 function playZeroBuzzerSound() {
@@ -150,7 +148,6 @@ function renderDisplay(state, meta = {}) {
         ${renderPlayerCard(group.player2, 'slot-p2')}
 
         <div class="group-score-pill" id="group-score-pill-${group.id}">
-          <div class="score-pill-shader" id="score-shader-${group.id}"></div>
           <span class="group-name-text">${escapeHtml(group.name)}</span>
           <span class="score-led-value" id="score-led-${group.id}">${group.points}</span>
         </div>
@@ -161,37 +158,6 @@ function renderDisplay(state, meta = {}) {
     if (groupWrapper.dataset.renderedStructure !== structureKey) {
       groupWrapper.innerHTML = innerHTML;
       groupWrapper.dataset.renderedStructure = structureKey;
-
-      // Mount Liquid Metal WebGL Shader from @paper-design/shaders
-      requestAnimationFrame(() => {
-        const shaderContainer = document.getElementById(`score-shader-${group.id}`);
-        if (shaderContainer && window.shaderMounts && !window.shaderMounts.has(group.id)) {
-          try {
-            const mount = new ShaderMount(
-              shaderContainer,
-              liquidMetalFragmentShader,
-              {
-                u_repetition: 4,
-                u_softness: 0.5,
-                u_shiftRed: 0.3,
-                u_shiftBlue: 0.3,
-                u_distortion: 0,
-                u_contour: 0,
-                u_angle: 45,
-                u_scale: 8,
-                u_shape: 1,
-                u_offsetX: 0.1,
-                u_offsetY: -0.1,
-              },
-              undefined,
-              0.6
-            );
-            window.shaderMounts.set(group.id, mount);
-          } catch (err) {
-            console.warn('ShaderMount error:', err);
-          }
-        }
-      });
     }
 
     const scoreLed = document.getElementById(`score-led-${group.id}`);
