@@ -152,7 +152,7 @@ html, body {
 .group-panel-wrapper {
   position: relative;
   width: 430px;
-  height: 330px;
+  height: 340px;
   perspective: 1200px;
   transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -168,13 +168,13 @@ html, body {
   background-position: center center;
   background-size: 100% 100%;
   backdrop-filter: blur(8px);
-  padding: 26px 20px 48px 20px;
+  padding: 52px 20px 48px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   overflow: visible;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.65);
-  transform-style: preserve-3d;
+  transform: none;
   transition: border-color 0.4s ease, box-shadow 0.4s ease, filter 0.5s ease;
 }
 
@@ -195,29 +195,21 @@ html, body {
   background-image: url('/assets/team_container_t5.png');
 }
 
-/* Enhanced Vivid 3D Sway / Tilt Breathing Loop for Active Group Panels */
+/* Flat Casino Container (No Container 3D Sway) */
 .group-panel-wrapper.active-group .group-panel-container {
-  animation: group-3d-idle-tilt 7s ease-in-out infinite alternate;
+  animation: none;
+  transform: none;
 }
 
-@keyframes group-3d-idle-tilt {
-  0% { transform: rotateX(-4.5deg) rotateY(4.5deg); }
-  50% { transform: rotateX(4.5deg) rotateY(-4deg); }
-  100% { transform: rotateX(-3.5deg) rotateY(-4.5deg); }
-}
-
-.group-panel-wrapper:nth-child(2n) .group-panel-container { animation-delay: 1.6s; }
-.group-panel-wrapper:nth-child(3n) .group-panel-container { animation-delay: 3.2s; }
-
-/* Translucent White/Pink Glass Edge Orbit Animation */
+/* Animated Gradient Blob Border Effect (Gradient Bold card.txt) */
 .group-panel-wrapper .gradient-blob-edge {
   position: absolute;
-  inset: -6px;
-  border-radius: 32px;
+  inset: -4px;
+  border-radius: 30px;
   pointer-events: none;
   overflow: hidden;
   z-index: -1;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .group-panel-wrapper .gradient-blob-edge::after {
@@ -225,16 +217,16 @@ html, body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 190px;
-  height: 190px;
+  width: 170px;
+  height: 170px;
   border-radius: 50%;
-  filter: blur(14px);
-  background: linear-gradient(to right, #ffffff 0%, #ff66b2 50%, #ffffff 100%);
-  box-shadow: 0 0 30px rgba(255, 102, 178, 0.8);
-  animation: blob-edge-orbit 6s linear infinite;
+  filter: blur(16px);
+  background: linear-gradient(to right, #ec4899, #ef4444, #eab308);
+  box-shadow: 0 0 35px rgba(236, 72, 153, 0.85);
+  animation: blob-orbit 5s linear infinite;
 }
 
-@keyframes blob-edge-orbit {
+@keyframes blob-orbit {
   0% { transform: translate(-100%, -100%); }
   25% { transform: translate(0%, -100%); }
   50% { transform: translate(0%, 0%); }
@@ -243,7 +235,7 @@ html, body {
 }
 
 /* ==========================================================================
-   INDIVIDUAL PLAYER CARDS - Organic Tilted Angles & Card Split Halves
+   INDIVIDUAL PLAYER CARDS - Direct 3D Tilt Sway Breathing Animations
    ========================================================================== */
 .player-card-slot {
   position: relative;
@@ -254,11 +246,31 @@ html, body {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65);
   background: #fffbf7;
   border: 1px solid rgba(255, 255, 255, 0.4);
+  perspective: 800px;
+  transform-style: preserve-3d;
   transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.player-card-slot.slot-p1 { transform: rotate(-4.5deg); }
-.player-card-slot.slot-p2 { transform: rotate(4.5deg); }
+.player-card-slot.slot-p1 {
+  transform: rotate(-4.5deg);
+  animation: card-sway-p1 7s ease-in-out infinite alternate;
+}
+.player-card-slot.slot-p2 {
+  transform: rotate(4.5deg);
+  animation: card-sway-p2 8s ease-in-out infinite alternate 1.5s;
+}
+
+@keyframes card-sway-p1 {
+  0% { transform: rotate(-4.5deg) rotateX(0deg) rotateY(0deg); }
+  50% { transform: rotate(-3.5deg) rotateX(5deg) rotateY(-5deg); }
+  100% { transform: rotate(-5.5deg) rotateX(-4deg) rotateY(4deg); }
+}
+
+@keyframes card-sway-p2 {
+  0% { transform: rotate(4.5deg) rotateX(0deg) rotateY(0deg); }
+  50% { transform: rotate(5.5deg) rotateX(-5deg) rotateY(5deg); }
+  100% { transform: rotate(3.5deg) rotateX(4deg) rotateY(-4deg); }
+}
 
 .player-card-img {
   width: 100%;
