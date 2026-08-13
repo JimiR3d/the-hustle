@@ -137,7 +137,10 @@ function renderDisplay(state, meta = {}) {
     `;
 
     const innerHTML = `
-      <div class="gradient-blob-edge" aria-hidden="true"></div>
+      <svg class="moving-border-svg" viewBox="0 0 430 340" preserveAspectRatio="none" aria-hidden="true">
+        <rect class="moving-border-track" x="4" y="4" width="422" height="332" rx="28" ry="28" />
+        <rect class="moving-border-line" x="4" y="4" width="422" height="332" rx="28" ry="28" />
+      </svg>
       <div class="group-panel-container" id="group-container-${group.id}">
         ${renderPlayerCard(group.player1, 'slot-p1')}
         ${renderPlayerCard(group.player2, 'slot-p2')}
