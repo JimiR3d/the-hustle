@@ -109,10 +109,10 @@ html, body {
   z-index: 2;
 }
 
-/* Layer 3: Desert Ground / Terrain (Balanced middle-ground position, clipped cleanly at section bottom) */
+/* Layer 3: Desert Ground / Terrain (Anchored from top horizon, extra height extends downward as overscan) */
 .layer-ground {
   position: absolute;
-  bottom: -28vh;
+  top: 67vh;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
