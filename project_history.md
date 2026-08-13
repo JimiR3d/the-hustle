@@ -51,17 +51,13 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-12 — Team 1-5 Container Overlays & v2 Background Integration
+### Session 2026-08-13 — Moving Border Light Line Track, Restored Team Containers & Liquid Metal Score Pill
 **Tasks completed:**
-- Applied transparent white container frame overlays (`team_container_t1.png` .. `team_container_t5.png`) featuring pixelated "TEAM N" header pills to each of the 5 group card panels matching `Display Demo v3 (1).png` and `Single Group layout v2 (1).png`.
-- Updated page background to `background_v2 (1).png` with full-bleed `100% 100%` fit.
-- Updated default team pairings in `state.js`: Team 1 (Teslim & Chidera), Team 2 (Adrian & Tayo), Team 3 (EZ & Aphro), Team 4 (Chinazom & Marty), Team 5 (Kia & Kitan).
-
-### Session 2026-08-13 — Moving Border Light Line Track & Transparent Backdrop Integration
-**Tasks completed:**
-- Removed blurry glass backdrop (`backdrop-filter: blur(...)`) so the casino table surface is 100% transparent and flat behind the drawn team container border frames.
+- Restored `background-image: url('/assets/team_container_t1.png')` .. `t5.png` on `.group-panel-container` by replacing shorthand `background: transparent` with `background-color: transparent`.
+- Applied Liquid Metal capsule score pill styling and metallic sheen reflection overlay (`@keyframes liquid-metal-sheen`) from `Liquid Metal button.txt` to `.group-score-pill`.
+- Removed blurry glass backdrop (`backdrop-filter: blur(...)`) so the casino table surface is 100% transparent and flat behind the team container frames.
 - Integrated SVG moving border path track and glowing white light beam (`.moving-border-line`) from `Moving border.txt`.
-- Positioned moving border SVG track at `z-index: 2` so the glowing light beam glides cleanly under the top "TEAM 1" .. "TEAM 5" header pills and under the bottom score board pills without covering text or LED scores.
+- Positioned moving border SVG track at `z-index: 2` so the glowing light beam glides cleanly under the top "TEAM 1" .. "TEAM 5" header pills and under the bottom score board pills without covering text or scores.
 - Increased container top padding (`padding-top: 52px`) so player cards sit cleanly below the "TEAM N" header pills without overlap.
 - Applied organic 3D tilt breathing sway animations (`card-sway-p1` and `card-sway-p2`) directly onto individual player cards.
 - Updated GEMINI.md, project_history.md, task.md, and walkthrough.md.
