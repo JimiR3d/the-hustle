@@ -51,26 +51,13 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-14 — 3-Section Transition Architecture, Black Buffer & Containment Gradients
+### Session 2026-08-14 — Extended Black Transition Buffer & Foreground UI Stacking Refinement
 **Tasks completed:**
-- Created dedicated solid black transition buffer section (`#transition-buffer-section` at `25vh` height) between Main Menu and Game Section.
-- Added static bottom black gradient fade (`.main-menu__bottom-fade` at `260px` height) inside Main Menu and top black gradient fade (`.game-section__top-fade` at `240px` height) inside Game Section.
-- Enforced strict containment (`overflow: hidden;`) on Main Menu so no elements physically leak into subsequent sections while the bottom fade creates a seamless gradual darkening.
-- Adjusted ground layer to a balanced middle-ground position (`bottom: -28vh;`), allowing intentional bottom cropping by section boundary.
-- Raised city skyline slightly (`bottom: 8vh;`) to showcase Las Vegas landmarks.
-- Preserved GSAP upward ground parallax movement (`yPercent: -38`).
-- Centered `.layer-piggy-wrapper` using `left: 0; right: 0; margin: 0 auto;`, completely avoiding any transform conflict with GSAP parallax or CSS rotation.
-- Added subtle continuous swinging pendulum animation to the hanging piggy bank (`transform-origin: 50% 0%` with `@keyframes piggy-pendulum-swing` 4.8s `ease-in-out` sway between `-3.5deg` and `+3.5deg`).
-- Scaled down main logo to match reference `Layout (Final look).png` and removed added artificial glow/bloom (`filter: none;`).
-- Enlarged hanging piggy bank and layered it in front of the logo at `z-index: 12` so it overlaps the logo's top marquee diamond.
-- Positioned "ENTER GAME SHOW ARENA" button above sponsor logos with clear spacing (`bottom: 7.5vh;` vs `bottom: 2vh;`).
-- Implemented dedicated `.card-shimmer-mask` clipping layer for all player cards, strictly clipping the moving light sweep within card boundaries and eliminating background shimmer bleed.
-- Preserved 100% full player card artwork and aspect ratio with `object-fit: contain`.
-- Implemented `animateLayoutFlip()` in `display.js` to ensure remaining active team cards smoothly glide into their newly centered layout with 0.85s eased transitions when a team is eliminated (zero snapping/jumping).
-- Removed solid white background (`#fffbf7`) from `.player-card-slot`, ensuring 100% transparent backgrounds between torn card fragments so underlying game board and table remain visible through the torn gap.
-- Added internal custom pink glowing scrollbar track and thumb matching the casino neon theme.
-- Upgraded the spotlight system to support up to 3 groups simultaneously (`state.js`), preventing 4th group selection until one is deselected.
-- Balanced layout underneath timers for 1 group (`x: 960px, scale: 1.20`), 2 groups (`x: 690px / 1230px, scale: 1.10`), and 3 groups (`x: 465px / 960px / 1455px, scale: 1.02`) with zero overlap.
-- Fixed DOM insertion lifecycle in `display.js` so elements remain mounted, enabling silky smooth eased animations (`transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)`) moving in and out of spotlight without snapping.
-- Proportional non-cropped scaling applied to all 8 parallax layers (`sky.png`, `Buildings.png`, `Ground.png`, `PiggyBank.png`, `homeLogo.png`, `Hosts.png`, `signHustle.png`, `sponsoreLogoss.png`).
+- Increased `.transition-buffer-section` height to `60vh` (min-height `480px`) providing deliberate, cinematic breathing room between sections.
+- Positioned `.main-menu__bottom-fade` at `z-index: 5;` to strictly fade the environment (sky, buildings, ground) while foreground UI sits cleanly above the gradient.
+- Elevated Hosts (`.layer-hosts` at `z-index: 12`), Billboard Sign (`.layer-sign` at `z-index: 12`), and Sponsors (`.layer-sponsors` at `z-index: 12`) above the bottom gradient.
+- Kept Enter Arena Button (`.scroll-to-arena-btn` at `z-index: 20`) above sponsor logos and fade.
+- Removed parallax movement from Hosts, Billboard Sign, Sponsors, Main Logo, and Piggy Bank (pure natural page scrolling).
+- Isolated GSAP parallax scrubbing exclusively to environmental layers (Sky `yPercent: 18`, Buildings `yPercent: 28`, Ground `yPercent: -38`).
+- Elevated Game Section `#app-stage` (`z-index: 15`) and `.display-header` (`z-index: 100`) above `.game-section__top-fade` (`z-index: 5`), keeping the logo and dynamic timers crisp and un-obscured.
 - Pushed updates to GitHub `v2-redesign`.
