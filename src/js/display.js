@@ -72,7 +72,7 @@ const HOME_COORDINATES = {
 };
 
 function getSpotlightTransform(groupId, spotlightedGroups) {
-  const count = spotlightedGroups.length;
+  const count = Math.min(spotlightedGroups.length, 3);
   const index = spotlightedGroups.findIndex(g => g.id === groupId);
   if (index === -1) {
     return { tx: 0, ty: 0, scale: 1 };
@@ -81,40 +81,20 @@ function getSpotlightTransform(groupId, spotlightedGroups) {
   const home = HOME_COORDINATES[groupId] || { x: 960, y: 330 };
   let targetX = 960;
   let targetY = 345;
-  let scale = 1.22;
+  let scale = 1.20;
 
   if (count === 1) {
     targetX = 960;
     targetY = 345;
-    scale = 1.22;
+    scale = 1.20;
   } else if (count === 2) {
-    targetX = index === 0 ? 700 : 1220;
+    targetX = index === 0 ? 690 : 1230;
     targetY = 345;
-    scale = 1.14;
+    scale = 1.10;
   } else if (count === 3) {
     targetX = index === 0 ? 465 : index === 1 ? 960 : 1455;
     targetY = 345;
-    scale = 1.06;
-  } else if (count === 4) {
-    if (index < 2) {
-      targetX = index === 0 ? 700 : 1220;
-      targetY = 320;
-      scale = 1.04;
-    } else {
-      targetX = index === 2 ? 700 : 1220;
-      targetY = 690;
-      scale = 1.04;
-    }
-  } else {
-    if (index < 3) {
-      targetX = index === 0 ? 465 : index === 1 ? 960 : 1455;
-      targetY = 320;
-      scale = 1.02;
-    } else {
-      targetX = index === 3 ? 712.5 : 1207.5;
-      targetY = 690;
-      scale = 1.02;
-    }
+    scale = 1.02;
   }
 
   return {
@@ -148,7 +128,7 @@ function renderDisplay(state, meta = {}) {
   // Render bottom-right mini-slots with completed disqualified teams
   renderDisqualifiedStack(disqualifiedGroups.filter(g => completedDisqualifiedIds.has(g.id)));
 
-  // Toggle theatrical spotlight backdrop dimmer
+  // Toggle theatrical spotlight backdrop dimmer (strictly based on spotlighted groups, independent of timer)
   const spotlightBackdrop = document.getElementById('spotlight-backdrop');
   const hasSpotlight = state.groups.some(g => g.isPopUp && !g.isDisqualified);
   if (spotlightBackdrop) {
@@ -195,7 +175,7 @@ function renderDisplay(state, meta = {}) {
       groupWrapper.className = `group-panel-wrapper active-group team-${teamNum}`;
     }
 
-    if (!activeAnimationIds.has(group.id)) {
+    if (!activeAnimationIds.has(group.id) && groupWrapper.parentElement !== parentRow) {
       // Maintain exact numerical slot order (Slot 1, 2, 3 in Top Row; Slot 4, 5 in Bottom Row)
       const existingChildren = Array.from(parentRow.children).filter(c => c !== groupWrapper);
       const insertBeforeElement = existingChildren.find(child => {
@@ -210,13 +190,11 @@ function renderDisplay(state, meta = {}) {
       }
     }
 
-    // Dynamic smooth 3D spotlight positioning (centered under timer)
+    // Dynamic smooth 3D spotlight positioning (centered under timer with smooth eased transforms)
     const isSpotlighted = Boolean(group.isPopUp);
     const transform = getSpotlightTransform(group.id, spotlightedGroups);
 
-    groupWrapper.style.setProperty('--spotlight-tx', `${Math.round(transform.tx)}px`);
-    groupWrapper.style.setProperty('--spotlight-ty', `${Math.round(transform.ty)}px`);
-    groupWrapper.style.setProperty('--spotlight-scale', `${transform.scale}`);
+    groupWrapper.style.transform = `translate3d(${Math.round(transform.tx)}px, ${Math.round(transform.ty)}px, 0px) scale(${transform.scale})`;
 
     groupWrapper.classList.add(`team-${teamNum}`);
     groupWrapper.classList.toggle('is-popup', isSpotlighted);

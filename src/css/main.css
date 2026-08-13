@@ -34,15 +34,13 @@ html, body {
 .parallax-intro-section {
   position: relative;
   width: 100vw;
-  height: 135vh;
+  height: 100vh;
   overflow: hidden;
   background: #060109;
 }
 
 .parallax-visuals {
-  position: sticky;
-  top: 0;
-  left: 0;
+  position: relative;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -55,103 +53,128 @@ html, body {
   will-change: transform;
 }
 
+/* Layer 1: Sky (Deep Background) */
 .layer-sky {
-  inset: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: fill;
   z-index: 1;
 }
 
+/* Layer 2: Las Vegas City Skyline (Proportional, Not Cropped) */
 .layer-buildings {
-  bottom: 14%;
+  position: absolute;
+  bottom: 12vh;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-height: 75vh;
+  max-width: 100vw;
+  height: auto;
   object-fit: contain;
   z-index: 2;
 }
 
+/* Layer 3: Desert Ground / Terrain (Proportional, Not Cropped) */
 .layer-ground {
+  position: absolute;
   bottom: 0;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
-  max-height: 46vh;
-  object-fit: cover;
+  max-width: 100vw;
+  height: auto;
+  object-fit: contain;
   z-index: 3;
 }
 
+/* Layer 4: Top Hanging Piggy Bank */
 .layer-piggy {
-  top: -2%;
+  position: absolute;
+  top: -1vh;
   left: 50%;
   transform: translateX(-50%);
-  width: 420px;
-  max-height: 380px;
+  width: 22vw;
+  max-width: 420px;
+  height: auto;
   object-fit: contain;
   z-index: 4;
   filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.85));
 }
 
+/* Layer 5: Main Glowing Neon Marquee Sign Center */
 .layer-logo {
-  top: 30%;
+  position: absolute;
+  top: 32vh;
   left: 50%;
   transform: translateX(-50%);
-  width: 680px;
-  max-height: 400px;
+  width: 38vw;
+  max-width: 700px;
+  height: auto;
   object-fit: contain;
   z-index: 5;
   filter: drop-shadow(0 0 50px rgba(255, 60, 140, 0.75)) drop-shadow(0 0 25px rgba(255, 200, 0, 0.85));
 }
 
+/* Layer 6: Host Cards (Bottom Left) */
 .layer-hosts {
-  bottom: 4%;
-  left: 4%;
-  width: 360px;
-  max-height: 260px;
+  position: absolute;
+  bottom: 2.5vh;
+  left: 2.5vw;
+  width: 18vw;
+  max-width: 340px;
+  height: auto;
   object-fit: contain;
   z-index: 6;
   filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.95));
 }
 
+/* Layer 7: Motorclub Houston Sign (Bottom Right) */
 .layer-sign {
-  bottom: 6%;
-  right: 4%;
-  width: 360px;
-  max-height: 340px;
+  position: absolute;
+  bottom: 3.5vh;
+  right: 2.5vw;
+  width: 18vw;
+  max-width: 340px;
+  height: auto;
   object-fit: contain;
   z-index: 6;
   filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.95));
 }
 
+/* Layer 8: Sponsors Bar (Bottom Center) */
 .layer-sponsors {
-  bottom: 3.5%;
+  position: absolute;
+  bottom: 2vh;
   left: 50%;
   transform: translateX(-50%);
-  width: 460px;
-  max-height: 50px;
+  width: 24vw;
+  max-width: 460px;
+  height: auto;
   object-fit: contain;
   z-index: 6;
   opacity: 0.9;
 }
 
+/* Soft Atmospheric Section Blend Transition (Sits at z-index: 2 behind foreground content) */
 .parallax__fade {
   position: absolute;
-  bottom: 0;
+  bottom: -2px;
   left: 0;
   width: 100%;
-  height: 240px;
-  background: linear-gradient(to bottom, transparent, #0d0108 95%);
-  z-index: 10;
+  height: 180px;
+  background: linear-gradient(180deg, transparent 0%, rgba(13, 1, 8, 0.35) 50%, rgba(13, 1, 8, 0.85) 85%, #0d0108 100%);
+  z-index: 2;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  backdrop-filter: blur(2px);
 }
 
 /* Pulsating Scroll to Arena Prompt */
 .scroll-to-arena-btn {
   position: absolute;
-  bottom: 30px;
+  bottom: 25px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -365,9 +388,10 @@ html, body {
   width: 430px;
   height: 340px;
   perspective: 1200px;
-  transform: translate3d(var(--spotlight-tx, 0px), var(--spotlight-ty, 0px), 0px) scale(var(--spotlight-scale, 1));
-  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease, filter 0.5s ease;
-  will-change: transform, opacity;
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease, filter 0.5s ease;
+  will-change: transform;
+  outline: none !important;
+  border: none !important;
 }
 
 .group-panel-container {

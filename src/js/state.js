@@ -228,14 +228,19 @@ class GameStateStore {
   }
 
   togglePopUp(id) {
-    this.state.groups.forEach((g) => {
-      if (g.id === id) {
-        g.isPopUp = !g.isPopUp;
-      } else {
-        g.isPopUp = false;
+    const group = this.state.groups.find((g) => g.id === id);
+    if (!group) return;
+
+    if (group.isPopUp) {
+      group.isPopUp = false;
+      this.saveAndBroadcast('popup_toggle');
+    } else {
+      const activeSpotlightCount = this.state.groups.filter((g) => g.isPopUp && !g.isDisqualified).length;
+      if (activeSpotlightCount < 3) {
+        group.isPopUp = true;
+        this.saveAndBroadcast('popup_toggle');
       }
-    });
-    this.saveAndBroadcast('popup_toggle');
+    }
   }
 
   disqualifyGroup(id) {
