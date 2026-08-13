@@ -51,10 +51,11 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Parallax Composition, Piggy Pendulum Sway, Shimmer Mask & FLIP
+### Session 2026-08-13 — Parallax Composition, Piggy Bank Centering & Pendulum Sway
 **Tasks completed:**
+- Centered `.layer-piggy-wrapper` using `left: 0; right: 0; margin: 0 auto;`, completely avoiding any transform conflict with GSAP parallax or CSS rotation.
+- Updated assets with latest `Buildings.png` and `Ground.png`.
 - Added subtle continuous swinging pendulum animation to the hanging piggy bank (`transform-origin: 50% 0%` with `@keyframes piggy-pendulum-swing` 4.8s `ease-in-out` sway between `-3.5deg` and `+3.5deg`).
-- Updated assets with latest `Ground.png` and `Buildings.png`.
 - Scaled down main logo to match reference `Layout (Final look).png` and removed added artificial glow/bloom (`filter: none;`).
 - Enlarged hanging piggy bank and layered it in front of the logo at `z-index: 5` so it overlaps the logo's top marquee diamond.
 - Lowered ground layer (`bottom: -10vh;`) without resizing, revealing significantly more Vegas skyline, palm trees, and scenery.
