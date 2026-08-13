@@ -9,7 +9,7 @@ A single-page digital game show board application designed for arena displays (1
 - **GitHub Repository:** [https://github.com/JimiR3d/the-hustle](https://github.com/JimiR3d/the-hustle)
 
 ## Stack
-- **Frontend:** HTML5, Modern CSS3 (CSS Grid, Flexbox, 3D Transforms, CSS Masking), Vanilla JavaScript (ES Modules), WebGL (@paper-design/shaders), GSAP, ScrollTrigger, Lenis
+- **Frontend:** HTML5, Modern CSS3 (CSS Grid, Flexbox, 3D Transforms, CSS Masking, Custom Pink Scrollbars), Vanilla JavaScript (ES Modules), WebGL (@paper-design/shaders), GSAP, ScrollTrigger, Lenis
 - **Fonts:** Google Fonts (`Cinzel`, `Outfit`, `VT323` pixel LED, `Silkscreen`)
 - **Tooling / Dev Server:** Vite
 - **Deployment & Sync:** Vercel + GitHub Continuous Integration, BroadcastChannel API + LocalStorage dual-channel sync engine
@@ -37,16 +37,19 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 │   └── parallax/        # Parallax assets (sky.png, Buildings.png, Ground.png, PiggyBank.png, homeLogo.png, Hosts.png, signHustle.png, sponsoreLogoss.png)
 ├── src/
 │   ├── css/
-│   │   ├── main.css     # Design tokens, parallax scrolling layers, background_v2, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight
+│   │   ├── main.css     # Design tokens, custom pink scrollbar, parallax scrolling layers, background_v2, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight
 │   │   └── admin.css    # Responsive host controller styling with Start/Pause/Stop/Reset timer buttons
 │   └── js/
 │       ├── parallax.js  # GSAP ScrollTrigger multi-depth scrub timeline & Lenis smooth scrolling controller
 │       ├── state.js     # 5 Team state, ALL_PLAYERS dictionary, tickTimer, pause/stop/reset & dual-channel sync engine
-│       ├── display.js   # Renderer, WebGL Liquid Metal ShaderMount, Apple Genie DQ flight controller, spotlight manager & Web Audio alarm
+│       ├── display.js   # Renderer, FLIP layout animator, WebGL Liquid Metal ShaderMount, Apple Genie DQ flight controller, spotlight manager & Web Audio alarm
 │       └── admin.js     # Host control panel logic, select dropdowns, quick presets & explicit timer buttons
 ```
 
 ## Conventions
+- **Elimination FLIP Transitions:** When a team is eliminated, remaining active cards smoothly glide with 0.85s eased transitions into their newly centered layout using `animateLayoutFlip()` without snapping or jumping.
+- **100% Transparent Card Tear Gaps:** Transparent player card slots ensure the stage background and casino table are clearly visible through the torn gap between card fragments during disqualification (zero white rectangular artifact).
+- **Internal Pink Glowing Scrollbar:** Webpage features custom glowing pink scrollbar styling (`linear-gradient(180deg, #ff3399 0%, #ff0066 50%, #cc0052 100%)`).
 - **Opening Intro Parallax Screen:** 8 visual layers composed to match `Layout (Final look).png` with smooth multi-plane depth scrub via GSAP ScrollTrigger and Lenis smooth scrolling.
 - **Proportional Parallax Artwork:** All artwork layers (sky, buildings, ground, piggy bank, logo sign, hosts, roadside billboard, sponsors) scale proportionally without cropping.
 - **Soft Atmospheric Section Blend:** Smooth gradient transition sitting at `z-index: 2` behind all interactive UI, host cards, and text (zero black rectangle divider).
@@ -79,7 +82,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, soft atmospheric section blend fade behind content, non-cropped proportional parallax artwork layers, opening 8-layer GSAP + Lenis Intro Parallax Screen, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, soft atmospheric section blend fade behind content, non-cropped proportional parallax artwork layers, opening 8-layer GSAP + Lenis Intro Parallax Screen, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.

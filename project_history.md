@@ -51,8 +51,11 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Spotlight Animations (Up to 3 Groups), Parallax Scaling & Soft Section Fade
+### Session 2026-08-13 — Spotlight Animations (Up to 3 Groups), Elimination FLIP & Transparent Tear
 **Tasks completed:**
+- Implemented `animateLayoutFlip()` in `display.js` to ensure remaining active team cards smoothly glide into their newly centered layout with 0.85s eased transitions when a team is eliminated (zero snapping/jumping).
+- Removed solid white background (`#fffbf7`) from `.player-card-slot`, ensuring 100% transparent backgrounds between torn card fragments so underlying game board and table remain visible through the torn gap.
+- Added internal custom pink glowing scrollbar track and thumb matching the casino neon theme.
 - Upgraded the spotlight system to support up to 3 groups simultaneously (`state.js`), preventing 4th group selection until one is deselected.
 - Balanced layout underneath timers for 1 group (`x: 960px, scale: 1.20`), 2 groups (`x: 690px / 1230px, scale: 1.10`), and 3 groups (`x: 465px / 960px / 1455px, scale: 1.02`) with zero overlap.
 - Fixed DOM insertion lifecycle in `display.js` so elements remain mounted, enabling silky smooth eased animations (`transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)`) moving in and out of spotlight without snapping.
