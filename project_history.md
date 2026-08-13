@@ -51,13 +51,10 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — Moving Border Light Line Track, Restored Team Containers & Liquid Metal Score Pill
+### Session 2026-08-13 — Pixel-Perfect Light Alignment & Score Board Pill Refinement
 **Tasks completed:**
-- Restored `background-image: url('/assets/team_container_t1.png')` .. `t5.png` on `.group-panel-container` by replacing shorthand `background: transparent` with `background-color: transparent`.
-- Applied Liquid Metal capsule score pill styling and metallic sheen reflection overlay (`@keyframes liquid-metal-sheen`) from `Liquid Metal button.txt` to `.group-score-pill`.
-- Removed blurry glass backdrop (`backdrop-filter: blur(...)`) so the casino table surface is 100% transparent and flat behind the team container frames.
-- Integrated SVG moving border path track and glowing white light beam (`.moving-border-line`) from `Moving border.txt`.
-- Positioned moving border SVG track at `z-index: 2` so the glowing light beam glides cleanly under the top "TEAM 1" .. "TEAM 5" header pills and under the bottom score board pills without covering text or scores.
-- Increased container top padding (`padding-top: 52px`) so player cards sit cleanly below the "TEAM N" header pills without overlap.
-- Applied organic 3D tilt breathing sway animations (`card-sway-p1` and `card-sway-p2`) directly onto individual player cards.
+- Aligned SVG moving border light beam (`x="14" y="14" width="402" height="312" rx="36"`) to trace pixel-perfectly on top of the team container border frame line with zero double border overlay.
+- Removed extra static border track line (`.moving-border-track`).
+- Removed unrequested `::before` sheen animation overlay from `.group-score-pill` to keep score board capsule clean, dark, crisp, and legible.
+- Restored `team_container_t1.png` .. `t5.png` overlays with transparent casino table backdrop.
 - Updated GEMINI.md, project_history.md, task.md, and walkthrough.md.
