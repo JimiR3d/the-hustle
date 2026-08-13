@@ -51,13 +51,10 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-14 — Extended Black Transition Buffer & Foreground UI Stacking Refinement
+### Session 2026-08-14 — Buffer Calibration, Sign Gradient Layering & Cinematic Auto-Scroll
 **Tasks completed:**
-- Increased `.transition-buffer-section` height to `60vh` (min-height `480px`) providing deliberate, cinematic breathing room between sections.
-- Positioned `.main-menu__bottom-fade` at `z-index: 5;` to strictly fade the environment (sky, buildings, ground) while foreground UI sits cleanly above the gradient.
-- Elevated Hosts (`.layer-hosts` at `z-index: 12`), Billboard Sign (`.layer-sign` at `z-index: 12`), and Sponsors (`.layer-sponsors` at `z-index: 12`) above the bottom gradient.
-- Kept Enter Arena Button (`.scroll-to-arena-btn` at `z-index: 20`) above sponsor logos and fade.
-- Removed parallax movement from Hosts, Billboard Sign, Sponsors, Main Logo, and Piggy Bank (pure natural page scrolling).
-- Isolated GSAP parallax scrubbing exclusively to environmental layers (Sky `yPercent: 18`, Buildings `yPercent: 28`, Ground `yPercent: -38`).
-- Elevated Game Section `#app-stage` (`z-index: 15`) and `.display-header` (`z-index: 100`) above `.game-section__top-fade` (`z-index: 5`), keeping the logo and dynamic timers crisp and un-obscured.
+- Adjusted `.transition-buffer-section` height to `42vh` (min-height `340px`) for balanced transition timing between sections.
+- Positioned billboard/sign (`.layer-sign` at `z-index: 4;`) behind `.main-menu__bottom-fade` (`z-index: 5;`) so it smoothly darkens into black along with the background environment without any parallax displacement.
+- Kept Hosts (`z-index: 12`) and Sponsor Logos (`z-index: 12`) clearly above the bottom gradient.
+- Slowed down "ENTER GAME SHOW ARENA" button auto-scroll to 3.0s with smooth `easeInOutCubic` Lenis easing, giving the user a cinematic scroll that fully showcases the GSAP multi-plane parallax timeline.
 - Pushed updates to GitHub `v2-redesign`.
