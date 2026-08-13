@@ -35,15 +35,10 @@ export function initParallax() {
     },
   });
 
-  // Layer depths (Ground moves upward on scroll down as foreground passes viewer)
+  // Environmental Parallax Layer depths (Ground moves upward on scroll down)
   tl.to('[data-parallax-layer="sky"]', { yPercent: 18, ease: 'none' }, 0)
     .to('[data-parallax-layer="buildings"]', { yPercent: 28, ease: 'none' }, 0)
-    .to('[data-parallax-layer="ground"]', { yPercent: -38, ease: 'none' }, 0)
-    .to('[data-parallax-layer="piggy"]', { yPercent: 58, ease: 'none' }, 0)
-    .to('[data-parallax-layer="logo"]', { yPercent: 68, ease: 'none' }, 0)
-    .to('[data-parallax-layer="hosts"]', { yPercent: 78, ease: 'none' }, 0)
-    .to('[data-parallax-layer="sign"]', { yPercent: 78, ease: 'none' }, 0)
-    .to('[data-parallax-layer="sponsors"]', { yPercent: 84, ease: 'none' }, 0);
+    .to('[data-parallax-layer="ground"]', { yPercent: -38, ease: 'none' }, 0);
 
   // Scroll to Arena button click
   const scrollIndicator = document.getElementById('scroll-to-arena-btn');
