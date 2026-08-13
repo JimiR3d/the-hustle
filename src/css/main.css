@@ -96,7 +96,7 @@ html, body {
 /* Layer 2: Las Vegas City Skyline (Proportional, Not Cropped) */
 .layer-buildings {
   position: absolute;
-  bottom: 14vh;
+  bottom: 8vh;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
@@ -106,10 +106,10 @@ html, body {
   z-index: 2;
 }
 
-/* Layer 3: Desert Ground / Terrain (Lowered to reveal more background skyline) */
+/* Layer 3: Desert Ground / Terrain (Lowered base position to reveal Vegas scenery) */
 .layer-ground {
   position: absolute;
-  bottom: -10vh;
+  bottom: -22vh;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
