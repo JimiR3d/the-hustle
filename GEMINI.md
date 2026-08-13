@@ -36,16 +36,19 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 ├── public/assets/       # Static assets (logo.png, background_v2.png, team_container_t1..t5.png, score_board.png, *.png)
 ├── src/
 │   ├── css/
-│   │   ├── main.css     # Design tokens, background_v2 100% 100%, Team 1-5 container frame masks, casino gold beam, DQ flight
+│   │   ├── main.css     # Design tokens, background_v2 100% 100%, Team 1-5 container frame masks, casino gold beam, DQ flight, spotlight focus
 │   │   └── admin.css    # Responsive host controller styling with Start/Pause/Stop/Reset timer buttons
 │   └── js/
 │       ├── state.js     # 5 Team state, ALL_PLAYERS dictionary, tickTimer, pause/stop/reset & dual-channel sync engine
-│       ├── display.js   # Renderer, WebGL Liquid Metal ShaderMount, Apple Genie DQ flight controller & Web Audio alarm
+│       ├── display.js   # Renderer, WebGL Liquid Metal ShaderMount, Apple Genie DQ flight controller, spotlight manager & Web Audio alarm
 │       └── admin.js     # Host control panel logic, select dropdowns, quick presets & explicit timer buttons
 ```
 
 ## Conventions
 - 5 Team Groups (Teams of 2 Players each = 10 competitors) arranged matching `Display Demo v3 (1).png`.
+- Spaced out team grid (`gap: 65px` horizontal, `gap: 38px; margin-top: 15px` vertical) occupying arena canvas space with balanced breathing room.
+- Seamless player card photos (`.card-full-face`) with zero subpixel cracks or seams during active play.
+- Theatrical Spotlight focus matching `Spotlight.jpg`: only the spotlighted team is 100% lit up while all other teams and background are dimmed, keeping header logo & game timer bright above the dimmer.
 - Per-team container frame overlays (`team_container_t1.png` .. `team_container_t5.png`) lying 100% flat on the transparent casino board table without any blurry glass backdrop.
 - Direct casino gold light beam animation via CSS `mask-image: url('/assets/team_container_t1.png')` .. `t5.png`, illuminating the exact pixel contours of the container border and top "TEAM N" pill with zero duplicate lines.
 - Layered `.team-container-top-overlay` at `z-index: 10` ensuring "TEAM 1" through "TEAM 5" black pixel text stays 100% sharp and visible on top of the passing gold light beam.
@@ -64,7 +67,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams (`#ffd700`, `#ffb300`, `#ffe57f`), top text overlay keeping "TEAM N" crisp on top of the beam, subtle WebGL Liquid Metal fluid shader from `@paper-design/shaders`, clean wide capsule scoreboard (`score_board.png`), transparent backdrop (no blurry glass), clean header pill spacing, direct card 3D sway breathing, full-bleed `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, Apple Genie disqualification flight, clean initial mini-slots, recognizable mini player card photos, 100% reliable 5-card restore, dynamic center alignment, enlarged HUD timer, and bug-free card sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring theatrical spotlight focus matching `Spotlight.jpg`, spaced-out group layout, seamless crack-free player card photos, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams (`#ffd700`, `#ffb300`, `#ffe57f`), top text overlay keeping "TEAM N" crisp on top of the beam, subtle WebGL Liquid Metal fluid shader from `@paper-design/shaders`, clean wide capsule scoreboard (`score_board.png`), transparent backdrop (no blurry glass), clean header pill spacing, direct card 3D sway breathing, full-bleed `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, Apple Genie disqualification flight, clean initial mini-slots, recognizable mini player card photos, 100% reliable 5-card restore, dynamic center alignment, enlarged HUD timer, and bug-free card sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.

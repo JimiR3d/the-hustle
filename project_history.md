@@ -51,10 +51,11 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-13 — TEAM N Text Layering & Subtle Liquid Metal Shader
+### Session 2026-08-13 — Spotlight Theatrical Focus, Spacing & Card Photo Crack Fix
 **Tasks completed:**
+- Implemented theatrical spotlight focus matching `Spotlight.jpg`: only the spotlighted team is 100% lit up while all other teams and background are dimmed, keeping header logo & game timer bright above the dimmer.
+- Eliminated card photo cracks/seams on active cards using `.card-full-face` seamless photo rendering.
+- Increased horizontal spacing between team cards (`gap: 65px`) and vertical row spacing (`gap: 38px; margin-top: 15px`) to occupy more canvas space with balanced breathing room.
 - Layered `.team-container-top-overlay` at `z-index: 10` with `mix-blend-mode: multiply` so the black pixelated "TEAM 1" through "TEAM 5" text on the top pill stays 100% sharp and visible on top of the passing gold light beam.
 - Re-added the WebGL Liquid Metal fluid shader from `@paper-design/shaders` with subtle reduced intensity (`opacity: 0.38; filter: brightness(0.65) contrast(1.1);`) inside each scoreboard capsule pill.
-- Changed team container light animation to a rich, warm casino gold color (`#ffd700`, `#ffb300`, `#ffe57f`) that harmonizes with the casino board table background and gold header logo.
-- Applied moving glowing light beam directly to `team_container_t1.png` .. `t5.png` via CSS `mask-image` with zero duplicate lines.
 - Updated GEMINI.md, project_history.md, task.md, and walkthrough.md.
