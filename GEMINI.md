@@ -46,6 +46,8 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 
 ## Conventions
 - 5 Team Groups (Teams of 2 Players each = 10 competitors) arranged matching `Display Demo v3 (1).png`.
+- Designated row & slot layout: Teams 1, 2, 3 in Top Row (Slots 1, 2, 3); Teams 4, 5 in Bottom Row (Slots 4, 5).
+- Restoring any disqualified team immediately returns it to its exact original slot index (e.g. Team 1 &rarr; Slot 1).
 - Spaced out team grid (`gap: 65px` horizontal, `gap: 38px; margin-top: 15px` vertical) occupying arena canvas space with balanced breathing room.
 - Seamless player card photos (`.card-full-face`) with zero subpixel cracks or seams during active play.
 - Theatrical Spotlight focus matching `Spotlight.jpg`: full-viewport edge-to-edge dark curtain, radiant box of light around the spotlighted group, with header logo and game timer remaining 100% bright above the dimmer.
@@ -61,13 +63,12 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Disqualifications trigger a 2.8s 3-phase live motion sequence: Phase 1 (0.6s neon red flash aura) -> Phase 2 (1.0s slow smooth diagonal card tear cut in place on stage) -> Phase 3 (1.2s Apple Genie curved flight trajectory gliding across screen directly to bottom-right slot).
 - Bottom-right mini-slots start 100% clean and empty when zero teams are disqualified; render recognizable miniature player card photos (`player1.image` and `player2.image`) with team labels when occupied.
 - Remaining active team panels dynamically re-center themselves on the stage layout.
-- Restoring disqualified teams immediately returns all 5 team cards to the active stage layout (3 top row, 2 bottom row).
 - Card light sheen sweeps (`.card-white-light-reflection`) persist smoothly without resetting on point changes.
 - Web Audio API spy countdown finish buzzer sound plays on `00:00` alongside ambient green flash.
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring full-viewport edge-to-edge theatrical spotlight curtain matching `Spotlight.jpg`, radiant spotlight box of light, spaced-out group layout, seamless crack-free player card photos, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams (`#ffd700`, `#ffb300`, `#ffe57f`), top text overlay keeping "TEAM N" crisp on top of the beam, subtle WebGL Liquid Metal fluid shader from `@paper-design/shaders`, clean wide capsule scoreboard (`score_board.png`), transparent backdrop (no blurry glass), clean header pill spacing, direct card 3D sway breathing, full-bleed `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, Apple Genie disqualification flight, clean initial mini-slots, recognizable mini player card photos, 100% reliable 5-card restore, dynamic center alignment, enlarged HUD timer, and bug-free card sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring exact slot restoration ordering (Teams 1-5 always restore to original positions), full-viewport edge-to-edge theatrical spotlight curtain matching `Spotlight.jpg`, radiant spotlight box of light, spaced-out group layout, seamless crack-free player card photos, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams (`#ffd700`, `#ffb300`, `#ffe57f`), top text overlay keeping "TEAM N" crisp on top of the beam, subtle WebGL Liquid Metal fluid shader from `@paper-design/shaders`, clean wide capsule scoreboard (`score_board.png`), transparent backdrop (no blurry glass), clean header pill spacing, direct card 3D sway breathing, full-bleed `background_v2.png`, pixelated LED scores (`VT323`), tilted card pairs, Apple Genie disqualification flight, clean initial mini-slots, recognizable mini player card photos, 100% reliable 5-card restore, dynamic center alignment, enlarged HUD timer, and bug-free card sheen sweeps. Live Vercel site (`the-hustle-eight.vercel.app`) remains on `v1-live-stable` for stakeholder demo.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.
