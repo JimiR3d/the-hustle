@@ -208,7 +208,7 @@ html, body {
   filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.95));
 }
 
-/* Layer 8: Motorclub Houston Sign (Bottom Right, sits ABOVE gradient fade) */
+/* Layer 8: Motorclub Houston Sign (Bottom Right, sits BEHIND bottom gradient fade) */
 .layer-sign {
   position: absolute;
   bottom: 3.5vh;
@@ -217,7 +217,7 @@ html, body {
   max-width: 340px;
   height: auto;
   object-fit: contain;
-  z-index: 12;
+  z-index: 4;
   filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.95));
 }
 
@@ -263,13 +263,13 @@ html, body {
 }
 
 /* ==========================================================================
-   BLACK TRANSITION BUFFER SECTION (Cinematic solid black buffer with generous height)
+   BLACK TRANSITION BUFFER SECTION (Cinematic solid black buffer with balanced height)
    ========================================================================== */
 .transition-buffer-section {
   position: relative;
   width: 100vw;
-  height: 60vh;
-  min-height: 480px;
+  height: 42vh;
+  min-height: 340px;
   background: #060109;
   z-index: 2;
 }

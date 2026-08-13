@@ -40,13 +40,17 @@ export function initParallax() {
     .to('[data-parallax-layer="buildings"]', { yPercent: 28, ease: 'none' }, 0)
     .to('[data-parallax-layer="ground"]', { yPercent: -38, ease: 'none' }, 0);
 
-  // Scroll to Arena button click
+  // Scroll to Arena button click (Cinematic, smooth 3.0s auto-scroll showcasing parallax layers)
   const scrollIndicator = document.getElementById('scroll-to-arena-btn');
   if (scrollIndicator) {
     scrollIndicator.addEventListener('click', () => {
       const arenaSection = document.getElementById('main-arena-section');
       if (arenaSection) {
-        lenis.scrollTo(arenaSection, { offset: 0, duration: 1.4 });
+        lenis.scrollTo(arenaSection, {
+          offset: 0,
+          duration: 3.0,
+          easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
+        });
       }
     });
   }
