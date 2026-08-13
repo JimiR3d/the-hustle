@@ -106,11 +106,9 @@ function renderDisplay(state, meta = {}) {
     });
   });
 
-  // Distribute active groups dynamically (up to 3 in top row, remaining in bottom row)
-  const topActive = activeGroups.slice(0, 3);
-
+  // Fixed designated row mapping & slot ordering: Teams 1, 2, 3 in Top Row; Teams 4, 5 in Bottom Row
   activeGroups.forEach((group) => {
-    const isTopRow = topActive.some(g => g.id === group.id);
+    const isTopRow = group.id === 'group-1' || group.id === 'group-2' || group.id === 'group-3';
     const parentRow = isTopRow ? topRow : bottomRow;
 
     let groupWrapper = document.getElementById(`group-wrap-${group.id}`);
@@ -122,13 +120,27 @@ function renderDisplay(state, meta = {}) {
     previousScores[group.id] = group.points;
 
     const teamNum = group.id.replace('group-', '');
+    const targetIndex = parseInt(teamNum, 10);
+
     if (!groupWrapper) {
       groupWrapper = document.createElement('div');
       groupWrapper.id = `group-wrap-${group.id}`;
       groupWrapper.className = `group-panel-wrapper active-group team-${teamNum}`;
-      parentRow.appendChild(groupWrapper);
-    } else if (groupWrapper.parentElement !== parentRow && !activeAnimationIds.has(group.id)) {
-      parentRow.appendChild(groupWrapper);
+    }
+
+    if (!activeAnimationIds.has(group.id)) {
+      // Maintain exact numerical slot order (Slot 1, 2, 3 in Top Row; Slot 4, 5 in Bottom Row)
+      const existingChildren = Array.from(parentRow.children).filter(c => c !== groupWrapper);
+      const insertBeforeElement = existingChildren.find(child => {
+        const childNum = parseInt(child.id.replace('group-wrap-group-', ''), 10);
+        return childNum > targetIndex;
+      });
+
+      if (insertBeforeElement) {
+        parentRow.insertBefore(groupWrapper, insertBeforeElement);
+      } else {
+        parentRow.appendChild(groupWrapper);
+      }
     }
 
     groupWrapper.classList.add(`team-${teamNum}`);
