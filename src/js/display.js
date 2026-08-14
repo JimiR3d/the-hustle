@@ -521,6 +521,11 @@ function triggerTimesUpSequence() {
   container.className = 'times-up-container';
   container.id = 'times-up-overlay';
 
+  // 70% Dark Overlay over Game Section
+  const backdrop = document.createElement('div');
+  backdrop.className = 'times-up-backdrop';
+  container.appendChild(backdrop);
+
   const img = document.createElement('img');
   img.src = '/assets/Times_up.png';
   img.alt = "TIME'S UP";
@@ -531,12 +536,12 @@ function triggerTimesUpSequence() {
   const startX = isLeftToRight ? -window.innerWidth * 1.3 : window.innerWidth * 1.3;
   const exitX = isLeftToRight ? window.innerWidth * 1.3 : -window.innerWidth * 1.3;
 
-  // Initial State: Offscreen, small, fast motion blur
+  // Initial State: Backdrop transparent, image offscreen + small + 100% sharp (no blur)
+  gsap.set(backdrop, { opacity: 0 });
   gsap.set(img, {
     x: startX,
     scale: 0.16,
     opacity: 0,
-    filter: 'blur(16px)',
   });
 
   const tl = gsap.timeline({
@@ -545,32 +550,43 @@ function triggerTimesUpSequence() {
     },
   });
 
-  // Phase 1: FAST entrance moving toward center, rapidly scaling small -> large + motion blur reducing
+  // Dark overlay quickly fades in to 70% darkness (~0.25s)
+  tl.to(backdrop, {
+    opacity: 1,
+    duration: 0.25,
+    ease: 'power2.out',
+  }, 0);
+
+  // Phase 1: FAST entrance moving toward center, rapidly scaling small -> large (100% sharp)
   tl.to(img, {
     x: isLeftToRight ? -window.innerWidth * 0.08 : window.innerWidth * 0.08,
     scale: 1.32,
     opacity: 1,
-    filter: 'blur(3px)',
     duration: 0.45,
     ease: 'power3.out',
-  })
-  // Phase 2: DRAMATIC SLOW-DOWN near center (emphasis moment: large, sharp blur(0px), crystal-clear reading)
+  }, 0)
+  // Phase 2: DRAMATIC SLOW-DOWN near center (emphasis moment: large, crisp, sharp crystal-clear reading)
   .to(img, {
     x: isLeftToRight ? window.innerWidth * 0.06 : -window.innerWidth * 0.06,
     scale: 1.15,
-    filter: 'blur(0px)',
     duration: 1.45,
     ease: 'power1.inOut',
   })
-  // Phase 3: FAST EXIT acceleration toward opposite side, scaling large -> small + motion blur returns
+  // Phase 3: FAST EXIT acceleration toward opposite side, scaling large -> small (100% sharp)
   .to(img, {
     x: exitX,
     scale: 0.20,
     opacity: 0,
-    filter: 'blur(18px)',
     duration: 0.55,
     ease: 'power3.in',
   });
+
+  // Dark overlay smoothly fades back out as the logo finishes its exit
+  tl.to(backdrop, {
+    opacity: 0,
+    duration: 0.35,
+    ease: 'power2.inOut',
+  }, '-=0.35');
 }
 
 function renderTimer(timerState) {
