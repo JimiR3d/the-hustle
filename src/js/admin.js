@@ -81,16 +81,16 @@ function renderAdminPanel(state) {
     container.appendChild(row);
   });
 
-  // Toggle Winner Celebration buttons
+  // Toggle Winner Celebration controls
   const btnOpenWinner = document.getElementById('btn-open-winner-modal');
-  const btnEndWinner = document.getElementById('btn-end-winner');
-  if (btnOpenWinner && btnEndWinner) {
+  const winnerActiveControls = document.getElementById('winner-active-controls');
+  if (btnOpenWinner && winnerActiveControls) {
     if (state.winnerGroupId) {
       btnOpenWinner.style.display = 'none';
-      btnEndWinner.style.display = 'inline-flex';
+      winnerActiveControls.style.display = 'flex';
     } else {
       btnOpenWinner.style.display = 'inline-flex';
-      btnEndWinner.style.display = 'none';
+      winnerActiveControls.style.display = 'none';
     }
   }
 }
@@ -335,6 +335,13 @@ function bindAdminEvents() {
         selectedWinnerId = null;
         winnerConfirmModal.classList.remove('open');
       }
+    });
+  }
+
+  const btnExitWinnerX = document.getElementById('btn-exit-winner-x');
+  if (btnExitWinnerX) {
+    btnExitWinnerX.addEventListener('click', () => {
+      gameStateStore.clearWinner();
     });
   }
 

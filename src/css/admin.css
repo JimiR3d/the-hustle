@@ -431,9 +431,17 @@ body {
 .winner-control-section {
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 20px 0 10px 0;
   border-top: 1px solid rgba(255, 215, 0, 0.2);
   margin-top: 20px;
+}
+
+.winner-active-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
 }
 
 .btn-winner-main {
@@ -454,21 +462,33 @@ body {
   filter: brightness(1.1);
 }
 
-.btn-winner-end {
+.btn-winner-exit-x {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #ff1744 0%, #b71c1c 100%);
   color: #ffffff;
-  font-size: 15px;
-  font-weight: 800;
-  padding: 12px 28px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(255, 23, 68, 0.4);
-  letter-spacing: 0.5px;
+  font-size: 22px;
+  font-weight: 900;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(255, 23, 68, 0.6);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  padding: 0;
+  line-height: 1;
 }
 
-.btn-winner-end:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 23, 68, 0.6);
-  filter: brightness(1.1);
+.btn-winner-exit-x:hover {
+  transform: scale(1.18) rotate(90deg);
+  background: #ff1744;
+  box-shadow: 0 6px 26px rgba(255, 23, 68, 0.9);
+}
+
+.btn-winner-exit-x:active {
+  transform: scale(0.92);
 }
 
 .modal-winner-card {

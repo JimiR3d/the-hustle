@@ -239,13 +239,13 @@ function stopCoinRain() {
 function getSpotlightTransform(groupId, spotlightedGroups, winnerGroupId) {
   const home = HOME_COORDINATES[groupId] || { x: 960, y: 330 };
 
-  // Winner Priority Transform
+  // Winner Priority Transform (Centering winning player cards at scale 1.50)
   if (winnerGroupId) {
     if (winnerGroupId === groupId) {
       return {
         tx: 960 - home.x,
-        ty: 470 - home.y,
-        scale: 1.35
+        ty: 475 - home.y,
+        scale: 1.50
       };
     }
     return { tx: 0, ty: 0, scale: 1 };
@@ -291,21 +291,22 @@ function renderDisplay(state, meta = {}) {
 
   if (!topRow || !bottomRow) return;
 
-  // Handle Winner Celebration Backdrop
+  // Handle Winner Celebration Backdrop inside app-stage (Stacking: Game UI -> 65% Backdrop -> Winner Group -> Winner Logo -> Coin Rain)
   let winnerBackdrop = document.getElementById('winner-celebration-backdrop');
-  if (!winnerBackdrop) {
+  if (!winnerBackdrop && stage) {
     winnerBackdrop = document.createElement('div');
     winnerBackdrop.className = 'winner-celebration-backdrop';
     winnerBackdrop.id = 'winner-celebration-backdrop';
-    const arena = document.getElementById('main-arena-section') || document.body;
-    arena.appendChild(winnerBackdrop);
+    stage.appendChild(winnerBackdrop);
   }
 
   if (state.winnerGroupId) {
-    winnerBackdrop.classList.add('active');
+    if (winnerBackdrop) winnerBackdrop.classList.add('active');
+    if (stage) stage.classList.add('has-winner');
     startCoinRain();
   } else {
-    winnerBackdrop.classList.remove('active');
+    if (winnerBackdrop) winnerBackdrop.classList.remove('active');
+    if (stage) stage.classList.remove('has-winner');
     stopCoinRain();
   }
 
