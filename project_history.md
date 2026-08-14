@@ -51,11 +51,13 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-14 — Time's Up Sound & Alternating Fly-Through Animation
+### Session 2026-08-14 — Time's Up Sound, Dedicated Game Timer Trigger & Alternating Fly-Through Animation
 **Tasks completed:**
 - Integrated `Time_up.mp3` and `Times_up.png` into `public/assets/`.
-- Built multi-phase GSAP fly-through animation for when timer hits `00:00`: Fast entrance (small to large + blur fading) &rarr; Dramatic slow-motion center moment (100% sharp blur 0px) &rarr; Fast exit acceleration (large to small + blur returning).
+- Connected trigger specifically to the **Game Timer** (`timerState.seconds`) counting down from `> 0` to `00:00`.
+- Added user interaction audio unlocking listeners to eliminate browser Autoplay restrictions.
+- Mounted the animated overlay layer inside the Game Section (`#main-arena-section`) at `z-index: 9999` with zero layout impact.
+- Built multi-phase GSAP fly-through animation: Fast entrance (small to large + blur fading) &rarr; Dramatic slow-motion center moment (100% sharp blur 0px) &rarr; Fast exit acceleration (large to small + blur returning).
 - Implemented alternating direction engine (Left &rarr; Center &rarr; Right on 1st run, Right &rarr; Center &rarr; Left on 2nd run, etc.).
-- Synchronized `Time_up.mp3` sound playback with animation entrance without duplicate fires.
 - Modernized typography with Inter Bold (700), Bitcount Single, and Geist Pixel.
 - Pushed updates to GitHub `v2-redesign`.
