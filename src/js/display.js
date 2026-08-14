@@ -31,88 +31,78 @@ let previousTimerSeconds = null;
 
 // Pre-instantiated Countdown and Time's Up audio elements
 const timerStartAudio = new Audio('/assets/Timer_start.mp3');
-timerStartAudio.preload = 'auto';
 timerStartAudio.loop = true;
+timerStartAudio.volume = 1.0;
 
 const timerSpeedUpAudio = new Audio('/assets/Timer_speedUp.mp3');
-timerSpeedUpAudio.preload = 'auto';
 timerSpeedUpAudio.loop = true;
+timerSpeedUpAudio.volume = 1.0;
 
 const timesUpAudio = new Audio('/assets/Time_up.mp3');
-timesUpAudio.preload = 'auto';
+timesUpAudio.loop = false;
+timesUpAudio.volume = 1.0;
 
-let currentAudioState = 'idle'; // 'idle' | 'start' | 'speedUp'
-let isAudioEngineUnlocked = false;
-
-function primeAudioPlayback() {
-  if (isAudioEngineUnlocked) return;
-  isAudioEngineUnlocked = true;
-
-  [timerStartAudio, timerSpeedUpAudio, timesUpAudio].forEach((audio) => {
-    try {
-      audio.load();
-      const p = audio.play();
-      if (p !== undefined) {
-        p.then(() => {
-          audio.pause();
-          audio.currentTime = 0;
-        }).catch(() => {
-          isAudioEngineUnlocked = false;
-        });
-      }
-    } catch (e) {
-      isAudioEngineUnlocked = false;
-    }
-  });
-}
-
-// Attach user unlock listeners across common interaction events
-['click', 'touchstart', 'mousedown', 'keydown', 'wheel', 'scroll'].forEach((evt) => {
-  window.addEventListener(evt, primeAudioPlayback, { passive: true });
-});
+let currentAudioTrack = null; // null | 'start' | 'speedUp'
 
 function syncTimerAudio(timerState) {
+  if (!timerState) return;
   const currentSecs = timerState.seconds;
   const isRunning = Boolean(timerState.isRunning && currentSecs > 0);
 
   if (!isRunning) {
     if (currentSecs === 0) {
-      // Stopped / Expired
-      timerStartAudio.pause();
-      timerStartAudio.currentTime = 0;
-      timerSpeedUpAudio.pause();
-      timerSpeedUpAudio.currentTime = 0;
-      currentAudioState = 'idle';
+      if (!timerStartAudio.paused) {
+        timerStartAudio.pause();
+        timerStartAudio.currentTime = 0;
+      }
+      if (!timerSpeedUpAudio.paused) {
+        timerSpeedUpAudio.pause();
+        timerSpeedUpAudio.currentTime = 0;
+      }
+      currentAudioTrack = null;
     } else {
-      // Paused: pause without resetting playback position so resuming continues smoothly
-      timerStartAudio.pause();
-      timerSpeedUpAudio.pause();
+      // Paused: pause without resetting position
+      if (!timerStartAudio.paused) timerStartAudio.pause();
+      if (!timerSpeedUpAudio.paused) timerSpeedUpAudio.pause();
     }
     return;
   }
 
-  // Running with seconds > 0
+  // Active countdown
   if (currentSecs > 20) {
-    // Normal countdown audio (> 20s)
-    if (currentAudioState !== 'start') {
-      timerSpeedUpAudio.pause();
-      timerSpeedUpAudio.currentTime = 0;
+    if (currentAudioTrack !== 'start') {
+      if (!timerSpeedUpAudio.paused) {
+        timerSpeedUpAudio.pause();
+        timerSpeedUpAudio.currentTime = 0;
+      }
+      currentAudioTrack = 'start';
       timerStartAudio.currentTime = 0;
-      currentAudioState = 'start';
     }
     if (timerStartAudio.paused) {
-      timerStartAudio.play().catch((e) => console.warn('Audio play prevented:', e));
+      const p = timerStartAudio.play();
+      if (p !== undefined) {
+        p.catch((err) => {
+          console.warn('[Display Audio] Timer_start.mp3 play blocked:', err);
+        });
+      }
     }
   } else {
-    // Sped-up countdown audio (<= 20s)
-    if (currentAudioState !== 'speedUp') {
-      timerStartAudio.pause();
-      timerStartAudio.currentTime = 0;
+    // 0 < currentSecs <= 20
+    if (currentAudioTrack !== 'speedUp') {
+      if (!timerStartAudio.paused) {
+        timerStartAudio.pause();
+        timerStartAudio.currentTime = 0;
+      }
+      currentAudioTrack = 'speedUp';
       timerSpeedUpAudio.currentTime = 0;
-      currentAudioState = 'speedUp';
     }
     if (timerSpeedUpAudio.paused) {
-      timerSpeedUpAudio.play().catch((e) => console.warn('Audio play prevented:', e));
+      const p = timerSpeedUpAudio.play();
+      if (p !== undefined) {
+        p.catch((err) => {
+          console.warn('[Display Audio] Timer_speedUp.mp3 play blocked:', err);
+        });
+      }
     }
   }
 }
@@ -124,8 +114,19 @@ function stopAllAudio() {
       audio.currentTime = 0;
     } catch (e) {}
   });
-  currentAudioState = 'idle';
+  currentAudioTrack = null;
 }
+
+function onDisplayUserGesture() {
+  const state = gameStateStore.getState();
+  if (state && state.timer && state.timer.isRunning && state.timer.seconds > 0) {
+    syncTimerAudio(state.timer);
+  }
+}
+
+['click', 'touchstart', 'mousedown', 'keydown', 'wheel', 'scroll'].forEach((evt) => {
+  window.addEventListener(evt, onDisplayUserGesture, { passive: true });
+});
 
 if (!window.shaderMounts) window.shaderMounts = new Map();
 
@@ -774,11 +775,15 @@ function triggerTimesUpSequence() {
   timesUpTriggerCount++;
 
   // Stop countdown audio before Time's Up sound plays
-  timerStartAudio.pause();
-  timerStartAudio.currentTime = 0;
-  timerSpeedUpAudio.pause();
-  timerSpeedUpAudio.currentTime = 0;
-  currentAudioState = 'idle';
+  if (!timerStartAudio.paused) {
+    timerStartAudio.pause();
+    timerStartAudio.currentTime = 0;
+  }
+  if (!timerSpeedUpAudio.paused) {
+    timerSpeedUpAudio.pause();
+    timerSpeedUpAudio.currentTime = 0;
+  }
+  currentAudioTrack = null;
 
   // Play uploaded Time's Up sound effect synchronized with entrance
   try {

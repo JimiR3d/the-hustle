@@ -4,93 +4,76 @@ let pendingDisqualifyId = null;
 
 // Persistent Countdown & Time's Up audio elements on Admin Panel
 const timerStartAudio = new Audio('/assets/Timer_start.mp3');
-timerStartAudio.preload = 'auto';
 timerStartAudio.loop = true;
+timerStartAudio.volume = 1.0;
 
 const timerSpeedUpAudio = new Audio('/assets/Timer_speedUp.mp3');
-timerSpeedUpAudio.preload = 'auto';
 timerSpeedUpAudio.loop = true;
+timerSpeedUpAudio.volume = 1.0;
 
 const timesUpAudio = new Audio('/assets/Time_up.mp3');
-timesUpAudio.preload = 'auto';
+timesUpAudio.loop = false;
+timesUpAudio.volume = 1.0;
 
-let currentAudioState = 'idle'; // 'idle' | 'start' | 'speedUp'
-let isAudioEngineUnlocked = false;
-
-function primeAudioPlayback() {
-  if (isAudioEngineUnlocked) return;
-  isAudioEngineUnlocked = true;
-
-  [timerStartAudio, timerSpeedUpAudio, timesUpAudio].forEach((audio) => {
-    try {
-      audio.load();
-      const p = audio.play();
-      if (p !== undefined) {
-        p.then(() => {
-          audio.pause();
-          audio.currentTime = 0;
-        }).catch((err) => {
-          console.warn('[Admin Audio] Priming deferred to user interaction:', err);
-          isAudioEngineUnlocked = false;
-        });
-      }
-    } catch (e) {
-      isAudioEngineUnlocked = false;
-    }
-  });
-}
-
-['click', 'touchstart', 'mousedown', 'keydown'].forEach((evt) => {
-  window.addEventListener(evt, primeAudioPlayback, { passive: true });
-});
+let currentAudioTrack = null; // null | 'start' | 'speedUp'
 
 function syncTimerAudio(timerState) {
-  const currentSecs = timerState ? timerState.seconds : 0;
-  const isRunning = Boolean(timerState && timerState.isRunning && currentSecs > 0);
+  if (!timerState) return;
+  const currentSecs = timerState.seconds;
+  const isRunning = Boolean(timerState.isRunning && currentSecs > 0);
 
   if (!isRunning) {
     if (currentSecs === 0) {
-      timerStartAudio.pause();
-      timerStartAudio.currentTime = 0;
-      timerSpeedUpAudio.pause();
-      timerSpeedUpAudio.currentTime = 0;
-      currentAudioState = 'idle';
+      if (!timerStartAudio.paused) {
+        timerStartAudio.pause();
+        timerStartAudio.currentTime = 0;
+      }
+      if (!timerSpeedUpAudio.paused) {
+        timerSpeedUpAudio.pause();
+        timerSpeedUpAudio.currentTime = 0;
+      }
+      currentAudioTrack = null;
     } else {
-      timerStartAudio.pause();
-      timerSpeedUpAudio.pause();
+      // Paused: pause without resetting position
+      if (!timerStartAudio.paused) timerStartAudio.pause();
+      if (!timerSpeedUpAudio.paused) timerSpeedUpAudio.pause();
     }
     return;
   }
 
-  // Running countdown
+  // Active countdown
   if (currentSecs > 20) {
-    if (currentAudioState !== 'start') {
-      timerSpeedUpAudio.pause();
-      timerSpeedUpAudio.currentTime = 0;
+    if (currentAudioTrack !== 'start') {
+      if (!timerSpeedUpAudio.paused) {
+        timerSpeedUpAudio.pause();
+        timerSpeedUpAudio.currentTime = 0;
+      }
+      currentAudioTrack = 'start';
       timerStartAudio.currentTime = 0;
-      currentAudioState = 'start';
     }
     if (timerStartAudio.paused) {
       const p = timerStartAudio.play();
       if (p !== undefined) {
         p.catch((err) => {
-          console.error('[Admin Audio] Timer_start.mp3 play blocked or failed:', err);
+          console.warn('[Admin Audio] Timer_start.mp3 play blocked:', err);
         });
       }
     }
   } else {
     // 0 < currentSecs <= 20
-    if (currentAudioState !== 'speedUp') {
-      timerStartAudio.pause();
-      timerStartAudio.currentTime = 0;
+    if (currentAudioTrack !== 'speedUp') {
+      if (!timerStartAudio.paused) {
+        timerStartAudio.pause();
+        timerStartAudio.currentTime = 0;
+      }
+      currentAudioTrack = 'speedUp';
       timerSpeedUpAudio.currentTime = 0;
-      currentAudioState = 'speedUp';
     }
     if (timerSpeedUpAudio.paused) {
       const p = timerSpeedUpAudio.play();
       if (p !== undefined) {
         p.catch((err) => {
-          console.error('[Admin Audio] Timer_speedUp.mp3 play blocked or failed:', err);
+          console.warn('[Admin Audio] Timer_speedUp.mp3 play blocked:', err);
         });
       }
     }
@@ -104,8 +87,19 @@ function stopAllAudio() {
       audio.currentTime = 0;
     } catch (e) {}
   });
-  currentAudioState = 'idle';
+  currentAudioTrack = null;
 }
+
+function onAdminUserGesture() {
+  const state = gameStateStore.getState();
+  if (state && state.timer && state.timer.isRunning && state.timer.seconds > 0) {
+    syncTimerAudio(state.timer);
+  }
+}
+
+['click', 'touchstart', 'mousedown', 'keydown'].forEach((evt) => {
+  window.addEventListener(evt, onAdminUserGesture, { passive: true });
+});
 
 function renderAdminPanel(state) {
   const container = document.getElementById('competitors-list');
@@ -237,7 +231,6 @@ function bindAdminEvents() {
 
   if (btnTimerStart) {
     btnTimerStart.addEventListener('click', () => {
-      primeAudioPlayback();
       const state = gameStateStore.getState();
       gameStateStore.updateTimer(state.timer.seconds, true);
       syncTimerAudio(gameStateStore.getState().timer);
