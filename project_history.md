@@ -59,5 +59,6 @@
 - Mounted the animated overlay layer inside the Game Section (`#main-arena-section`) at `z-index: 9999` with zero layout impact.
 - Built multi-phase GSAP fly-through animation: Fast entrance (small to large + blur fading) &rarr; Dramatic slow-motion center moment (100% sharp blur 0px) &rarr; Fast exit acceleration (large to small + blur returning).
 - Implemented alternating direction engine (Left &rarr; Center &rarr; Right on 1st run, Right &rarr; Center &rarr; Left on 2nd run, etc.).
+- Fixed admin control sync by removing undeclared variable reference and upgrading timer to wall-clock `targetEndTime` synchronization.
 - Modernized typography with Inter Bold (700), Bitcount Single, and Geist Pixel.
 - Pushed updates to GitHub `v2-redesign`.
