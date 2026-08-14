@@ -51,13 +51,11 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-14 — Taller Ground Asset Integration & Top Horizon Anchoring
+### Session 2026-08-14 — Buildings Parallax & Enter Arena Button Redesign
 **Tasks completed:**
-- Synchronized new taller `Ground.png` asset to `public/assets/parallax/Ground.png`.
-- Anchored `.layer-ground` from its top horizon position (`top: 67vh;`) instead of bottom, preserving the exact visible horizon while allowing all extra image height to extend downward as overscan.
-- Maintained GSAP upward ground parallax scrub (`yPercent: -38`), eliminating empty space or gaps underneath when the ground moves upward.
-- Adjusted `.transition-buffer-section` height to `42vh` (min-height `340px`) for balanced transition timing between sections.
-- Positioned billboard/sign (`.layer-sign` at `z-index: 4;`) behind `.main-menu__bottom-fade` (`z-index: 5;`) so it smoothly darkens into black along with the background environment without any parallax displacement.
-- Kept Hosts (`z-index: 12`) and Sponsor Logos (`z-index: 12`) clearly above the bottom gradient.
-- Slowed down "ENTER GAME SHOW ARENA" button auto-scroll to 3.0s with smooth `easeInOutCubic` Lenis easing.
+- Restored medium-speed upward parallax to the buildings layer (`yPercent: -18` in `src/js/parallax.js`).
+- Centered `.layer-buildings` with `left: 0; right: 0; margin: 0 auto;`, guaranteeing zero inline transform conflicts during GSAP scrubbing.
+- Redesigned "ENTER GAME SHOW ARENA" button to be gold/yellow by default with black text and ambient glow, transitioning smoothly to translucent dark casino style with gold text on hover.
+- Positioned the button to `bottom: 13.5vh;`, perfectly centering it in the vertical space between the main logo and the sponsor logos.
+- Left the ground layer completely untouched.
 - Pushed updates to GitHub `v2-redesign`.
