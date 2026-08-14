@@ -23,6 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 let previousScores = {};
 let activeAnimationIds = new Set();
+let animatingSpotlightIds = new Set();
 let completedDisqualifiedIds = new Set();
 let timesUpTriggerCount = 0;
 let timesUpTriggeredForCurrentRun = false;
@@ -99,14 +100,17 @@ function playZeroBuzzerSound() {
 }
 
 function animateLayoutFlip(updateDomCallback) {
-  const activeEls = Array.from(document.querySelectorAll('.group-panel-wrapper:not(.phase3-flight)'));
+  // Only measure and animate non-spotlighted active groups to avoid fighting with Spotlight mode
+  const activeEls = Array.from(document.querySelectorAll('.group-panel-wrapper:not(.phase3-flight):not(.is-popup):not(.is-winner-group)'));
   const firstPositions = new Map();
 
   activeEls.forEach((el) => {
     firstPositions.set(el.id, el.getBoundingClientRect());
   });
 
-  updateDomCallback();
+  if (typeof updateDomCallback === 'function') {
+    updateDomCallback();
+  }
 
   requestAnimationFrame(() => {
     activeEls.forEach((el) => {
@@ -140,6 +144,35 @@ const HOME_COORDINATES = {
   'group-4': { x: 712.5, y: 710 },
   'group-5': { x: 1207.5, y: 710 }
 };
+
+function getGroupHomeCoordinates(groupId, state) {
+  if (!state || !state.groups) {
+    return HOME_COORDINATES[groupId] || { x: 960, y: 330 };
+  }
+
+  const active = state.groups.filter(g => !completedDisqualifiedIds.has(g.id));
+  const isTopRow = groupId === 'group-1' || groupId === 'group-2' || groupId === 'group-3';
+  const rowGroups = active.filter(g => {
+    const top = g.id === 'group-1' || g.id === 'group-2' || g.id === 'group-3';
+    return isTopRow ? top : !top;
+  });
+
+  const count = rowGroups.length;
+  const index = rowGroups.findIndex(g => g.id === groupId);
+  const y = isTopRow ? 330 : 710;
+
+  if (index === -1 || count === 0) {
+    return HOME_COORDINATES[groupId] || { x: 960, y };
+  }
+
+  const cardW = 430;
+  const gap = 65;
+  const totalWidth = count * cardW + (count - 1) * gap;
+  const startX = (1920 - totalWidth) / 2;
+  const x = startX + index * (cardW + gap) + cardW / 2;
+
+  return { x, y };
+}
 
 // Continuous Coin Rain Celebration Engine
 let coinRainInterval = null;
@@ -235,8 +268,8 @@ function stopCoinRain() {
   }
 }
 
-function getSpotlightTransform(groupId, spotlightedGroups, winnerGroupId) {
-  const home = HOME_COORDINATES[groupId] || { x: 960, y: 330 };
+function getSpotlightTransform(groupId, spotlightedGroups, winnerGroupId, state) {
+  const home = getGroupHomeCoordinates(groupId, state);
 
   // Winner Priority Transform (Centering winning player cards at scale 1.50)
   if (winnerGroupId) {
@@ -314,19 +347,23 @@ function renderDisplay(state, meta = {}) {
     if (!g.isDisqualified) {
       completedDisqualifiedIds.delete(g.id);
       activeAnimationIds.delete(g.id);
+      animatingSpotlightIds.delete(g.id);
     }
   });
 
-  // 2. Active groups exclude completed disqualified teams AND in-flight animation teams
-  const activeGroups = state.groups.filter(g => !g.isDisqualified && !completedDisqualifiedIds.has(g.id));
+  // 2. Active groups include groups currently in DQ flight, but exclude completed DQ groups
+  const activeGroups = state.groups.filter(g => !completedDisqualifiedIds.has(g.id));
   const disqualifiedGroups = state.groups.filter(g => g.isDisqualified || completedDisqualifiedIds.has(g.id));
 
   // Render bottom-right mini-slots with completed disqualified teams
   renderDisqualifiedStack(disqualifiedGroups.filter(g => completedDisqualifiedIds.has(g.id)));
 
+  // Spotlighted groups: include groups currently in DQ flight so remaining spotlighted groups do NOT jump or fight animations
+  const spotlightedGroups = state.groups.filter(g => (g.isPopUp || animatingSpotlightIds.has(g.id)) && !completedDisqualifiedIds.has(g.id));
+
   // Toggle theatrical spotlight backdrop dimmer (strictly based on spotlighted groups, independent of timer)
   const spotlightBackdrop = document.getElementById('spotlight-backdrop');
-  const hasSpotlight = state.groups.some(g => g.isPopUp && !g.isDisqualified) && !state.winnerGroupId;
+  const hasSpotlight = spotlightedGroups.length > 0 && !state.winnerGroupId;
   if (spotlightBackdrop) {
     spotlightBackdrop.classList.toggle('active', hasSpotlight);
   }
@@ -346,8 +383,6 @@ function renderDisplay(state, meta = {}) {
       }
     });
   });
-
-  const spotlightedGroups = activeGroups.filter(g => g.isPopUp);
 
   // Fixed designated row mapping & slot ordering: Teams 1, 2, 3 in Top Row; Teams 4, 5 in Bottom Row
   activeGroups.forEach((group) => {
@@ -387,11 +422,13 @@ function renderDisplay(state, meta = {}) {
     }
 
     // Dynamic smooth 3D spotlight or winner positioning
-    const isSpotlighted = Boolean(group.isPopUp);
+    const isSpotlighted = Boolean(group.isPopUp && !completedDisqualifiedIds.has(group.id));
     const isWinner = state.winnerGroupId === group.id;
-    const transform = getSpotlightTransform(group.id, spotlightedGroups, state.winnerGroupId);
+    const transform = getSpotlightTransform(group.id, spotlightedGroups, state.winnerGroupId, state);
 
-    groupWrapper.style.transform = `translate3d(${Math.round(transform.tx)}px, ${Math.round(transform.ty)}px, 0px) scale(${transform.scale})`;
+    if (!activeAnimationIds.has(group.id)) {
+      groupWrapper.style.transform = `translate3d(${Math.round(transform.tx)}px, ${Math.round(transform.ty)}px, 0px) scale(${transform.scale})`;
+    }
 
     groupWrapper.classList.add(`team-${teamNum}`);
     groupWrapper.classList.toggle('is-popup', isSpotlighted);
@@ -509,6 +546,11 @@ function renderDisplay(state, meta = {}) {
     let groupWrapper = document.getElementById(`group-wrap-${group.id}`);
     if (!groupWrapper) return;
 
+    // Track if this group was spotlighted so the remaining spotlighted groups do NOT move until DQ animation finishes
+    const wasSpotlighted = groupWrapper.classList.contains('is-popup') || group.isPopUp || animatingSpotlightIds.has(group.id);
+    if (wasSpotlighted) {
+      animatingSpotlightIds.add(group.id);
+    }
     activeAnimationIds.add(group.id);
 
     // Calculate dynamic flight vector (--target-x, --target-y)
@@ -544,15 +586,23 @@ function renderDisplay(state, meta = {}) {
         }
 
         setTimeout(() => {
-          // Sequence complete: Move into completed stack with smooth FLIP re-centering of remaining teams
-          animateLayoutFlip(() => {
-            if (groupWrapper && groupWrapper.parentElement) {
-              groupWrapper.remove();
-            }
-            activeAnimationIds.delete(group.id);
-            completedDisqualifiedIds.add(group.id);
+          // Sequence complete: Remove DQ card from DOM, register as completed, and cleanly trigger FLIP & Spotlight recalculation
+          if (groupWrapper && groupWrapper.parentElement) {
+            groupWrapper.remove();
+          }
+          activeAnimationIds.delete(group.id);
+          animatingSpotlightIds.delete(group.id);
+          completedDisqualifiedIds.add(group.id);
 
-            renderDisplay(gameStateStore.getState());
+          // Update local state to ensure disqualified team is un-spotlighted
+          const currentState = gameStateStore.getState();
+          const targetG = currentState.groups.find(g => g.id === group.id);
+          if (targetG && targetG.isPopUp) {
+            targetG.isPopUp = false;
+          }
+
+          animateLayoutFlip(() => {
+            renderDisplay(currentState);
           });
         }, 1200);
 
