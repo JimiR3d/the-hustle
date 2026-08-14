@@ -244,7 +244,7 @@ function getSpotlightTransform(groupId, spotlightedGroups, winnerGroupId) {
     if (winnerGroupId === groupId) {
       return {
         tx: 960 - home.x,
-        ty: 475 - home.y,
+        ty: 450 - home.y,
         scale: 1.50
       };
     }
