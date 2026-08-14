@@ -54,12 +54,12 @@ git checkout v2-redesign      # Switch back to v2 redesign development
   - Clicking WINNER opens **SELECT YOUR WINNER** modal listing all available groups with live state binding.
   - Selecting a group and clicking **CONFIRM WINNER** displays a safety confirmation modal (*"Are you sure you want to declare [Selected Team] as the winner?"*) with CANCEL and CONFIRM options.
   - Confirming broadcasts `state.winnerGroupId` and triggers the Winner Celebration on the Game section:
-    - **Full-Screen 65% Dark Backdrop (`rgba(0, 0, 0, 0.65)`):** Covers the entire viewport edge-to-edge at `z-index: 50`.
-    - **Main "The Hustle" Logo Elevation:** Sits at `z-index: 70` above the dark overlay in its normal header position, remaining 100% bright and clearly visible.
-    - **Winning Group Centering & Scaling:** Hardware-accelerated 0.85s eased transform glides the winning team to exact center stage (`scale: 1.50`, centered at `960px, 450px`, `z-index: 100`).
+    - **True Full-Viewport 65% Dark Backdrop (`rgba(0, 0, 0, 0.65)`):** Mounted directly to `document.body` at `z-index: 9000;`, covering the entire viewport edge-to-edge with zero transform containment traps.
+    - **Main "The Hustle" Logo Elevation:** Sits at `z-index: 9200;` above the dark overlay in its normal header position, remaining 100% bright and clearly visible.
+    - **Winning Group Centering & Scaling:** Hardware-accelerated 0.85s eased transform glides the winning team to exact center stage (`scale: 1.50`, centered at `960px, 460px`, `z-index: 9500;`).
     - **Hidden Scoreboard & Group Border:** The outer team border and scoreboard capsule are temporarily hidden during Winner mode (`opacity: 0 !important;`) without modifying underlying state.
-    - **Winner Crown Logo (`WinnerIcon.png`):** Layered at `bottom: -78px;` (`width: 340px`, `z-index: 150`) across the lower portion of the cards, acting as a banner underneath without obscuring player faces or artwork.
-    - **Continuous Coin Rain Engine:** Spawns `Coin3.png` as dominant coin (100% prominence) and `Coin1.png`/`Coin2.png` as variation (40% prominence) with randomized 3D tumbling, rotation, speed, and horizontal drift, cleaning up DOM elements on exit.
+    - **Compact Winner Crown Logo (`WinnerIcon.png`):** Scaled 45% smaller (`width: 188px;`, ~55% of previous size) and layered at `bottom: -44px;` (`z-index: 9600;`) across the lower portion of the cards, acting as a clean banner underneath without obscuring player faces or card artwork.
+    - **Continuous Coin Rain Engine:** Mounted to `document.body` at `z-index: 9900;`, spawning `Coin3.png` as dominant coin (100% prominence) and `Coin1.png`/`Coin2.png` as variation (40% prominence) with randomized 3D tumbling, rotation, speed, and horizontal drift across the full screen.
     - **Dedicated Red ✕ Exit Button:** Displayed in the winner control section on the Admin panel to cleanly exit Winner mode and smoothly restore the stage.
 - **Time's Up Sequence & 70% Dark Backdrop:**
   - When timer reaches `00:00`, fires once per completion.

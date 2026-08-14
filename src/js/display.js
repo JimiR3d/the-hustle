@@ -196,13 +196,12 @@ function spawnSingleCelebrationCoin(container) {
 
 function startCoinRain() {
   if (coinRainInterval) return;
-  const arena = document.getElementById('main-arena-section') || document.body;
   let container = document.getElementById('winner-coin-rain');
   if (!container) {
     container = document.createElement('div');
     container.className = 'winner-coin-rain-container';
     container.id = 'winner-coin-rain';
-    arena.appendChild(container);
+    document.body.appendChild(container);
   }
   container.style.opacity = '1';
 
@@ -244,7 +243,7 @@ function getSpotlightTransform(groupId, spotlightedGroups, winnerGroupId) {
     if (winnerGroupId === groupId) {
       return {
         tx: 960 - home.x,
-        ty: 450 - home.y,
+        ty: 460 - home.y,
         scale: 1.50
       };
     }
@@ -291,13 +290,13 @@ function renderDisplay(state, meta = {}) {
 
   if (!topRow || !bottomRow) return;
 
-  // Handle Winner Celebration Backdrop inside app-stage (Stacking: Game UI -> 65% Backdrop -> Winner Group -> Winner Logo -> Coin Rain)
+  // Handle True Full-Viewport Winner Celebration Backdrop attached directly to document.body
   let winnerBackdrop = document.getElementById('winner-celebration-backdrop');
-  if (!winnerBackdrop && stage) {
+  if (!winnerBackdrop) {
     winnerBackdrop = document.createElement('div');
     winnerBackdrop.className = 'winner-celebration-backdrop';
     winnerBackdrop.id = 'winner-celebration-backdrop';
-    stage.appendChild(winnerBackdrop);
+    document.body.appendChild(winnerBackdrop);
   }
 
   if (state.winnerGroupId) {

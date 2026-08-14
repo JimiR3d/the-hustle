@@ -441,7 +441,7 @@ html, body {
 }
 
 /* ==========================================================================
-   WINNER CELEBRATION (65% Dark Backdrop, Centered Group, Winner Logo & Coin Rain)
+   WINNER CELEBRATION (True Full-Viewport 65% Dark Backdrop, Centered Group, Compact Winner Logo & Coin Rain)
    ========================================================================== */
 .winner-celebration-backdrop {
   position: fixed;
@@ -450,7 +450,7 @@ html, body {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.65);
-  z-index: 50;
+  z-index: 9000;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1);
@@ -461,17 +461,23 @@ html, body {
   opacity: 1;
 }
 
+/* Elevate App Stage Above Body Dark Overlay During Winner Mode */
+#app-stage.has-winner {
+  z-index: 9100;
+}
+
 /* Stacking Order: Keep Main 'The Hustle' Header Logo Above Dark Overlay & Fully Bright */
 #app-stage.has-winner .display-header .logo-img {
   position: relative;
-  z-index: 70;
+  z-index: 9200;
   opacity: 1 !important;
   filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.8)) !important;
 }
 
 /* Dim non-winning stage elements and HUD timer during celebration */
 #app-stage.has-winner .hud-timer-badge,
-#app-stage.has-winner .disqualified-stack-container {
+#app-stage.has-winner .disqualified-stack-container,
+#app-stage.has-winner .display-footer {
   opacity: 0.25;
   filter: brightness(0.35);
   transition: opacity 0.6s ease, filter 0.6s ease;
@@ -485,7 +491,7 @@ html, body {
 
 /* Winning Group Elevation & Centering - ABOVE Dark Overlay */
 .group-panel-wrapper.is-winner-group {
-  z-index: 100 !important;
+  z-index: 9500 !important;
   opacity: 1 !important;
   filter: none !important;
   transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -504,13 +510,13 @@ html, body {
   transition: opacity 0.3s ease !important;
 }
 
-/* Winner Crown & WINNERS Badge Overlay - Positioned Lower Under Cards */
+/* Winner Crown & WINNERS Badge Overlay - 45% Smaller (~55% size) Positioned Lower Under Cards */
 .winner-icon-overlay {
   position: absolute;
-  bottom: -78px;
+  bottom: -44px;
   left: 50%;
   transform: translateX(-50%) scale(1);
-  z-index: 150;
+  z-index: 9600;
   pointer-events: none;
   display: flex;
   justify-content: center;
@@ -519,10 +525,10 @@ html, body {
 }
 
 .winner-icon-img {
-  width: 340px;
+  width: 188px;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 14px 35px rgba(0, 0, 0, 0.95));
+  filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.95));
 }
 
 @keyframes winner-badge-pop {
@@ -531,7 +537,7 @@ html, body {
   100% { transform: translateX(-50%) scale(1); opacity: 1; }
 }
 
-/* Continuous Coin Rain Container - Full Viewport */
+/* Continuous Coin Rain Container - True Full Viewport */
 .winner-coin-rain-container {
   position: fixed;
   top: 0;
@@ -539,7 +545,7 @@ html, body {
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  z-index: 200;
+  z-index: 9900;
   overflow: hidden;
 }
 
