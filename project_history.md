@@ -62,4 +62,17 @@
 - Fixed admin control sync by removing undeclared variable reference and upgrading timer to wall-clock `targetEndTime` synchronization.
 - Removed all blur from `Times_up.png` logo and added temporary 70% dark background overlay during Time's Up sequence.
 - Modernized typography with Inter Bold (700), Bitcount Single, and Geist Pixel.
+
+### Session 2026-08-14 — Winner Selection, Winner Celebration & Coin Rain System
+**Tasks completed:**
+- Integrated `WinnerIcon.png` and coin assets (`Coin1.png`, `Coin2.png`, `Coin3.png`) into `public/assets/`.
+- Reduced `Times_up.png` maximum scale (`max-width: 68vw; max-height: 52vh; width: 780px;`, scale `1.05`/`0.98`) and removed all added drop-shadow/glow filters (`filter: none;`).
+- Added standalone **🏆 WINNER** button at the bottom of the Control Panel.
+- Created **SELECT YOUR WINNER** modal with dynamic group/team selection.
+- Created Safety Confirmation Popup (*"Are you sure you want to declare [Selected Team] as the winner?"*) with Cancel and Confirm buttons.
+- Implemented 65% dark background overlay (`.winner-celebration-backdrop`) over the Game section during Winner Celebration.
+- Centered the winning team on stage with smooth hardware-accelerated eased transform (`scale: 1.35`).
+- Layered uploaded `WinnerIcon.png` prominently over the lower-middle area of the winning group cards matching reference photo.
+- Built continuous Coin Rain celebration with `Coin3.png` as dominant coin (100% prominence, ~60% spawn chance) and `Coin1.png`/`Coin2.png` as variation (40% prominence, ~20% spawn chance each), with randomized 3D tumbling, rotation, speed, drift, and automatic DOM cleanup.
+- Added **🛑 END WINNER DISPLAY** button to smoothly restore stage and glide team back to home slot.
 - Pushed updates to GitHub `v2-redesign`.

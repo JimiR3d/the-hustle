@@ -63,6 +63,16 @@
     <div class="competitors-list" id="competitors-list">
       <!-- Dynamically rendered team rows with player select dropdowns -->
     </div>
+
+    <!-- Standalone Winner Button Section at Bottom of Control Panel -->
+    <div class="winner-control-section" id="winner-control-section">
+      <button class="btn btn-winner-main" id="btn-open-winner-modal">
+        🏆 WINNER
+      </button>
+      <button class="btn btn-winner-end" id="btn-end-winner" style="display: none;">
+        🛑 END WINNER DISPLAY
+      </button>
+    </div>
   </main>
 
   <!-- Disqualification Safety Confirmation Modal -->
@@ -73,6 +83,33 @@
       <div class="modal-actions">
         <button class="btn btn-outline" id="btn-cancel-disqualify">Cancel</button>
         <button class="btn btn-red" id="btn-confirm-disqualify">Yes, Disqualify Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Select Your Winner Modal -->
+  <div class="modal-backdrop" id="winner-select-modal">
+    <div class="modal-card modal-winner-card">
+      <h3 style="color: #ffd700;">🏆 SELECT YOUR WINNER</h3>
+      <p>Choose the winning team to celebrate on the Game Arena Display:</p>
+      <div class="winner-options-list" id="winner-options-list">
+        <!-- Dynamically rendered team choices -->
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="btn-cancel-winner-select">CANCEL</button>
+        <button class="btn btn-gold" id="btn-proceed-winner-confirm" disabled>CONFIRM WINNER</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Winner Safety Confirmation Popup -->
+  <div class="modal-backdrop" id="winner-confirm-modal">
+    <div class="modal-card modal-winner-card">
+      <h3 style="color: #ffaa00;">⚠️ Confirm Winner Announcement</h3>
+      <p>Are you sure you want to declare <strong id="confirm-winner-team-name" style="color: #ffd700; font-size: 16px;">TEAM</strong> as the winner?</p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="btn-cancel-winner-final">CANCEL</button>
+        <button class="btn btn-gold-solid" id="btn-confirm-winner-final">CONFIRM WINNER</button>
       </div>
     </div>
   </div>

@@ -72,6 +72,7 @@ const DEFAULT_STATE = {
     isRunning: false,
     isExpanded: false,
   },
+  winnerGroupId: null,
   lastUpdated: Date.now(),
   lastTxId: null,
   lastScoreEvent: null,
@@ -337,6 +338,16 @@ class GameStateStore {
   toggleTimerExpansion(forceState) {
     this.state.timer.isExpanded = typeof forceState === 'boolean' ? forceState : !this.state.timer.isExpanded;
     this.saveAndBroadcast('timer_expand');
+  }
+
+  declareWinner(groupId) {
+    this.state.winnerGroupId = groupId;
+    this.saveAndBroadcast('winner_declared');
+  }
+
+  clearWinner() {
+    this.state.winnerGroupId = null;
+    this.saveAndBroadcast('winner_cleared');
   }
 
   resetAll() {

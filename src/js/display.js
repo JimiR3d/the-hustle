@@ -141,14 +141,122 @@ const HOME_COORDINATES = {
   'group-5': { x: 1207.5, y: 710 }
 };
 
-function getSpotlightTransform(groupId, spotlightedGroups) {
+// Continuous Coin Rain Celebration Engine
+let coinRainInterval = null;
+const COIN_TYPES = [
+  { src: '/assets/coins/Coin3.png', minSize: 52, maxSize: 84 }, // 60% probability (Dominant 100% prominence)
+  { src: '/assets/coins/Coin1.png', minSize: 36, maxSize: 60 }, // 20% probability (40% prominence)
+  { src: '/assets/coins/Coin2.png', minSize: 36, maxSize: 60 }, // 20% probability (40% prominence)
+];
+
+function spawnSingleCelebrationCoin(container) {
+  if (!container) return;
+  const rand = Math.random();
+  const coinData = rand < 0.60 ? COIN_TYPES[0] : rand < 0.80 ? COIN_TYPES[1] : COIN_TYPES[2];
+
+  const coin = document.createElement('img');
+  coin.src = coinData.src;
+  coin.className = 'celebration-coin';
+
+  const size = coinData.minSize + Math.random() * (coinData.maxSize - coinData.minSize);
+  coin.style.width = `${Math.round(size)}px`;
+  coin.style.height = 'auto';
+
+  // Layer depth: 55% in front of cards (z-index 80), 25% in front of logo (z-index 85), 20% behind cards (z-index 55)
+  const zRand = Math.random();
+  coin.style.zIndex = zRand < 0.55 ? 80 : zRand < 0.80 ? 85 : 55;
+
+  const startX = Math.random() * window.innerWidth;
+  const startRotation = Math.random() * 360;
+  const fallDuration = 2.2 + Math.random() * 2.2;
+  const driftX = (Math.random() - 0.5) * 140;
+  const spinZ = (Math.random() - 0.5) * 720;
+  const spinY = (Math.random() - 0.5) * 720;
+
+  container.appendChild(coin);
+
+  gsap.fromTo(coin, {
+    x: startX,
+    y: -size - 20,
+    rotation: startRotation,
+    rotationY: 0,
+    opacity: 0.9 + Math.random() * 0.1,
+  }, {
+    y: window.innerHeight + size + 50,
+    x: startX + driftX,
+    rotation: startRotation + spinZ,
+    rotationY: spinY,
+    duration: fallDuration,
+    ease: 'none',
+    onComplete: () => {
+      coin.remove();
+    }
+  });
+}
+
+function startCoinRain() {
+  if (coinRainInterval) return;
+  const arena = document.getElementById('main-arena-section') || document.body;
+  let container = document.getElementById('winner-coin-rain');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'winner-coin-rain-container';
+    container.id = 'winner-coin-rain';
+    arena.appendChild(container);
+  }
+  container.style.opacity = '1';
+
+  // Initial burst
+  for (let i = 0; i < 14; i++) {
+    setTimeout(() => spawnSingleCelebrationCoin(container), i * 50);
+  }
+
+  coinRainInterval = setInterval(() => {
+    const count = 1 + Math.floor(Math.random() * 3);
+    for (let c = 0; c < count; c++) {
+      spawnSingleCelebrationCoin(container);
+    }
+  }, 150);
+}
+
+function stopCoinRain() {
+  if (coinRainInterval) {
+    clearInterval(coinRainInterval);
+    coinRainInterval = null;
+  }
+  const container = document.getElementById('winner-coin-rain');
+  if (container) {
+    gsap.to(container, {
+      opacity: 0,
+      duration: 0.5,
+      onComplete: () => {
+        container.remove();
+      }
+    });
+  }
+}
+
+function getSpotlightTransform(groupId, spotlightedGroups, winnerGroupId) {
+  const home = HOME_COORDINATES[groupId] || { x: 960, y: 330 };
+
+  // Winner Priority Transform
+  if (winnerGroupId) {
+    if (winnerGroupId === groupId) {
+      return {
+        tx: 960 - home.x,
+        ty: 470 - home.y,
+        scale: 1.35
+      };
+    }
+    return { tx: 0, ty: 0, scale: 1 };
+  }
+
   const count = Math.min(spotlightedGroups.length, 3);
   const index = spotlightedGroups.findIndex(g => g.id === groupId);
   if (index === -1) {
     return { tx: 0, ty: 0, scale: 1 };
   }
 
-  const home = HOME_COORDINATES[groupId] || { x: 960, y: 330 };
   let targetX = 960;
   let targetY = 345;
   let scale = 1.20;
@@ -183,6 +291,24 @@ function renderDisplay(state, meta = {}) {
 
   if (!topRow || !bottomRow) return;
 
+  // Handle Winner Celebration Backdrop
+  let winnerBackdrop = document.getElementById('winner-celebration-backdrop');
+  if (!winnerBackdrop) {
+    winnerBackdrop = document.createElement('div');
+    winnerBackdrop.className = 'winner-celebration-backdrop';
+    winnerBackdrop.id = 'winner-celebration-backdrop';
+    const arena = document.getElementById('main-arena-section') || document.body;
+    arena.appendChild(winnerBackdrop);
+  }
+
+  if (state.winnerGroupId) {
+    winnerBackdrop.classList.add('active');
+    startCoinRain();
+  } else {
+    winnerBackdrop.classList.remove('active');
+    stopCoinRain();
+  }
+
   // 1. Sync completed disqualified set with state FIRST (handles reset/restore)
   state.groups.forEach(g => {
     if (!g.isDisqualified) {
@@ -200,7 +326,7 @@ function renderDisplay(state, meta = {}) {
 
   // Toggle theatrical spotlight backdrop dimmer (strictly based on spotlighted groups, independent of timer)
   const spotlightBackdrop = document.getElementById('spotlight-backdrop');
-  const hasSpotlight = state.groups.some(g => g.isPopUp && !g.isDisqualified);
+  const hasSpotlight = state.groups.some(g => g.isPopUp && !g.isDisqualified) && !state.winnerGroupId;
   if (spotlightBackdrop) {
     spotlightBackdrop.classList.toggle('active', hasSpotlight);
   }
@@ -260,14 +386,16 @@ function renderDisplay(state, meta = {}) {
       }
     }
 
-    // Dynamic smooth 3D spotlight positioning (centered under timer with smooth eased transforms)
+    // Dynamic smooth 3D spotlight or winner positioning
     const isSpotlighted = Boolean(group.isPopUp);
-    const transform = getSpotlightTransform(group.id, spotlightedGroups);
+    const isWinner = state.winnerGroupId === group.id;
+    const transform = getSpotlightTransform(group.id, spotlightedGroups, state.winnerGroupId);
 
     groupWrapper.style.transform = `translate3d(${Math.round(transform.tx)}px, ${Math.round(transform.ty)}px, 0px) scale(${transform.scale})`;
 
     groupWrapper.classList.add(`team-${teamNum}`);
     groupWrapper.classList.toggle('is-popup', isSpotlighted);
+    groupWrapper.classList.toggle('is-winner-group', isWinner);
     groupWrapper.classList.toggle('active-group', true);
     groupWrapper.classList.remove('phase1-breaking', 'phase2-tearing', 'phase3-flight');
 
@@ -351,6 +479,21 @@ function renderDisplay(state, meta = {}) {
 
     if (isScoreChanged) {
       triggerPointAnimation(group.id, scoreDelta);
+    }
+
+    // Winner Icon Badge Overlay
+    let winnerIcon = groupWrapper.querySelector('.winner-icon-overlay');
+    if (isWinner) {
+      if (!winnerIcon) {
+        winnerIcon = document.createElement('div');
+        winnerIcon.className = 'winner-icon-overlay';
+        winnerIcon.innerHTML = `<img src="/assets/WinnerIcon.png" alt="WINNERS" class="winner-icon-img" />`;
+        groupWrapper.appendChild(winnerIcon);
+      }
+    } else {
+      if (winnerIcon) {
+        winnerIcon.remove();
+      }
     }
   });
 
@@ -540,7 +683,7 @@ function triggerTimesUpSequence() {
   gsap.set(backdrop, { opacity: 0 });
   gsap.set(img, {
     x: startX,
-    scale: 0.16,
+    scale: 0.12,
     opacity: 0,
   });
 
@@ -557,25 +700,25 @@ function triggerTimesUpSequence() {
     ease: 'power2.out',
   }, 0);
 
-  // Phase 1: FAST entrance moving toward center, rapidly scaling small -> large (100% sharp)
+  // Phase 1: FAST entrance moving toward center, rapidly scaling small -> moderate (100% sharp)
   tl.to(img, {
     x: isLeftToRight ? -window.innerWidth * 0.08 : window.innerWidth * 0.08,
-    scale: 1.32,
+    scale: 1.05,
     opacity: 1,
     duration: 0.45,
     ease: 'power3.out',
   }, 0)
-  // Phase 2: DRAMATIC SLOW-DOWN near center (emphasis moment: large, crisp, sharp crystal-clear reading)
+  // Phase 2: DRAMATIC SLOW-DOWN near center (emphasis moment: crisp, sharp crystal-clear reading)
   .to(img, {
     x: isLeftToRight ? window.innerWidth * 0.06 : -window.innerWidth * 0.06,
-    scale: 1.15,
+    scale: 0.98,
     duration: 1.45,
     ease: 'power1.inOut',
   })
-  // Phase 3: FAST EXIT acceleration toward opposite side, scaling large -> small (100% sharp)
+  // Phase 3: FAST EXIT acceleration toward opposite side, scaling moderate -> small (100% sharp)
   .to(img, {
     x: exitX,
-    scale: 0.20,
+    scale: 0.15,
     opacity: 0,
     duration: 0.55,
     ease: 'power3.in',

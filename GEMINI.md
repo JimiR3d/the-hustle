@@ -32,29 +32,40 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 ## Project Structure
 ```
 ├── index.html           # Main Display Screen (Intro Parallax Screen + Buffer Section + 1920x1080 Arena view)
-├── admin.html           # Admin Control Screen (Host controller)
-├── public/assets/       # Static assets (logo.png, background_v2.png, team_container_t1..t5.png, score_board.png, Time_up.mp3, Times_up.png, *.png)
+├── admin.html           # Admin Control Screen (Host controller with Winner selection & safety confirmation modals)
+├── public/assets/       # Static assets (logo.png, background_v2.png, team_container_t1..t5.png, score_board.png, Time_up.mp3, Times_up.png, WinnerIcon.png, coins/*.png)
 │   ├── fonts/           # Self-hosted webfonts (bitcount-single/*.woff2, geist-pixel/*.woff2)
+│   ├── coins/           # Coin assets (Coin1.png, Coin2.png, Coin3.png)
 │   └── parallax/        # Parallax assets (sky.png, Buildings.png, Ground.png, PiggyBank.png, homeLogo.png, Hosts.png, signHustle.png, sponsoreLogoss.png)
 ├── src/
 │   ├── css/
-│   │   ├── main.css     # Design tokens, custom pink scrollbar, card shimmer mask, piggy pendulum swing, 3-section transition, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight, Time's Up overlay & 70% backdrop
-│   │   └── admin.css    # Responsive host controller styling with Start/Pause/Stop/Reset timer buttons
+│   │   ├── main.css     # Design tokens, custom pink scrollbar, card shimmer mask, piggy pendulum swing, 3-section transition, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight, Time's Up overlay & 70% backdrop, Winner celebration 65% backdrop & coin rain
+│   │   └── admin.css    # Responsive host controller styling with Start/Pause/Stop/Reset timer buttons, Winner selection and safety confirmation modals
 │   └── js/
 │       ├── parallax.js  # GSAP ScrollTrigger multi-depth scrub timeline & Lenis smooth scrolling controller (3.0s cinematic auto-scroll)
-│       ├── state.js     # 5 Team state, ALL_PLAYERS dictionary, tickTimer, pause/stop/reset, wall-clock targetEndTime & dual-channel sync engine
-│       ├── display.js   # Renderer, FLIP layout animator, WebGL Liquid Metal ShaderMount, Apple Genie DQ flight controller, spotlight manager, Time's Up sequence & audio unlocker
-│       └── admin.js     # Host control panel logic, select dropdowns, quick presets, explicit timer buttons & sync loop
+│       ├── state.js     # 5 Team state, ALL_PLAYERS dictionary, tickTimer, pause/stop/reset, wall-clock targetEndTime, declareWinner, clearWinner & dual-channel sync engine
+│       ├── display.js   # Renderer, FLIP layout animator, WebGL Liquid Metal ShaderMount, Apple Genie DQ flight controller, spotlight manager, Time's Up sequence, Winner celebration centering & coin rain engine
+│       └── admin.js     # Host control panel logic, select dropdowns, quick presets, explicit timer buttons, Winner selection & safety confirmation modals
 ```
 
 ## Conventions
+- **Winner Selection & Winner Celebration System:**
+  - Control Panel features standalone gold **🏆 WINNER** button at the bottom.
+  - Clicking WINNER opens **SELECT YOUR WINNER** modal listing all available groups with live state binding.
+  - Selecting a group and clicking **CONFIRM WINNER** displays a safety confirmation modal (*"Are you sure you want to declare [Selected Team] as the winner?"*) with CANCEL and CONFIRM options.
+  - Confirming broadcasts `state.winnerGroupId` and triggers the Winner Celebration on the Game section:
+    - **65% Dark Backdrop (`rgba(0, 0, 0, 0.65)`):** Darkens background and non-winning elements.
+    - **Winning Group Centering:** Hardware-accelerated 0.85s eased transform glides the winning team to exact center stage (`scale: 1.35`).
+    - **Winner Crown Logo (`WinnerIcon.png`):** Layered prominently over the lower-middle area between player cards matching `photo_2026-08-14_02-04-21.jpg`.
+    - **Continuous Coin Rain Engine:** Spawns `Coin3.png` as dominant coin (100% prominence) and `Coin1.png`/`Coin2.png` as variation (40% prominence) with randomized 3D tumbling, rotation, speed, and horizontal drift, cleaning up DOM elements on exit.
+    - **End Winner Display:** Replaces button on control panel with **🛑 END WINNER DISPLAY**, smoothly restoring stage and gliding team back to home slot.
 - **Time's Up Sequence & 70% Dark Backdrop:**
   - When timer reaches `00:00`, fires once per completion.
   - Plays `Time_up.mp3` in perfect sync with the visual entrance.
   - Fades a 70% dark backdrop (`rgba(0, 0, 0, 0.70)`) across the Game section in `0.25s` to make the logo pop while keeping the game faintly visible.
-  - Logo (`Times_up.png`) sits in front of the backdrop at `z-index: 2` and remains 100% crisp and sharp (zero blur) throughout the entire animation.
+  - Logo (`Times_up.png`) sits in front of the backdrop at `z-index: 2` and remains 100% crisp and sharp (zero blur, zero added glow) throughout the entire animation.
   - Alternates direction each trigger: 1st (Left &rarr; Center &rarr; Right), 2nd (Right &rarr; Center &rarr; Left), 3rd (Left &rarr; Center &rarr; Right), etc.
-  - Dynamic 3-phase sequence: Fast entrance (small &rarr; large) &rarr; dramatic slow-down center moment (sharp crystal-clear reading) &rarr; fast exit acceleration (large &rarr; small).
+  - Dynamic 3-phase sequence: Fast entrance (small &rarr; moderate) &rarr; dramatic slow-down center moment (sharp crystal-clear reading) &rarr; fast exit acceleration (moderate &rarr; small).
   - Dark backdrop smoothly fades out (`0.35s`) as the logo exits, returning the stage to its previous brightness without altering active spotlights or layout.
 - **Typography & Font System:**
   - `Inter Bold` (weight `700`): Primary branding, headings, and Enter Arena button.
@@ -105,14 +116,14 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Cards sit cleanly below the "TEAM N" header pill (`padding-top: 52px`) without any overlap.
 - Organic 3D tilt breathing sway animations (`card-sway-p1` and `card-sway-p2`) applied directly onto player cards (`rotate(-4.5deg)` / `rotate(4.5deg)`).
 - Explicit timer controls (**Start**, **Pause**, **Stop**, **Reset Timer**) on Admin bar; enlarged HUD timer badge with bold 38px clock.
-- Disqualifications trigger a 2.8s 3-phase live motion sequence: Phase 1 (0.6s neon red flash aura) -> Phase 2 (1.0s slow smooth diagonal card tear cut in place on stage) -> Phase 3 (1.2s Apple Genie curved flight trajectory gliding across screen directly to bottom-right slot).
+- Disqualifications trigger a 2.8s 3-phase live motion sequence: Phase 1 (0.6s neon red flash aura) -> Phase 2 (1.0s slow smooth diagonal card tear cut in place on stage) -> Phase 3 (1.2s Apple Genie curved flight trajectory glides across screen directly to bottom-right slot).
 - Bottom-right mini-slots start 100% clean and empty when zero teams are disqualified; render recognizable miniature player card photos (`player1.image` and `player2.image`) with team labels when occupied.
 - Remaining active team panels dynamically re-center themselves on the stage layout.
 - Card light sheen sweeps (`.card-white-light-reflection`) persist smoothly without resetting on point changes.
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring Time's Up synchronized audio, crisp 100% sharp animation (zero blur), temporary 70% dark Game section background overlay, alternating fly-through trajectory, wall-clock timer synchronization, typography modernized to Inter Bold 700, Bitcount Single, and Geist Pixel, exact main logo section horizontal centering locked 1:1 with the swinging hanging piggy bank, restored medium-speed buildings parallax, gold-yellow default Enter Arena button with black hover centered vertically between logo and sponsors, calibrated 42vh black transition buffer section, billboard sign fading behind bottom gradient with natural 1:1 scrolling, slow cinematic 3.0s auto-scroll via Lenis, foreground UI elements layered crisply above transition gradients, environmental-only GSAP parallax scrubbing, strict containment clipping, top/bottom black gradient fades, balanced ground and city skyline elevation, centered hanging piggy bank from top anchor point with continuous pendulum sway, accurate logo sizing without added glow, enlarged piggy bank in front of logo, clean separation between arena button and sponsor logos, dedicated `.card-shimmer-mask` layer clipping shimmer strictly within card boundaries with zero bleed, unclipped `object-fit: contain` player cards, smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
+- **Status:** Winner Selection & Winner Celebration system complete on `v2-redesign` branch, featuring standalone WINNER button on control panel, Select Your Winner modal with live state options, safety confirmation popup, 65% dark Game background overlay, smooth winning group centering on stage, prominent uploaded Winner crown logo (`WinnerIcon.png`), continuous randomized 3D coin rain (`Coin3.png` 100% dominant, `Coin1.png` and `Coin2.png` 40% variation), smooth reset with END WINNER DISPLAY, Time's Up size scaled down and extra glow removed, wall-clock timer synchronization, typography modernized to Inter Bold 700, Bitcount Single, and Geist Pixel, exact main logo section horizontal centering locked 1:1 with the swinging hanging piggy bank, restored medium-speed buildings parallax, gold-yellow default Enter Arena button with black hover centered vertically between logo and sponsors, calibrated 42vh black transition buffer section, billboard sign fading behind bottom gradient with natural 1:1 scrolling, slow cinematic 3.0s auto-scroll via Lenis, foreground UI elements layered crisply above transition gradients, environmental-only GSAP parallax scrubbing, strict containment clipping, top/bottom black gradient fades, balanced ground and city skyline elevation, centered hanging piggy bank from top anchor point with continuous pendulum sway, accurate logo sizing without added glow, enlarged piggy bank in front of logo, clean separation between arena button and sponsor logos, dedicated `.card-shimmer-mask` layer clipping shimmer strictly within card boundaries with zero bleed, unclipped `object-fit: contain` player cards, smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.

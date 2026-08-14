@@ -80,6 +80,19 @@ function renderAdminPanel(state) {
 
     container.appendChild(row);
   });
+
+  // Toggle Winner Celebration buttons
+  const btnOpenWinner = document.getElementById('btn-open-winner-modal');
+  const btnEndWinner = document.getElementById('btn-end-winner');
+  if (btnOpenWinner && btnEndWinner) {
+    if (state.winnerGroupId) {
+      btnOpenWinner.style.display = 'none';
+      btnEndWinner.style.display = 'inline-flex';
+    } else {
+      btnOpenWinner.style.display = 'inline-flex';
+      btnEndWinner.style.display = 'none';
+    }
+  }
 }
 
 function escapeHtml(str) {
@@ -234,6 +247,100 @@ function bindAdminEvents() {
         pendingDisqualifyId = null;
         if (modalBackdrop) modalBackdrop.classList.remove('open');
       }
+    });
+  }
+
+  // Winner Selection & Confirmation Flow
+  const btnOpenWinnerModal = document.getElementById('btn-open-winner-modal');
+  const btnEndWinner = document.getElementById('btn-end-winner');
+  const winnerSelectModal = document.getElementById('winner-select-modal');
+  const winnerConfirmModal = document.getElementById('winner-confirm-modal');
+  const winnerOptionsList = document.getElementById('winner-options-list');
+  const btnCancelWinnerSelect = document.getElementById('btn-cancel-winner-select');
+  const btnProceedWinnerConfirm = document.getElementById('btn-proceed-winner-confirm');
+  const btnCancelWinnerFinal = document.getElementById('btn-cancel-winner-final');
+  const btnConfirmWinnerFinal = document.getElementById('btn-confirm-winner-final');
+  const confirmWinnerTeamName = document.getElementById('confirm-winner-team-name');
+
+  let selectedWinnerId = null;
+
+  if (btnOpenWinnerModal && winnerSelectModal && winnerOptionsList) {
+    btnOpenWinnerModal.addEventListener('click', () => {
+      const state = gameStateStore.getState();
+      selectedWinnerId = null;
+      btnProceedWinnerConfirm.disabled = true;
+
+      // Populate current groups
+      winnerOptionsList.innerHTML = '';
+      state.groups.forEach((group, index) => {
+        const opt = document.createElement('div');
+        opt.className = `winner-option-card ${group.isDisqualified ? 'is-dq' : ''}`;
+        opt.dataset.id = group.id;
+        opt.innerHTML = `
+          <div>
+            <div class="winner-opt-team-name">GROUP ${index + 1} — ${escapeHtml(group.name)}</div>
+            <div class="winner-opt-players">${escapeHtml(group.player1?.name || '')} &amp; ${escapeHtml(group.player2?.name || '')}</div>
+          </div>
+          <div class="winner-opt-score">${group.points} PTS</div>
+        `;
+
+        opt.addEventListener('click', () => {
+          selectedWinnerId = group.id;
+          Array.from(winnerOptionsList.children).forEach((c) => c.classList.remove('selected'));
+          opt.classList.add('selected');
+          btnProceedWinnerConfirm.disabled = false;
+        });
+
+        winnerOptionsList.appendChild(opt);
+      });
+
+      winnerSelectModal.classList.add('open');
+    });
+  }
+
+  if (btnCancelWinnerSelect && winnerSelectModal) {
+    btnCancelWinnerSelect.addEventListener('click', () => {
+      selectedWinnerId = null;
+      winnerSelectModal.classList.remove('open');
+    });
+  }
+
+  if (btnProceedWinnerConfirm && winnerConfirmModal && winnerSelectModal) {
+    btnProceedWinnerConfirm.addEventListener('click', () => {
+      if (!selectedWinnerId) return;
+      const state = gameStateStore.getState();
+      const group = state.groups.find((g) => g.id === selectedWinnerId);
+      if (!group) return;
+
+      if (confirmWinnerTeamName) {
+        confirmWinnerTeamName.textContent = group.name;
+      }
+
+      winnerSelectModal.classList.remove('open');
+      winnerConfirmModal.classList.add('open');
+    });
+  }
+
+  if (btnCancelWinnerFinal && winnerConfirmModal) {
+    btnCancelWinnerFinal.addEventListener('click', () => {
+      winnerConfirmModal.classList.remove('open');
+      if (winnerSelectModal) winnerSelectModal.classList.add('open');
+    });
+  }
+
+  if (btnConfirmWinnerFinal && winnerConfirmModal) {
+    btnConfirmWinnerFinal.addEventListener('click', () => {
+      if (selectedWinnerId) {
+        gameStateStore.declareWinner(selectedWinnerId);
+        selectedWinnerId = null;
+        winnerConfirmModal.classList.remove('open');
+      }
+    });
+  }
+
+  if (btnEndWinner) {
+    btnEndWinner.addEventListener('click', () => {
+      gameStateStore.clearWinner();
     });
   }
 }
