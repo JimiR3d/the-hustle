@@ -142,12 +142,13 @@ html, body {
   pointer-events: none;
 }
 
-/* Layer 5: Main Marquee Sign Center (Sits above fade) */
+/* Layer 5: Main Marquee Sign Center (Exact horizontal section centering) */
 .layer-logo {
   position: absolute;
   top: 33vh;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
   width: 30vw;
   max-width: 580px;
   height: auto;
