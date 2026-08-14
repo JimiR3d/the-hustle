@@ -244,6 +244,19 @@ class GameStateStore {
     }
   }
 
+  resetSpotlights() {
+    let changed = false;
+    this.state.groups.forEach((group) => {
+      if (group.isPopUp) {
+        group.isPopUp = false;
+        changed = true;
+      }
+    });
+    if (changed) {
+      this.saveAndBroadcast('reset_spotlights');
+    }
+  }
+
   disqualifyGroup(id) {
     const group = this.state.groups.find((g) => g.id === id);
     if (group) {

@@ -385,17 +385,7 @@ html, body {
   transition: filter 0.3s ease;
 }
 
-/* Soft Green Ambient Flash when Timer Finishes (00:00) */
-#app-stage.timer-finished-flash {
-  animation: full-page-green-flash 2.5s cubic-bezier(0.15, 0.85, 0.35, 1.2);
-}
 
-@keyframes full-page-green-flash {
-  0% { filter: brightness(1.35) drop-shadow(0 0 50px #00ff77); }
-  30% { filter: brightness(1.45) drop-shadow(0 0 70px #00ff77); }
-  60% { filter: brightness(1.2) drop-shadow(0 0 30px #00ff77); }
-  100% { filter: brightness(1); }
-}
 
 /* ==========================================================================
    TIME'S UP DRAMATIC FLY-THROUGH OVERLAY & ANIMATION (Inside Game Section)

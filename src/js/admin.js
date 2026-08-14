@@ -232,6 +232,14 @@ function bindAdminEvents() {
     });
   }
 
+  // Global Reset Spotlights Action
+  const btnResetSpotlights = document.getElementById('btn-reset-spotlights');
+  if (btnResetSpotlights) {
+    btnResetSpotlights.addEventListener('click', () => {
+      gameStateStore.resetSpotlights();
+    });
+  }
+
   // Disqualification Modal Actions
   if (cancelDisqualifyBtn) {
     cancelDisqualifyBtn.addEventListener('click', () => {

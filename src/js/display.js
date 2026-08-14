@@ -693,17 +693,6 @@ function triggerTimesUpSequence() {
     playZeroBuzzerSound();
   }
 
-  // Ambient green stage flash
-  const stage = document.getElementById('app-stage');
-  if (stage) {
-    stage.classList.remove('timer-finished-flash');
-    void stage.offsetWidth;
-    stage.classList.add('timer-finished-flash');
-    setTimeout(() => {
-      stage.classList.remove('timer-finished-flash');
-    }, 2500);
-  }
-
   // Remove any leftover Time's Up container
   const oldContainer = document.getElementById('times-up-overlay');
   if (oldContainer) oldContainer.remove();

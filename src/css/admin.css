@@ -190,12 +190,39 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 14px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .panel-heading h2 {
   font-size: 16px;
   color: #ffffff;
   letter-spacing: 0.5px;
+}
+
+.btn-reset-spotlights {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 179, 0, 0.25) 100%);
+  border: 1.5px solid var(--admin-accent-gold);
+  color: var(--admin-accent-gold);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-reset-spotlights:hover {
+  background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
+  color: #0d0108;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+  transform: translateY(-1px);
+}
+
+.btn-reset-spotlights:active {
+  transform: translateY(1px) scale(0.96);
 }
 
 .competitors-list {
