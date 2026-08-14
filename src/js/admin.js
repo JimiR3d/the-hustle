@@ -2,6 +2,111 @@ import { gameStateStore, ALL_PLAYERS } from './state.js';
 
 let pendingDisqualifyId = null;
 
+// Persistent Countdown & Time's Up audio elements on Admin Panel
+const timerStartAudio = new Audio('/assets/Timer_start.mp3');
+timerStartAudio.preload = 'auto';
+timerStartAudio.loop = true;
+
+const timerSpeedUpAudio = new Audio('/assets/Timer_speedUp.mp3');
+timerSpeedUpAudio.preload = 'auto';
+timerSpeedUpAudio.loop = true;
+
+const timesUpAudio = new Audio('/assets/Time_up.mp3');
+timesUpAudio.preload = 'auto';
+
+let currentAudioState = 'idle'; // 'idle' | 'start' | 'speedUp'
+let isAudioEngineUnlocked = false;
+
+function primeAudioPlayback() {
+  if (isAudioEngineUnlocked) return;
+  isAudioEngineUnlocked = true;
+
+  [timerStartAudio, timerSpeedUpAudio, timesUpAudio].forEach((audio) => {
+    try {
+      audio.load();
+      const p = audio.play();
+      if (p !== undefined) {
+        p.then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+        }).catch((err) => {
+          console.warn('[Admin Audio] Priming deferred to user interaction:', err);
+          isAudioEngineUnlocked = false;
+        });
+      }
+    } catch (e) {
+      isAudioEngineUnlocked = false;
+    }
+  });
+}
+
+['click', 'touchstart', 'mousedown', 'keydown'].forEach((evt) => {
+  window.addEventListener(evt, primeAudioPlayback, { passive: true });
+});
+
+function syncTimerAudio(timerState) {
+  const currentSecs = timerState ? timerState.seconds : 0;
+  const isRunning = Boolean(timerState && timerState.isRunning && currentSecs > 0);
+
+  if (!isRunning) {
+    if (currentSecs === 0) {
+      timerStartAudio.pause();
+      timerStartAudio.currentTime = 0;
+      timerSpeedUpAudio.pause();
+      timerSpeedUpAudio.currentTime = 0;
+      currentAudioState = 'idle';
+    } else {
+      timerStartAudio.pause();
+      timerSpeedUpAudio.pause();
+    }
+    return;
+  }
+
+  // Running countdown
+  if (currentSecs > 20) {
+    if (currentAudioState !== 'start') {
+      timerSpeedUpAudio.pause();
+      timerSpeedUpAudio.currentTime = 0;
+      timerStartAudio.currentTime = 0;
+      currentAudioState = 'start';
+    }
+    if (timerStartAudio.paused) {
+      const p = timerStartAudio.play();
+      if (p !== undefined) {
+        p.catch((err) => {
+          console.error('[Admin Audio] Timer_start.mp3 play blocked or failed:', err);
+        });
+      }
+    }
+  } else {
+    // 0 < currentSecs <= 20
+    if (currentAudioState !== 'speedUp') {
+      timerStartAudio.pause();
+      timerStartAudio.currentTime = 0;
+      timerSpeedUpAudio.currentTime = 0;
+      currentAudioState = 'speedUp';
+    }
+    if (timerSpeedUpAudio.paused) {
+      const p = timerSpeedUpAudio.play();
+      if (p !== undefined) {
+        p.catch((err) => {
+          console.error('[Admin Audio] Timer_speedUp.mp3 play blocked or failed:', err);
+        });
+      }
+    }
+  }
+}
+
+function stopAllAudio() {
+  [timerStartAudio, timerSpeedUpAudio, timesUpAudio].forEach((audio) => {
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+    } catch (e) {}
+  });
+  currentAudioState = 'idle';
+}
+
 function renderAdminPanel(state) {
   const container = document.getElementById('competitors-list');
   const timerVal = document.getElementById('admin-timer-val');
@@ -132,26 +237,31 @@ function bindAdminEvents() {
 
   if (btnTimerStart) {
     btnTimerStart.addEventListener('click', () => {
+      primeAudioPlayback();
       const state = gameStateStore.getState();
       gameStateStore.updateTimer(state.timer.seconds, true);
+      syncTimerAudio(gameStateStore.getState().timer);
     });
   }
 
   if (btnTimerPause) {
     btnTimerPause.addEventListener('click', () => {
       gameStateStore.pauseTimer();
+      syncTimerAudio(gameStateStore.getState().timer);
     });
   }
 
   if (btnTimerStop) {
     btnTimerStop.addEventListener('click', () => {
       gameStateStore.stopTimer();
+      syncTimerAudio(gameStateStore.getState().timer);
     });
   }
 
   if (btnTimerReset) {
     btnTimerReset.addEventListener('click', () => {
       gameStateStore.resetTimer();
+      syncTimerAudio(gameStateStore.getState().timer);
     });
   }
 
@@ -418,44 +528,22 @@ function syncAdminTimerLoop(timerState) {
 renderAdminPanel(gameStateStore.getState());
 bindAdminEvents();
 syncAdminTimerLoop(gameStateStore.getState().timer);
+syncTimerAudio(gameStateStore.getState().timer);
 
-gameStateStore.onStateChange((state) => {
+gameStateStore.onStateChange((state, meta) => {
   renderAdminPanel(state);
   syncAdminTimerLoop(state.timer);
+  syncTimerAudio(state.timer);
+
+  if (meta && meta.eventType === 'reset') {
+    stopAllAudio();
+  }
 
   // Live update Winner Select Modal if currently open
   const winnerSelectModal = document.getElementById('winner-select-modal');
   const winnerConfirmModal = document.getElementById('winner-confirm-modal');
   if (winnerSelectModal && winnerSelectModal.classList.contains('open')) {
-    const winnerOptionsList = document.getElementById('winner-options-list');
-    const btnProceedWinnerConfirm = document.getElementById('btn-proceed-winner-confirm');
-    if (winnerOptionsList) {
-      const eligibleGroups = state.groups.filter((g) => !g.isDisqualified);
-      winnerOptionsList.innerHTML = '';
-      if (eligibleGroups.length === 0) {
-        winnerOptionsList.innerHTML = '<div style="padding: 16px; color: #ff1744; text-align: center; font-weight: 700;">No eligible teams remaining!</div>';
-        if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = true;
-      } else {
-        eligibleGroups.forEach((group) => {
-          const opt = document.createElement('div');
-          opt.className = 'winner-option-card';
-          opt.dataset.id = group.id;
-          opt.innerHTML = `
-            <div>
-              <div class="winner-opt-team-name">${escapeHtml(group.name)}</div>
-              <div class="winner-opt-players">${escapeHtml(group.player1?.name || '')} &amp; ${escapeHtml(group.player2?.name || '')}</div>
-            </div>
-            <div class="winner-opt-score">${group.points} PTS</div>
-          `;
-          opt.addEventListener('click', () => {
-            Array.from(winnerOptionsList.children).forEach((c) => c.classList.remove('selected'));
-            opt.classList.add('selected');
-            if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = false;
-          });
-          winnerOptionsList.appendChild(opt);
-        });
-      }
-    }
+    renderWinnerOptions(state);
   }
 
   // If winner confirm modal is open and confirmed team was just disqualified, revert to select modal
@@ -465,7 +553,11 @@ gameStateStore.onStateChange((state) => {
       const dqMatch = state.groups.find((g) => g.name === confirmNameEl.textContent && g.isDisqualified);
       if (dqMatch) {
         winnerConfirmModal.classList.remove('open');
-        if (winnerSelectModal) winnerSelectModal.classList.add('open');
+        selectedWinnerId = null;
+        if (winnerSelectModal) {
+          renderWinnerOptions(state);
+          winnerSelectModal.classList.add('open');
+        }
       }
     }
   }
