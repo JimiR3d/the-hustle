@@ -35,9 +35,9 @@ export function initParallax() {
     },
   });
 
-  // Environmental Parallax Layer depths (Ground moves upward on scroll down)
-  tl.to('[data-parallax-layer="sky"]', { yPercent: 18, ease: 'none' }, 0)
-    .to('[data-parallax-layer="buildings"]', { yPercent: 28, ease: 'none' }, 0)
+  // Environmental Parallax Layer depths (Sky = slowest, Buildings = medium, Ground = fastest foreground)
+  tl.to('[data-parallax-layer="sky"]', { yPercent: 12, ease: 'none' }, 0)
+    .to('[data-parallax-layer="buildings"]', { yPercent: -18, ease: 'none' }, 0)
     .to('[data-parallax-layer="ground"]', { yPercent: -38, ease: 'none' }, 0);
 
   // Scroll to Arena button click (Cinematic, smooth 3.0s auto-scroll showcasing parallax layers)
