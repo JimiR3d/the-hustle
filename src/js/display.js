@@ -24,11 +24,40 @@ window.addEventListener('DOMContentLoaded', () => {
 let previousScores = {};
 let activeAnimationIds = new Set();
 let completedDisqualifiedIds = new Set();
-let hasFiredZeroFlash = false;
 let timesUpTriggerCount = 0;
 let timesUpTriggeredForCurrentRun = false;
-let previousTimerSeconds = 600;
-let currentTimesUpAudio = null;
+let previousTimerSeconds = null;
+
+// Pre-instantiated Time's Up audio element for zero-latency & browser policy unlocking
+const timesUpAudio = new Audio('/assets/Time_up.mp3');
+timesUpAudio.preload = 'auto';
+
+let isAudioEngineUnlocked = false;
+function primeAudioPlayback() {
+  if (isAudioEngineUnlocked) return;
+  isAudioEngineUnlocked = true;
+
+  try {
+    timesUpAudio.load();
+    const p = timesUpAudio.play();
+    if (p !== undefined) {
+      p.then(() => {
+        timesUpAudio.pause();
+        timesUpAudio.currentTime = 0;
+      }).catch(() => {
+        // Will unlock on next user gesture
+        isAudioEngineUnlocked = false;
+      });
+    }
+  } catch (e) {
+    isAudioEngineUnlocked = false;
+  }
+}
+
+// Attach user unlock listeners across common interaction events
+['click', 'touchstart', 'mousedown', 'keydown', 'wheel', 'scroll'].forEach((evt) => {
+  window.addEventListener(evt, primeAudioPlayback, { passive: true });
+});
 
 if (!window.shaderMounts) window.shaderMounts = new Map();
 
@@ -468,26 +497,20 @@ function triggerTimesUpSequence() {
   const isLeftToRight = timesUpTriggerCount % 2 === 0;
   timesUpTriggerCount++;
 
-  // Stop any previous playing audio instance to avoid overlapping copies
-  if (currentTimesUpAudio) {
-    try {
-      currentTimesUpAudio.pause();
-      currentTimesUpAudio.currentTime = 0;
-    } catch (e) {}
-    currentTimesUpAudio = null;
-  }
-
   // Play uploaded Time's Up sound effect synchronized with entrance
   try {
-    const audio = new Audio('/assets/Time_up.mp3');
-    audio.volume = 1.0;
-    currentTimesUpAudio = audio;
-    audio.play().catch((err) => {
-      console.warn('Audio play failed, triggering fallback buzzer:', err);
-      playZeroBuzzerSound();
-    });
+    timesUpAudio.pause();
+    timesUpAudio.currentTime = 0;
+    timesUpAudio.volume = 1.0;
+    const playPromise = timesUpAudio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn('Direct audio play restricted, playing synthesizer fallback:', err);
+        playZeroBuzzerSound();
+      });
+    }
   } catch (err) {
-    console.warn('Audio initialization error:', err);
+    console.warn('Audio playback error, playing synthesizer fallback:', err);
     playZeroBuzzerSound();
   }
 
@@ -506,7 +529,8 @@ function triggerTimesUpSequence() {
   const oldContainer = document.getElementById('times-up-overlay');
   if (oldContainer) oldContainer.remove();
 
-  // Create temporary Time's Up animation container
+  // Create temporary Time's Up animation container mounted to the Game Section
+  const arenaSection = document.getElementById('main-arena-section') || document.body;
   const container = document.createElement('div');
   container.className = 'times-up-container';
   container.id = 'times-up-overlay';
@@ -516,7 +540,7 @@ function triggerTimesUpSequence() {
   img.alt = "TIME'S UP";
   img.className = 'times-up-img';
   container.appendChild(img);
-  document.body.appendChild(container);
+  arenaSection.appendChild(container);
 
   const startX = isLeftToRight ? -window.innerWidth * 1.3 : window.innerWidth * 1.3;
   const exitX = isLeftToRight ? window.innerWidth * 1.3 : -window.innerWidth * 1.3;
@@ -524,7 +548,7 @@ function triggerTimesUpSequence() {
   // Initial State: Offscreen, small, fast motion blur
   gsap.set(img, {
     x: startX,
-    scale: 0.18,
+    scale: 0.16,
     opacity: 0,
     filter: 'blur(16px)',
   });
@@ -538,9 +562,9 @@ function triggerTimesUpSequence() {
   // Phase 1: FAST entrance moving toward center, rapidly scaling small -> large + motion blur reducing
   tl.to(img, {
     x: isLeftToRight ? -window.innerWidth * 0.08 : window.innerWidth * 0.08,
-    scale: 1.28,
+    scale: 1.32,
     opacity: 1,
-    filter: 'blur(4px)',
+    filter: 'blur(3px)',
     duration: 0.45,
     ease: 'power3.out',
   })
@@ -549,13 +573,13 @@ function triggerTimesUpSequence() {
     x: isLeftToRight ? window.innerWidth * 0.06 : -window.innerWidth * 0.06,
     scale: 1.15,
     filter: 'blur(0px)',
-    duration: 1.35,
+    duration: 1.45,
     ease: 'power1.inOut',
   })
   // Phase 3: FAST EXIT acceleration toward opposite side, scaling large -> small + motion blur returns
   .to(img, {
     x: exitX,
-    scale: 0.22,
+    scale: 0.20,
     opacity: 0,
     filter: 'blur(18px)',
     duration: 0.55,
@@ -571,19 +595,19 @@ function renderTimer(timerState) {
     clockEl.textContent = `${mins}:${secs}`;
   }
 
-  // Handle Time's Up trigger when timer reaches 00:00
-  if (timerState.seconds > 0) {
+  const currentSecs = timerState.seconds;
+
+  // Re-arm when timer is set or reset above 0
+  if (currentSecs > 0) {
     timesUpTriggeredForCurrentRun = false;
-    hasFiredZeroFlash = false;
-  } else if (timerState.seconds === 0 && !timesUpTriggeredForCurrentRun && (previousTimerSeconds > 0 || timerState.isRunning === false)) {
+  }
+  // Trigger ONLY when transitioning from > 0 to 0 (or when active countdown reaches 00:00)
+  else if (currentSecs === 0 && !timesUpTriggeredForCurrentRun && previousTimerSeconds !== null && previousTimerSeconds > 0) {
     timesUpTriggeredForCurrentRun = true;
-    if (!hasFiredZeroFlash) {
-      hasFiredZeroFlash = true;
-      triggerTimesUpSequence();
-    }
+    triggerTimesUpSequence();
   }
 
-  previousTimerSeconds = timerState.seconds;
+  previousTimerSeconds = currentSecs;
 }
 
 function escapeHtml(str) {
