@@ -51,10 +51,11 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-14 — Typography Update (Inter Bold, Bitcount Single, Geist Pixel)
+### Session 2026-08-14 — Time's Up Sound & Alternating Fly-Through Animation
 **Tasks completed:**
-- Replaced `Cinzel` with `Inter Bold` (weight `700`) via Google Fonts in `index.html` and `src/css/main.css`.
-- Replaced `VT323` with `Bitcount Single` (self-hosted with full WOFF/WOFF2 font files in `public/assets/fonts/bitcount-single/` and registered via `@font-face`).
-- Replaced `Silkscreen` with `Geist Pixel` (self-hosted with full WOFF2 font files in `public/assets/fonts/geist-pixel/` and registered via `@font-face`).
-- Maintained all font sizes, letter spacing, line heights, colors, layout, and hierarchy without distortion.
+- Integrated `Time_up.mp3` and `Times_up.png` into `public/assets/`.
+- Built multi-phase GSAP fly-through animation for when timer hits `00:00`: Fast entrance (small to large + blur fading) &rarr; Dramatic slow-motion center moment (100% sharp blur 0px) &rarr; Fast exit acceleration (large to small + blur returning).
+- Implemented alternating direction engine (Left &rarr; Center &rarr; Right on 1st run, Right &rarr; Center &rarr; Left on 2nd run, etc.).
+- Synchronized `Time_up.mp3` sound playback with animation entrance without duplicate fires.
+- Modernized typography with Inter Bold (700), Bitcount Single, and Geist Pixel.
 - Pushed updates to GitHub `v2-redesign`.

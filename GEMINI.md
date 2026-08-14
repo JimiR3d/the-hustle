@@ -13,7 +13,7 @@ A single-page digital game show board application designed for arena displays (1
 - **Fonts:** Google Fonts (`Inter Bold 700`, `Outfit 400-900`), Self-Hosted Fonts (`Bitcount Single`, `Geist Pixel`)
 - **Tooling / Dev Server:** Vite
 - **Deployment & Sync:** Vercel + GitHub Continuous Integration, BroadcastChannel API + LocalStorage dual-channel sync engine
-- **Audio:** Web Audio API (`AudioContext`) native sound synthesis for countdown alarms
+- **Audio:** Web Audio API (`AudioContext`) native sound synthesis & custom `Time_up.mp3` sound effects
 
 ## Commands
 ```bash
@@ -33,21 +33,27 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 ```
 ├── index.html           # Main Display Screen (Intro Parallax Screen + Buffer Section + 1920x1080 Arena view)
 ├── admin.html           # Admin Control Screen (Host controller)
-├── public/assets/       # Static assets (logo.png, background_v2.png, team_container_t1..t5.png, score_board.png, *.png)
+├── public/assets/       # Static assets (logo.png, background_v2.png, team_container_t1..t5.png, score_board.png, Time_up.mp3, Times_up.png, *.png)
 │   ├── fonts/           # Self-hosted webfonts (bitcount-single/*.woff2, geist-pixel/*.woff2)
 │   └── parallax/        # Parallax assets (sky.png, Buildings.png, Ground.png, PiggyBank.png, homeLogo.png, Hosts.png, signHustle.png, sponsoreLogoss.png)
 ├── src/
 │   ├── css/
-│   │   ├── main.css     # Design tokens, custom pink scrollbar, card shimmer mask, piggy pendulum swing, 3-section transition, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight
+│   │   ├── main.css     # Design tokens, custom pink scrollbar, card shimmer mask, piggy pendulum swing, 3-section transition, Team 1-5 container frame masks, casino gold beam, DQ flight, 3D zoom spotlight, Time's Up overlay
 │   │   └── admin.css    # Responsive host controller styling with Start/Pause/Stop/Reset timer buttons
 │   └── js/
 │       ├── parallax.js  # GSAP ScrollTrigger multi-depth scrub timeline & Lenis smooth scrolling controller (3.0s cinematic auto-scroll)
 │       ├── state.js     # 5 Team state, ALL_PLAYERS dictionary, tickTimer, pause/stop/reset & dual-channel sync engine
-│       ├── display.js   # Renderer, FLIP layout animator, WebGL Liquid Metal ShaderMount, Apple Genie DQ flight controller, spotlight manager & Web Audio alarm
+│       ├── display.js   # Renderer, FLIP layout animator, WebGL Liquid Metal ShaderMount, Apple Genie DQ flight controller, spotlight manager, Time's Up sequence & Web Audio alarm
 │       └── admin.js     # Host control panel logic, select dropdowns, quick presets & explicit timer buttons
 ```
 
 ## Conventions
+- **Time's Up Dramatic Fly-Through & Sound:**
+  - When timer reaches `00:00`, fires once per completion.
+  - Plays `Time_up.mp3` in perfect sync with the visual entrance.
+  - Alternates direction each trigger: 1st (Left &rarr; Center &rarr; Right), 2nd (Right &rarr; Center &rarr; Left), 3rd (Left &rarr; Center &rarr; Right), etc.
+  - Dynamic 3-phase motion blur sequence: Fast entrance (small &rarr; large, `blur(16px)` &rarr; `blur(4px)`), dramatic slow-down center moment (`blur(0px)` sharp crystal-clear reading), and fast exit acceleration (large &rarr; small, `blur(18px)` returning).
+  - Overlay sits at `z-index: 9999` above all UI, cleanly removed upon completion.
 - **Typography & Font System:**
   - `Inter Bold` (weight `700`): Primary branding, headings, and Enter Arena button.
   - `Outfit` (weights `400-900`): Player names, controls, and Admin Control Panel.
@@ -101,11 +107,10 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - Bottom-right mini-slots start 100% clean and empty when zero teams are disqualified; render recognizable miniature player card photos (`player1.image` and `player2.image`) with team labels when occupied.
 - Remaining active team panels dynamically re-center themselves on the stage layout.
 - Card light sheen sweeps (`.card-white-light-reflection`) persist smoothly without resetting on point changes.
-- Web Audio API spy countdown finish buzzer sound plays on `00:00` alongside ambient green flash.
 - Floating green `+N` popups on point additions; floating red `-N` popups on point subtractions.
 
 ## Current State
-- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring typography modernized to Inter Bold 700, Bitcount Single, and Geist Pixel, exact main logo section horizontal centering locked 1:1 with the swinging hanging piggy bank, restored medium-speed buildings parallax, gold-yellow default Enter Arena button with black hover centered vertically between logo and sponsors, calibrated 42vh black transition buffer section, billboard sign fading behind bottom gradient with natural 1:1 scrolling, slow cinematic 3.0s auto-scroll via Lenis, foreground UI elements layered crisply above transition gradients, environmental-only GSAP parallax scrubbing, strict containment clipping, top/bottom black gradient fades, balanced ground and city skyline elevation, centered hanging piggy bank from top anchor point with continuous pendulum sway, accurate logo sizing without added glow, enlarged piggy bank in front of logo, clean separation between arena button and sponsor logos, dedicated `.card-shimmer-mask` layer clipping shimmer strictly within card boundaries with zero bleed, unclipped `object-fit: contain` player cards, smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
+- **Status:** v2 Redesign complete on `v2-redesign` branch, featuring Time's Up synchronized audio and alternating fly-through animation with dynamic motion blur, typography modernized to Inter Bold 700, Bitcount Single, and Geist Pixel, exact main logo section horizontal centering locked 1:1 with the swinging hanging piggy bank, restored medium-speed buildings parallax, gold-yellow default Enter Arena button with black hover centered vertically between logo and sponsors, calibrated 42vh black transition buffer section, billboard sign fading behind bottom gradient with natural 1:1 scrolling, slow cinematic 3.0s auto-scroll via Lenis, foreground UI elements layered crisply above transition gradients, environmental-only GSAP parallax scrubbing, strict containment clipping, top/bottom black gradient fades, balanced ground and city skyline elevation, centered hanging piggy bank from top anchor point with continuous pendulum sway, accurate logo sizing without added glow, enlarged piggy bank in front of logo, clean separation between arena button and sponsor logos, dedicated `.card-shimmer-mask` layer clipping shimmer strictly within card boundaries with zero bleed, unclipped `object-fit: contain` player cards, smooth elimination FLIP layout transitions, 100% transparent card tear gaps, internal custom pink scrollbar, smooth spotlight movement animations with easing, simultaneous spotlighting of up to 3 groups under the timer with zero overlap, asset preloading, dimmer isolation, exact slot restoration ordering, flat casino Team 1-5 container frame overlays with direct CSS mask glowing casino gold light beams, WebGL Liquid Metal fluid shader, and real-time dual-screen synchronization.
 
 ## Boundaries
 - Single-page dual-view system; keep real-time sync simple, dependency-free, and bulletproof.
