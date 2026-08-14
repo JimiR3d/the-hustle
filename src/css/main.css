@@ -3,9 +3,38 @@
    Casino Board Theme: "THE HUSTLE Love & MONEY" v2
    ========================================================================== */
 
+/* ==========================================================================
+   CUSTOM / SELF-HOSTED FONTS: Bitcount Single & Geist Pixel
+   ========================================================================== */
+@font-face {
+  font-family: 'Bitcount Single';
+  src: url('/assets/fonts/bitcount-single/bitcount-single-latin-400-normal.woff2') format('woff2'),
+       url('/assets/fonts/bitcount-single/bitcount-single-latin-400-normal.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bitcount Single';
+  src: url('/assets/fonts/bitcount-single/bitcount-single-latin-700-normal.woff2') format('woff2'),
+       url('/assets/fonts/bitcount-single/bitcount-single-latin-700-normal.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Pixel';
+  src: url('/assets/fonts/geist-pixel/GeistPixel-Square.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --font-family: 'Cinzel', 'Outfit', 'VT323', 'Silkscreen', system-ui, sans-serif;
-  --pixel-font: 'VT323', 'Silkscreen', monospace;
+  --font-family: 'Inter', 'Outfit', 'Bitcount Single', 'Geist Pixel', system-ui, sans-serif;
+  --pixel-font: 'Bitcount Single', 'Geist Pixel', monospace;
   --suit-red: #c0133c;
   --suit-black: #1a1a24;
 }
@@ -810,7 +839,7 @@ html, body {
   position: relative;
   z-index: 10;
   font-size: 11px;
-  font-family: 'Silkscreen', 'VT323', monospace;
+  font-family: 'Geist Pixel', 'Bitcount Single', monospace;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: 1.5px;
