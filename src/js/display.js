@@ -1,6 +1,7 @@
 import { gameStateStore } from './state.js';
 import { liquidMetalFragmentShader, ShaderMount } from '@paper-design/shaders';
 import { initParallax } from './parallax.js';
+import gsap from 'gsap';
 
 // Auto-scaling 1920x1080 stage fitting
 function fitStageToWindow() {
@@ -24,6 +25,11 @@ let previousScores = {};
 let activeAnimationIds = new Set();
 let completedDisqualifiedIds = new Set();
 let hasFiredZeroFlash = false;
+let timesUpTriggerCount = 0;
+let timesUpTriggeredForCurrentRun = false;
+let previousTimerSeconds = 600;
+let currentTimesUpAudio = null;
+
 if (!window.shaderMounts) window.shaderMounts = new Map();
 
 // Synthesize Spy Game Show Countdown Finish Alarm Sound via Web Audio API
@@ -458,12 +464,126 @@ function triggerPointAnimation(groupId, delta) {
   }
 }
 
+function triggerTimesUpSequence() {
+  const isLeftToRight = timesUpTriggerCount % 2 === 0;
+  timesUpTriggerCount++;
+
+  // Stop any previous playing audio instance to avoid overlapping copies
+  if (currentTimesUpAudio) {
+    try {
+      currentTimesUpAudio.pause();
+      currentTimesUpAudio.currentTime = 0;
+    } catch (e) {}
+    currentTimesUpAudio = null;
+  }
+
+  // Play uploaded Time's Up sound effect synchronized with entrance
+  try {
+    const audio = new Audio('/assets/Time_up.mp3');
+    audio.volume = 1.0;
+    currentTimesUpAudio = audio;
+    audio.play().catch((err) => {
+      console.warn('Audio play failed, triggering fallback buzzer:', err);
+      playZeroBuzzerSound();
+    });
+  } catch (err) {
+    console.warn('Audio initialization error:', err);
+    playZeroBuzzerSound();
+  }
+
+  // Ambient green stage flash
+  const stage = document.getElementById('app-stage');
+  if (stage) {
+    stage.classList.remove('timer-finished-flash');
+    void stage.offsetWidth;
+    stage.classList.add('timer-finished-flash');
+    setTimeout(() => {
+      stage.classList.remove('timer-finished-flash');
+    }, 2500);
+  }
+
+  // Remove any leftover Time's Up container
+  const oldContainer = document.getElementById('times-up-overlay');
+  if (oldContainer) oldContainer.remove();
+
+  // Create temporary Time's Up animation container
+  const container = document.createElement('div');
+  container.className = 'times-up-container';
+  container.id = 'times-up-overlay';
+
+  const img = document.createElement('img');
+  img.src = '/assets/Times_up.png';
+  img.alt = "TIME'S UP";
+  img.className = 'times-up-img';
+  container.appendChild(img);
+  document.body.appendChild(container);
+
+  const startX = isLeftToRight ? -window.innerWidth * 1.3 : window.innerWidth * 1.3;
+  const exitX = isLeftToRight ? window.innerWidth * 1.3 : -window.innerWidth * 1.3;
+
+  // Initial State: Offscreen, small, fast motion blur
+  gsap.set(img, {
+    x: startX,
+    scale: 0.18,
+    opacity: 0,
+    filter: 'blur(16px)',
+  });
+
+  const tl = gsap.timeline({
+    onComplete: () => {
+      container.remove();
+    },
+  });
+
+  // Phase 1: FAST entrance moving toward center, rapidly scaling small -> large + motion blur reducing
+  tl.to(img, {
+    x: isLeftToRight ? -window.innerWidth * 0.08 : window.innerWidth * 0.08,
+    scale: 1.28,
+    opacity: 1,
+    filter: 'blur(4px)',
+    duration: 0.45,
+    ease: 'power3.out',
+  })
+  // Phase 2: DRAMATIC SLOW-DOWN near center (emphasis moment: large, sharp blur(0px), crystal-clear reading)
+  .to(img, {
+    x: isLeftToRight ? window.innerWidth * 0.06 : -window.innerWidth * 0.06,
+    scale: 1.15,
+    filter: 'blur(0px)',
+    duration: 1.35,
+    ease: 'power1.inOut',
+  })
+  // Phase 3: FAST EXIT acceleration toward opposite side, scaling large -> small + motion blur returns
+  .to(img, {
+    x: exitX,
+    scale: 0.22,
+    opacity: 0,
+    filter: 'blur(18px)',
+    duration: 0.55,
+    ease: 'power3.in',
+  });
+}
+
 function renderTimer(timerState) {
   const clockEl = document.getElementById('hud-clock');
-  if (!clockEl) return;
-  const mins = String(Math.floor(timerState.seconds / 60)).padStart(2, '0');
-  const secs = String(timerState.seconds % 60).padStart(2, '0');
-  clockEl.textContent = `${mins}:${secs}`;
+  if (clockEl) {
+    const mins = String(Math.floor(timerState.seconds / 60)).padStart(2, '0');
+    const secs = String(timerState.seconds % 60).padStart(2, '0');
+    clockEl.textContent = `${mins}:${secs}`;
+  }
+
+  // Handle Time's Up trigger when timer reaches 00:00
+  if (timerState.seconds > 0) {
+    timesUpTriggeredForCurrentRun = false;
+    hasFiredZeroFlash = false;
+  } else if (timerState.seconds === 0 && !timesUpTriggeredForCurrentRun && (previousTimerSeconds > 0 || timerState.isRunning === false)) {
+    timesUpTriggeredForCurrentRun = true;
+    if (!hasFiredZeroFlash) {
+      hasFiredZeroFlash = true;
+      triggerTimesUpSequence();
+    }
+  }
+
+  previousTimerSeconds = timerState.seconds;
 }
 
 function escapeHtml(str) {

@@ -398,6 +398,34 @@ html, body {
 }
 
 /* ==========================================================================
+   TIME'S UP DRAMATIC FLY-THROUGH OVERLAY & ANIMATION
+   ========================================================================== */
+.times-up-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.times-up-img {
+  max-width: 80vw;
+  max-height: 65vh;
+  width: 960px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 15px 45px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 50px rgba(255, 215, 0, 0.85));
+  will-change: transform, filter, opacity;
+  transform-origin: center center;
+}
+
+/* ==========================================================================
    HEADER SECTION - Custom Logo Image & Prominent Dynamic HUD Timer
    ========================================================================== */
 .display-header {
