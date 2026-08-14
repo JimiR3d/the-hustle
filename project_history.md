@@ -51,11 +51,9 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-14 — Buildings Parallax & Enter Arena Button Redesign
+### Session 2026-08-14 — Exact Main Logo Horizontal Centering
 **Tasks completed:**
-- Restored medium-speed upward parallax to the buildings layer (`yPercent: -18` in `src/js/parallax.js`).
-- Centered `.layer-buildings` with `left: 0; right: 0; margin: 0 auto;`, guaranteeing zero inline transform conflicts during GSAP scrubbing.
-- Redesigned "ENTER GAME SHOW ARENA" button to be gold/yellow by default with black text and ambient glow, transitioning smoothly to translucent dark casino style with gold text on hover.
-- Positioned the button to `bottom: 13.5vh;`, perfectly centering it in the vertical space between the main logo and the sponsor logos.
-- Left the ground layer completely untouched.
+- Updated `.layer-logo` in `src/css/main.css` to use `left: 0; right: 0; margin: 0 auto;`, locking it to the exact horizontal center of the Main Menu section with zero transform conflicts.
+- Preserved the 1:1 horizontal alignment and natural relationship between the logo and the hanging piggy bank (`.layer-piggy-wrapper`).
+- Kept the piggy bank pendulum swing animation and all other Main Menu layouts intact.
 - Pushed updates to GitHub `v2-redesign`.
