@@ -232,7 +232,11 @@ function bindAdminEvents() {
   if (btnTimerStart) {
     btnTimerStart.addEventListener('click', () => {
       const state = gameStateStore.getState();
-      gameStateStore.updateTimer(state.timer.seconds, true);
+      let secs = state.timer.seconds;
+      if (secs <= 0) {
+        secs = state.timer.initialSeconds || 300;
+      }
+      gameStateStore.updateTimer(secs, true);
       syncTimerAudio(gameStateStore.getState().timer);
     });
   }
