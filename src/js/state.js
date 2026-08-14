@@ -365,6 +365,8 @@ class GameStateStore {
 
   resetAll() {
     this.state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    this.state.lastUpdated = Date.now();
+    this.state.lastTxId = `tx_reset_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     this.saveAndBroadcast('reset');
   }
 }

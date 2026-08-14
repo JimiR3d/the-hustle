@@ -29,36 +29,103 @@ let timesUpTriggerCount = 0;
 let timesUpTriggeredForCurrentRun = false;
 let previousTimerSeconds = null;
 
-// Pre-instantiated Time's Up audio element for zero-latency & browser policy unlocking
+// Pre-instantiated Countdown and Time's Up audio elements
+const timerStartAudio = new Audio('/assets/Timer_start.mp3');
+timerStartAudio.preload = 'auto';
+timerStartAudio.loop = true;
+
+const timerSpeedUpAudio = new Audio('/assets/Timer_speedUp.mp3');
+timerSpeedUpAudio.preload = 'auto';
+timerSpeedUpAudio.loop = true;
+
 const timesUpAudio = new Audio('/assets/Time_up.mp3');
 timesUpAudio.preload = 'auto';
 
+let currentAudioState = 'idle'; // 'idle' | 'start' | 'speedUp'
 let isAudioEngineUnlocked = false;
+
 function primeAudioPlayback() {
   if (isAudioEngineUnlocked) return;
   isAudioEngineUnlocked = true;
 
-  try {
-    timesUpAudio.load();
-    const p = timesUpAudio.play();
-    if (p !== undefined) {
-      p.then(() => {
-        timesUpAudio.pause();
-        timesUpAudio.currentTime = 0;
-      }).catch(() => {
-        // Will unlock on next user gesture
-        isAudioEngineUnlocked = false;
-      });
+  [timerStartAudio, timerSpeedUpAudio, timesUpAudio].forEach((audio) => {
+    try {
+      audio.load();
+      const p = audio.play();
+      if (p !== undefined) {
+        p.then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+        }).catch(() => {
+          isAudioEngineUnlocked = false;
+        });
+      }
+    } catch (e) {
+      isAudioEngineUnlocked = false;
     }
-  } catch (e) {
-    isAudioEngineUnlocked = false;
-  }
+  });
 }
 
 // Attach user unlock listeners across common interaction events
 ['click', 'touchstart', 'mousedown', 'keydown', 'wheel', 'scroll'].forEach((evt) => {
   window.addEventListener(evt, primeAudioPlayback, { passive: true });
 });
+
+function syncTimerAudio(timerState) {
+  const currentSecs = timerState.seconds;
+  const isRunning = Boolean(timerState.isRunning && currentSecs > 0);
+
+  if (!isRunning) {
+    if (currentSecs === 0) {
+      // Stopped / Expired
+      timerStartAudio.pause();
+      timerStartAudio.currentTime = 0;
+      timerSpeedUpAudio.pause();
+      timerSpeedUpAudio.currentTime = 0;
+      currentAudioState = 'idle';
+    } else {
+      // Paused: pause without resetting playback position so resuming continues smoothly
+      timerStartAudio.pause();
+      timerSpeedUpAudio.pause();
+    }
+    return;
+  }
+
+  // Running with seconds > 0
+  if (currentSecs > 20) {
+    // Normal countdown audio (> 20s)
+    if (currentAudioState !== 'start') {
+      timerSpeedUpAudio.pause();
+      timerSpeedUpAudio.currentTime = 0;
+      timerStartAudio.currentTime = 0;
+      currentAudioState = 'start';
+    }
+    if (timerStartAudio.paused) {
+      timerStartAudio.play().catch((e) => console.warn('Audio play prevented:', e));
+    }
+  } else {
+    // Sped-up countdown audio (<= 20s)
+    if (currentAudioState !== 'speedUp') {
+      timerStartAudio.pause();
+      timerStartAudio.currentTime = 0;
+      timerSpeedUpAudio.currentTime = 0;
+      currentAudioState = 'speedUp';
+    }
+    if (timerSpeedUpAudio.paused) {
+      timerSpeedUpAudio.play().catch((e) => console.warn('Audio play prevented:', e));
+    }
+  }
+}
+
+function stopAllAudio() {
+  [timerStartAudio, timerSpeedUpAudio, timesUpAudio].forEach((audio) => {
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+    } catch (e) {}
+  });
+  currentAudioState = 'idle';
+}
 
 if (!window.shaderMounts) window.shaderMounts = new Map();
 
@@ -319,9 +386,23 @@ function renderDisplay(state, meta = {}) {
   const topRow = document.getElementById('groups-row-top');
   const bottomRow = document.getElementById('groups-row-bottom');
   const timerBadge = document.getElementById('hud-timer-badge');
-  const groupsContainer = document.getElementById('groups-stage-container');
 
   if (!topRow || !bottomRow) return;
+
+  // Handle Full Reset Action
+  if (meta && meta.eventType === 'reset') {
+    completedDisqualifiedIds.clear();
+    activeAnimationIds.clear();
+    animatingSpotlightIds.clear();
+    previousScores = {};
+    previousTimerSeconds = null;
+    timesUpTriggeredForCurrentRun = false;
+    stopAllAudio();
+    stopCoinRain();
+
+    const oldTimesUp = document.getElementById('times-up-overlay');
+    if (oldTimesUp) oldTimesUp.remove();
+  }
 
   // Handle True Full-Viewport Winner Celebration Backdrop attached directly to document.body
   let winnerBackdrop = document.getElementById('winner-celebration-backdrop');
@@ -348,6 +429,16 @@ function renderDisplay(state, meta = {}) {
       completedDisqualifiedIds.delete(g.id);
       activeAnimationIds.delete(g.id);
       animatingSpotlightIds.delete(g.id);
+    }
+  });
+
+  // Pre-scan: If any team newly became disqualified while spotlighted, preserve its presence in animatingSpotlightIds
+  state.groups.forEach(g => {
+    if (g.isDisqualified && !completedDisqualifiedIds.has(g.id) && !activeAnimationIds.has(g.id)) {
+      const el = document.getElementById(`group-wrap-${g.id}`);
+      if (el && (el.classList.contains('is-popup') || g.isPopUp)) {
+        animatingSpotlightIds.add(g.id);
+      }
     }
   });
 
@@ -534,7 +625,7 @@ function renderDisplay(state, meta = {}) {
     }
   });
 
-  // Handle Cinematic 3-Phase Disqualification Live Motion (2.8s Total)
+  // Handle Strictly Sequenced Disqualification Live Motion
   state.groups.forEach((group) => {
     if (!group.isDisqualified) return;
 
@@ -546,29 +637,12 @@ function renderDisplay(state, meta = {}) {
     let groupWrapper = document.getElementById(`group-wrap-${group.id}`);
     if (!groupWrapper) return;
 
-    // Track if this group was spotlighted so the remaining spotlighted groups do NOT move until DQ animation finishes
-    const wasSpotlighted = groupWrapper.classList.contains('is-popup') || group.isPopUp || animatingSpotlightIds.has(group.id);
-    if (wasSpotlighted) {
+    activeAnimationIds.add(group.id);
+    if (groupWrapper.classList.contains('is-popup') || group.isPopUp) {
       animatingSpotlightIds.add(group.id);
     }
-    activeAnimationIds.add(group.id);
 
-    // Calculate dynamic flight vector (--target-x, --target-y)
-    const currentCompleted = Array.from(completedDisqualifiedIds);
-    const targetIndex = currentCompleted.length;
-    const targetSlot = document.getElementById(`dq-slot-${targetIndex < 5 ? targetIndex : 4}`);
-
-    if (targetSlot) {
-      const wrapRect = groupWrapper.getBoundingClientRect();
-      const slotRect = targetSlot.getBoundingClientRect();
-      const deltaX = slotRect.left - wrapRect.left;
-      const deltaY = slotRect.top - wrapRect.top;
-
-      groupWrapper.style.setProperty('--target-x', `${deltaX}px`);
-      groupWrapper.style.setProperty('--target-y', `${deltaY}px`);
-    }
-
-    // Phase 1: Neon Red Flash Aura (0.6s)
+    // Phase 1: Neon Red Flash Aura in place (0.6s)
     groupWrapper.classList.add('phase1-breaking');
 
     setTimeout(() => {
@@ -579,33 +653,56 @@ function renderDisplay(state, meta = {}) {
       }
 
       setTimeout(() => {
-        // Phase 3: Apple Genie Curved Flight Arc to Bottom Right (1.2s)
+        // Phase 3: Apple Genie Curved Flight Arc to Bottom Right (GSAP onComplete driven)
         if (groupWrapper) {
           groupWrapper.classList.remove('phase2-tearing');
           groupWrapper.classList.add('phase3-flight');
-        }
 
-        setTimeout(() => {
-          // Sequence complete: Remove DQ card from DOM, register as completed, and cleanly trigger FLIP & Spotlight recalculation
-          if (groupWrapper && groupWrapper.parentElement) {
-            groupWrapper.remove();
-          }
-          activeAnimationIds.delete(group.id);
-          animatingSpotlightIds.delete(group.id);
-          completedDisqualifiedIds.add(group.id);
+          const currentCompleted = Array.from(completedDisqualifiedIds);
+          const targetIndex = currentCompleted.length;
+          const targetSlot = document.getElementById(`dq-slot-${targetIndex < 5 ? targetIndex : 4}`);
 
-          // Update local state to ensure disqualified team is un-spotlighted
-          const currentState = gameStateStore.getState();
-          const targetG = currentState.groups.find(g => g.id === group.id);
-          if (targetG && targetG.isPopUp) {
-            targetG.isPopUp = false;
+          let deltaX = 600;
+          let deltaY = 600;
+          if (targetSlot) {
+            const wrapRect = groupWrapper.getBoundingClientRect();
+            const slotRect = targetSlot.getBoundingClientRect();
+            deltaX = slotRect.left - wrapRect.left;
+            deltaY = slotRect.top - wrapRect.top;
           }
 
-          animateLayoutFlip(() => {
-            renderDisplay(currentState);
+          groupWrapper.style.transition = 'none';
+
+          gsap.to(groupWrapper, {
+            x: `+=${deltaX}`,
+            y: `+=${deltaY}`,
+            scale: 0.22,
+            rotation: 24,
+            opacity: 0.3,
+            duration: 1.2,
+            ease: 'power2.inOut',
+            onComplete: () => {
+              // Disqualified card has physically arrived and settled at the bottom mini-slot
+              if (groupWrapper && groupWrapper.parentElement) {
+                groupWrapper.remove();
+              }
+              activeAnimationIds.delete(group.id);
+              animatingSpotlightIds.delete(group.id);
+              completedDisqualifiedIds.add(group.id);
+
+              const currentState = gameStateStore.getState();
+              const targetG = currentState.groups.find(g => g.id === group.id);
+              if (targetG) targetG.isPopUp = false;
+
+              // Distinct visual beat (150ms) after arrival before remaining spotlighted teams rearrange
+              setTimeout(() => {
+                animateLayoutFlip(() => {
+                  renderDisplay(currentState);
+                });
+              }, 150);
+            }
           });
-        }, 1200);
-
+        }
       }, 1000);
 
     }, 600);
@@ -675,6 +772,13 @@ function triggerPointAnimation(groupId, delta) {
 function triggerTimesUpSequence() {
   const isLeftToRight = timesUpTriggerCount % 2 === 0;
   timesUpTriggerCount++;
+
+  // Stop countdown audio before Time's Up sound plays
+  timerStartAudio.pause();
+  timerStartAudio.currentTime = 0;
+  timerSpeedUpAudio.pause();
+  timerSpeedUpAudio.currentTime = 0;
+  currentAudioState = 'idle';
 
   // Play uploaded Time's Up sound effect synchronized with entrance
   try {
@@ -832,9 +936,11 @@ function syncTimerLoop(timerState) {
 fitStageToWindow();
 renderDisplay(gameStateStore.getState());
 syncTimerLoop(gameStateStore.getState().timer);
+syncTimerAudio(gameStateStore.getState().timer);
 
-// Ensure syncTimerLoop is called on EVERY state update
+// Ensure syncTimerLoop and syncTimerAudio are called on EVERY state update
 gameStateStore.onStateChange((state, meta) => {
   renderDisplay(state, meta);
   syncTimerLoop(state.timer);
+  syncTimerAudio(state.timer);
 });

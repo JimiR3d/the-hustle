@@ -1153,11 +1153,11 @@ html, body {
   transform: translateX(24px) translateY(-20px) rotate(12deg);
 }
 
-/* Phase 3: Apple Genie Curved Flight Arc across Screen */
+/* Phase 3: Apple Genie Curved Flight Arc across Screen (Driven by GSAP) */
 .group-panel-wrapper.phase3-flight {
   z-index: 99999 !important;
   pointer-events: none;
-  animation: apple-genie-flight 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  filter: drop-shadow(0 20px 40px rgba(255, 23, 68, 0.7));
 }
 
 .group-panel-wrapper.phase3-flight .card-half-left {
@@ -1166,24 +1166,6 @@ html, body {
 
 .group-panel-wrapper.phase3-flight .card-half-right {
   transform: translateX(24px) translateY(-20px) rotate(12deg);
-}
-
-@keyframes apple-genie-flight {
-  0% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
-    opacity: 1;
-    filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.65));
-  }
-  50% {
-    transform: translate(calc(var(--target-x) * 0.45), calc(var(--target-y) * 0.35 + 60px)) scale(0.65) rotate(12deg);
-    opacity: 0.85;
-    filter: drop-shadow(0 20px 40px rgba(255, 23, 68, 0.7));
-  }
-  100% {
-    transform: translate(var(--target-x), var(--target-y)) scale(0.22) rotate(24deg);
-    opacity: 0.3;
-    filter: drop-shadow(0 5px 15px rgba(255, 23, 68, 0.3));
-  }
 }
 
 /* ==========================================================================

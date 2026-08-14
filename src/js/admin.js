@@ -272,36 +272,59 @@ function bindAdminEvents() {
 
   let selectedWinnerId = null;
 
-  if (btnOpenWinnerModal && winnerSelectModal && winnerOptionsList) {
+  function renderWinnerOptions(state) {
+    if (!winnerOptionsList) return;
+    winnerOptionsList.innerHTML = '';
+
+    // Filter ONLY non-disqualified eligible teams
+    const eligibleGroups = state.groups.filter((g) => !g.isDisqualified);
+
+    if (eligibleGroups.length === 0) {
+      winnerOptionsList.innerHTML = '<div style="padding: 16px; color: #ff1744; text-align: center; font-weight: 700;">No eligible teams remaining!</div>';
+      selectedWinnerId = null;
+      if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = true;
+      return;
+    }
+
+    // Verify currently selected team is still eligible
+    if (selectedWinnerId && !eligibleGroups.some((g) => g.id === selectedWinnerId)) {
+      selectedWinnerId = null;
+      if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = true;
+    }
+
+    eligibleGroups.forEach((group) => {
+      const opt = document.createElement('div');
+      const isSelected = group.id === selectedWinnerId;
+      opt.className = `winner-option-card ${isSelected ? 'selected' : ''}`;
+      opt.dataset.id = group.id;
+      opt.innerHTML = `
+        <div>
+          <div class="winner-opt-team-name">${escapeHtml(group.name)}</div>
+          <div class="winner-opt-players">${escapeHtml(group.player1?.name || '')} &amp; ${escapeHtml(group.player2?.name || '')}</div>
+        </div>
+        <div class="winner-opt-score">${group.points} PTS</div>
+      `;
+
+      opt.addEventListener('click', () => {
+        selectedWinnerId = group.id;
+        Array.from(winnerOptionsList.children).forEach((c) => c.classList.remove('selected'));
+        opt.classList.add('selected');
+        if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = false;
+      });
+
+      winnerOptionsList.appendChild(opt);
+    });
+
+    if (btnProceedWinnerConfirm) {
+      btnProceedWinnerConfirm.disabled = !selectedWinnerId;
+    }
+  }
+
+  if (btnOpenWinnerModal && winnerSelectModal) {
     btnOpenWinnerModal.addEventListener('click', () => {
       const state = gameStateStore.getState();
       selectedWinnerId = null;
-      btnProceedWinnerConfirm.disabled = true;
-
-      // Populate current groups
-      winnerOptionsList.innerHTML = '';
-      state.groups.forEach((group, index) => {
-        const opt = document.createElement('div');
-        opt.className = `winner-option-card ${group.isDisqualified ? 'is-dq' : ''}`;
-        opt.dataset.id = group.id;
-        opt.innerHTML = `
-          <div>
-            <div class="winner-opt-team-name">GROUP ${index + 1} — ${escapeHtml(group.name)}</div>
-            <div class="winner-opt-players">${escapeHtml(group.player1?.name || '')} &amp; ${escapeHtml(group.player2?.name || '')}</div>
-          </div>
-          <div class="winner-opt-score">${group.points} PTS</div>
-        `;
-
-        opt.addEventListener('click', () => {
-          selectedWinnerId = group.id;
-          Array.from(winnerOptionsList.children).forEach((c) => c.classList.remove('selected'));
-          opt.classList.add('selected');
-          btnProceedWinnerConfirm.disabled = false;
-        });
-
-        winnerOptionsList.appendChild(opt);
-      });
-
+      renderWinnerOptions(state);
       winnerSelectModal.classList.add('open');
     });
   }
@@ -318,7 +341,11 @@ function bindAdminEvents() {
       if (!selectedWinnerId) return;
       const state = gameStateStore.getState();
       const group = state.groups.find((g) => g.id === selectedWinnerId);
-      if (!group) return;
+      if (!group || group.isDisqualified) {
+        selectedWinnerId = null;
+        renderWinnerOptions(state);
+        return;
+      }
 
       if (confirmWinnerTeamName) {
         confirmWinnerTeamName.textContent = group.name;
@@ -339,7 +366,11 @@ function bindAdminEvents() {
   if (btnConfirmWinnerFinal && winnerConfirmModal) {
     btnConfirmWinnerFinal.addEventListener('click', () => {
       if (selectedWinnerId) {
-        gameStateStore.declareWinner(selectedWinnerId);
+        const state = gameStateStore.getState();
+        const group = state.groups.find((g) => g.id === selectedWinnerId);
+        if (group && !group.isDisqualified) {
+          gameStateStore.declareWinner(selectedWinnerId);
+        }
         selectedWinnerId = null;
         winnerConfirmModal.classList.remove('open');
       }
@@ -391,4 +422,51 @@ syncAdminTimerLoop(gameStateStore.getState().timer);
 gameStateStore.onStateChange((state) => {
   renderAdminPanel(state);
   syncAdminTimerLoop(state.timer);
+
+  // Live update Winner Select Modal if currently open
+  const winnerSelectModal = document.getElementById('winner-select-modal');
+  const winnerConfirmModal = document.getElementById('winner-confirm-modal');
+  if (winnerSelectModal && winnerSelectModal.classList.contains('open')) {
+    const winnerOptionsList = document.getElementById('winner-options-list');
+    const btnProceedWinnerConfirm = document.getElementById('btn-proceed-winner-confirm');
+    if (winnerOptionsList) {
+      const eligibleGroups = state.groups.filter((g) => !g.isDisqualified);
+      winnerOptionsList.innerHTML = '';
+      if (eligibleGroups.length === 0) {
+        winnerOptionsList.innerHTML = '<div style="padding: 16px; color: #ff1744; text-align: center; font-weight: 700;">No eligible teams remaining!</div>';
+        if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = true;
+      } else {
+        eligibleGroups.forEach((group) => {
+          const opt = document.createElement('div');
+          opt.className = 'winner-option-card';
+          opt.dataset.id = group.id;
+          opt.innerHTML = `
+            <div>
+              <div class="winner-opt-team-name">${escapeHtml(group.name)}</div>
+              <div class="winner-opt-players">${escapeHtml(group.player1?.name || '')} &amp; ${escapeHtml(group.player2?.name || '')}</div>
+            </div>
+            <div class="winner-opt-score">${group.points} PTS</div>
+          `;
+          opt.addEventListener('click', () => {
+            Array.from(winnerOptionsList.children).forEach((c) => c.classList.remove('selected'));
+            opt.classList.add('selected');
+            if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = false;
+          });
+          winnerOptionsList.appendChild(opt);
+        });
+      }
+    }
+  }
+
+  // If winner confirm modal is open and confirmed team was just disqualified, revert to select modal
+  if (winnerConfirmModal && winnerConfirmModal.classList.contains('open')) {
+    const confirmNameEl = document.getElementById('confirm-winner-team-name');
+    if (confirmNameEl) {
+      const dqMatch = state.groups.find((g) => g.name === confirmNameEl.textContent && g.isDisqualified);
+      if (dqMatch) {
+        winnerConfirmModal.classList.remove('open');
+        if (winnerSelectModal) winnerSelectModal.classList.add('open');
+      }
+    }
+  }
 });
