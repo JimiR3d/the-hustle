@@ -422,20 +422,6 @@ function renderDisplay(state, meta = {}) {
   const isExpanded = Boolean(state.timer.isExpanded || state.timer.isRunning);
   if (timerBadge) timerBadge.classList.toggle('timer-expanded', isExpanded);
 
-  // Trigger full-page green flash & Web Audio buzzer when timer hits 0
-  if (state.timer.seconds === 0 && !hasFiredZeroFlash) {
-    hasFiredZeroFlash = true;
-    playZeroBuzzerSound();
-    if (stage) {
-      stage.classList.remove('timer-finished-flash');
-      void stage.offsetWidth;
-      stage.classList.add('timer-finished-flash');
-      setTimeout(() => stage.classList.remove('timer-finished-flash'), 2600);
-    }
-  } else if (state.timer.seconds > 0) {
-    hasFiredZeroFlash = false;
-  }
-
   renderTimer(state.timer);
 }
 

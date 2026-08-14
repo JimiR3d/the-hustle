@@ -238,10 +238,35 @@ function bindAdminEvents() {
   }
 }
 
+// Robust Admin Multi-Window Timer Loop
+let adminTimerInterval = null;
+function syncAdminTimerLoop(timerState) {
+  if (adminTimerInterval) {
+    clearInterval(adminTimerInterval);
+    adminTimerInterval = null;
+  }
+
+  if (timerState && timerState.isRunning && timerState.seconds > 0) {
+    adminTimerInterval = setInterval(() => {
+      const state = gameStateStore.getState();
+      if (state.timer.isRunning && state.timer.seconds > 0) {
+        gameStateStore.tickTimer();
+      } else {
+        if (adminTimerInterval) {
+          clearInterval(adminTimerInterval);
+          adminTimerInterval = null;
+        }
+      }
+    }, 1000);
+  }
+}
+
 // Initialize Admin UI
 renderAdminPanel(gameStateStore.getState());
 bindAdminEvents();
+syncAdminTimerLoop(gameStateStore.getState().timer);
 
 gameStateStore.onStateChange((state) => {
   renderAdminPanel(state);
+  syncAdminTimerLoop(state.timer);
 });

@@ -271,34 +271,57 @@ class GameStateStore {
   updateTimer(seconds, isRunning) {
     this.state.timer.seconds = Math.max(0, seconds);
     this.state.timer.isRunning = isRunning;
+    if (isRunning && this.state.timer.seconds > 0) {
+      this.state.timer.targetEndTime = Date.now() + this.state.timer.seconds * 1000;
+    } else {
+      this.state.timer.targetEndTime = null;
+    }
     this.saveAndBroadcast('timer_update');
   }
 
   pauseTimer() {
+    if (this.state.timer.isRunning && this.state.timer.targetEndTime) {
+      this.state.timer.seconds = Math.max(0, Math.ceil((this.state.timer.targetEndTime - Date.now()) / 1000));
+    }
     this.state.timer.isRunning = false;
+    this.state.timer.targetEndTime = null;
     this.saveAndBroadcast('timer_update');
   }
 
   stopTimer() {
     this.state.timer.isRunning = false;
+    this.state.timer.targetEndTime = null;
     this.state.timer.seconds = this.state.timer.initialSeconds || 300;
     this.saveAndBroadcast('timer_update');
   }
 
   resetTimer() {
     this.state.timer.isRunning = false;
+    this.state.timer.targetEndTime = null;
     this.state.timer.seconds = this.state.timer.initialSeconds || 300;
     this.state.timer.isExpanded = false;
     this.saveAndBroadcast('timer_update');
   }
 
   tickTimer() {
-    if (this.state.timer.isRunning && this.state.timer.seconds > 0) {
-      this.state.timer.seconds -= 1;
-      if (this.state.timer.seconds === 0) {
-        this.state.timer.isRunning = false;
+    if (this.state.timer.isRunning) {
+      if (this.state.timer.targetEndTime) {
+        const remaining = Math.max(0, Math.ceil((this.state.timer.targetEndTime - Date.now()) / 1000));
+        if (this.state.timer.seconds !== remaining) {
+          this.state.timer.seconds = remaining;
+          if (remaining === 0) {
+            this.state.timer.isRunning = false;
+            this.state.timer.targetEndTime = null;
+          }
+          this.saveAndBroadcast('timer_tick');
+        }
+      } else if (this.state.timer.seconds > 0) {
+        this.state.timer.seconds -= 1;
+        if (this.state.timer.seconds === 0) {
+          this.state.timer.isRunning = false;
+        }
+        this.saveAndBroadcast('timer_tick');
       }
-      this.saveAndBroadcast('timer_tick');
     }
   }
 
@@ -307,6 +330,7 @@ class GameStateStore {
     this.state.timer.seconds = targetSecs;
     this.state.timer.initialSeconds = targetSecs;
     this.state.timer.isRunning = false;
+    this.state.timer.targetEndTime = null;
     this.saveAndBroadcast('timer_duration');
   }
 
