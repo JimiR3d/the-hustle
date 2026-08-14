@@ -105,11 +105,13 @@ git checkout v2-redesign      # Switch back to v2 redesign development
   - 2 Groups: Side-by-side at `x: 690px` and `x: 1230px`, `scale: 1.10`.
   - 3 Groups: Balanced 3 across at `x: 465px`, `x: 960px`, and `x: 1455px`, `scale: 1.02`.
 - **Sequenced Disqualification & Spotlight Layout Separation:**
-  - When a spotlighted team is disqualified, its 2.8s DQ sequence (Phase 1 neon aura, Phase 2 in-place diagonal card tear, Phase 3 Apple Genie curved flight arc) completes in its entirety BEFORE remaining spotlighted groups move.
+  - When a spotlighted team is disqualified, its 2.8s DQ sequence (Phase 1 neon aura, Phase 2 in-place diagonal card tear, Phase 3 Apple Genie curved flight arc down to the bottom-right slot) completes in its entirety and settles into the slot BEFORE remaining spotlighted groups move.
   - While DQ flight is active, remaining spotlighted groups stay locked in place without jitter or displacement.
-  - Once the DQ group is removed from the DOM, the spotlight layout smoothly recalculates for the remaining spotlighted count (e.g. 3 &rarr; 2 or 2 &rarr; 1), easing smoothly into their newly centered spotlight positions.
+  - Once the DQ group has arrived and settled into the bottom slot, the spotlight layout smoothly recalculates for the remaining spotlighted count (e.g. 3 &rarr; 2 or 2 &rarr; 1), easing smoothly into their newly centered spotlight positions.
   - `animateLayoutFlip` operates strictly on non-spotlighted active groups, ensuring Spotlight mode solely owns visible transforms without position conflicts.
   - `getGroupHomeCoordinates` dynamically calculates each team's exact current flex slot coordinates so that returning from Spotlight always lands on the team's true current layout position.
+- **Global Reset Spotlights Control:** Standalone `🎯 RESET SPOTLIGHTS` button in the header of the Competitor Teams section on `admin.html` clears all active spotlight selections at once and smoothly glides the teams back to their natural layout slots without affecting any other game state.
+- **Zero Timer Finish Green Flash:** When the countdown reaches `00:00`, the crisp Time's Up animation and audio play with zero stage green flash, bloom, or filter effects.
 - **Spotlight Dimmer Isolation:** The stage dark overlay activates exclusively when at least one group is spotlighted; starting, pausing, or running the timer never affects background darkness.
 - **Exact Slot Restoration:** Restoring any disqualified team returns it directly to its exact original slot index (e.g. Team 1 &rarr; Slot 1).
 - 5 Team Groups (Teams of 2 Players each = 10 competitors) arranged matching `Display Demo v3 (1).png`.
