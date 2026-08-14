@@ -60,5 +60,6 @@
 - Built multi-phase GSAP fly-through animation: Fast entrance (small to large + blur fading) &rarr; Dramatic slow-motion center moment (100% sharp blur 0px) &rarr; Fast exit acceleration (large to small + blur returning).
 - Implemented alternating direction engine (Left &rarr; Center &rarr; Right on 1st run, Right &rarr; Center &rarr; Left on 2nd run, etc.).
 - Fixed admin control sync by removing undeclared variable reference and upgrading timer to wall-clock `targetEndTime` synchronization.
+- Removed all blur from `Times_up.png` logo and added temporary 70% dark background overlay during Time's Up sequence.
 - Modernized typography with Inter Bold (700), Bitcount Single, and Geist Pixel.
 - Pushed updates to GitHub `v2-redesign`.
