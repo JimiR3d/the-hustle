@@ -51,9 +51,10 @@
 - Moved player card assets to `public/assets/` for static Vercel production bundle serving.
 - Completed end-to-end live browser testing on `https://the-hustle-eight.vercel.app` and `https://the-hustle-eight.vercel.app/admin`.
 
-### Session 2026-08-14 — Exact Main Logo Horizontal Centering
+### Session 2026-08-14 — Typography Update (Inter Bold, Bitcount Single, Geist Pixel)
 **Tasks completed:**
-- Updated `.layer-logo` in `src/css/main.css` to use `left: 0; right: 0; margin: 0 auto;`, locking it to the exact horizontal center of the Main Menu section with zero transform conflicts.
-- Preserved the 1:1 horizontal alignment and natural relationship between the logo and the hanging piggy bank (`.layer-piggy-wrapper`).
-- Kept the piggy bank pendulum swing animation and all other Main Menu layouts intact.
+- Replaced `Cinzel` with `Inter Bold` (weight `700`) via Google Fonts in `index.html` and `src/css/main.css`.
+- Replaced `VT323` with `Bitcount Single` (self-hosted with full WOFF/WOFF2 font files in `public/assets/fonts/bitcount-single/` and registered via `@font-face`).
+- Replaced `Silkscreen` with `Geist Pixel` (self-hosted with full WOFF2 font files in `public/assets/fonts/geist-pixel/` and registered via `@font-face`).
+- Maintained all font sizes, letter spacing, line heights, colors, layout, and hierarchy without distortion.
 - Pushed updates to GitHub `v2-redesign`.
