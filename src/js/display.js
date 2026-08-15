@@ -44,6 +44,7 @@ let timesUpTriggerCount = 0;
 let timesUpTriggeredForCurrentRun = false;
 let previousTimerSeconds = null;
 let showSfxContext = null;
+let leaderboardUpdateTimer = null;
 
 // Pre-instantiated Countdown and Time's Up audio elements
 const timerStartAudio = new Audio('/assets/Timer_start.mp3');
@@ -498,7 +499,22 @@ function renderLeaderboard(state, meta = {}) {
   if (title) title.textContent = state.leaderboard?.title || 'CURRENT STANDINGS';
   // The hidden board keeps its last on-air snapshot. Rankings and movement are
   // recalculated only while the leaderboard is actually being shown.
-  if (!isVisible) return;
+  if (!isVisible) {
+    if (leaderboardUpdateTimer) {
+      clearTimeout(leaderboardUpdateTimer);
+      leaderboardUpdateTimer = null;
+    }
+    return;
+  }
+
+  if (meta.eventType === 'points_update') {
+    if (leaderboardUpdateTimer) clearTimeout(leaderboardUpdateTimer);
+    leaderboardUpdateTimer = setTimeout(() => {
+      leaderboardUpdateTimer = null;
+      renderLeaderboard(gameStateStore.getState(), { eventType: 'leaderboard_delayed_points_update' });
+    }, 3000);
+    return;
+  }
 
   const nextRanks = new Map();
   list.innerHTML = '';
@@ -520,7 +536,7 @@ function renderLeaderboard(state, meta = {}) {
     }
     const movementRecord = leaderboardMovementState.get(group.id);
     const displayedMovement = movementRecord && movementRecord.expiresAt > Date.now() ? movementRecord.movement : 0;
-    const isScoreEvent = state.lastScoreEvent?.groupId === group.id && meta.eventType === 'points_update';
+    const isScoreEvent = state.lastScoreEvent?.groupId === group.id && meta.eventType === 'leaderboard_delayed_points_update';
     const row = document.createElement('article');
 
     row.className = `leaderboard-row ${group.isDisqualified ? 'is-disqualified' : ''} ${rank === 1 ? 'is-first' : ''}`;
