@@ -116,7 +116,9 @@ class GameStateStore {
     const handleIncomingState = (newState, eventType, source) => {
       if (!newState || !newState.lastTxId) return;
       if (newState.lastTxId === this.lastProcessedTxId) return; // Deduplicate
-      if ((Number(newState.revision) || 0) < (Number(this.state?.revision) || 0)) return;
+      const isStale = (Number(newState.revision) || 0) < (Number(this.state?.revision) || 0);
+      const isControllerCloudEcho = source === 'supabase' && Boolean(this.remoteHostPin);
+      if (isStale && (source !== 'supabase' || isControllerCloudEcho)) return;
       
       // Check if points changed compared to current state
       let pointsChanged = false;
@@ -642,9 +644,9 @@ class GameStateStore {
   }
 
   resetAll() {
+    const currentRevision = Number(this.state.revision) || 0;
     this.state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-    this.state.lastUpdated = Date.now();
-    this.state.lastTxId = `tx_reset_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this.state.revision = currentRevision;
     this.saveAndBroadcast('reset');
   }
 }
