@@ -18,11 +18,23 @@ export function initParallax() {
     orientation: 'vertical',
   });
 
+  let introIsVisible = true;
+  const lenisTicker = (time) => {
+    if (introIsVisible) lenis.raf(time * 1000);
+  };
   lenis.on('scroll', ScrollTrigger.update);
-  gsap.ticker.add((time) => {
-    lenis.raf(time * 1000);
-  });
+  gsap.ticker.add(lenisTicker);
   gsap.ticker.lagSmoothing(0);
+
+  const visibilityObserver = new IntersectionObserver(([entry]) => {
+    introIsVisible = Boolean(entry?.isIntersecting);
+    if (introIsVisible) {
+      lenis.start();
+    } else {
+      lenis.stop();
+    }
+  }, { threshold: 0.01 });
+  visibilityObserver.observe(parallaxContainer);
 
   // Parallax multi-depth timeline
   const tl = gsap.timeline({
@@ -46,6 +58,7 @@ export function initParallax() {
     scrollIndicator.addEventListener('click', () => {
       const arenaSection = document.getElementById('main-arena-section');
       if (arenaSection) {
+        lenis.start();
         lenis.scrollTo(arenaSection, {
           offset: 0,
           duration: 3.0,
@@ -58,6 +71,8 @@ export function initParallax() {
   return {
     lenis,
     destroy() {
+      visibilityObserver.disconnect();
+      gsap.ticker.remove(lenisTicker);
       ScrollTrigger.getAll().forEach((st) => st.kill());
       gsap.killTweensOf(triggerElement);
       lenis.destroy();

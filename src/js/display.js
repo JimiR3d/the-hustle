@@ -43,6 +43,7 @@ let completedDisqualifiedIds = new Set();
 let timesUpTriggerCount = 0;
 let timesUpTriggeredForCurrentRun = false;
 let previousTimerSeconds = null;
+let lastAudibleTimerTick = '';
 let showSfxContext = null;
 let leaderboardUpdateTimer = null;
 let hasLeaderboardSnapshot = false;
@@ -1256,10 +1257,6 @@ function renderTimer(timerState) {
   const timerBadge = document.getElementById('hud-timer-badge');
   timerBadge?.classList.toggle('is-urgent', Boolean(timerState.isRunning && currentSecs <= 30 && currentSecs > 0));
 
-  if (timerState.isRunning && currentSecs > 0 && previousTimerSeconds !== null && currentSecs < previousTimerSeconds) {
-    playTimerTick(currentSecs);
-  }
-
   // Re-arm when timer is set or reset above 0
   if (currentSecs > 0) {
     timesUpTriggeredForCurrentRun = false;
@@ -1320,6 +1317,27 @@ syncTimerLoop(gameStateStore.getState());
 
 // Keep rendering the local timestamp-derived timer on every state update.
 gameStateStore.onStateChange((state, meta) => {
+  if (meta?.eventType === 'timer_tick') {
+    renderTimer(state.timer);
+    const tickKey = `${state.timer.targetEndTime || 'local'}:${state.timer.seconds}`;
+    if (state.timer.isRunning && state.timer.seconds > 0 && tickKey !== lastAudibleTimerTick) {
+      lastAudibleTimerTick = tickKey;
+      playTimerTick(state.timer.seconds);
+    }
+    syncTimerLoop(state);
+    return;
+  }
+
+  if (meta?.eventType === 'intermission_timer_tick') {
+    renderIntermissionTimer(state.intermissionTimer);
+    syncTimerLoop(state);
+    return;
+  }
+
+  if (meta?.eventType === 'timer_update' || meta?.eventType === 'timer_duration') {
+    lastAudibleTimerTick = '';
+  }
+
   if (meta?.eventType === 'popup_toggle') {
     const newlySpotlighted = state.groups.some((group) => group.isPopUp && !previousSpotlightIds.has(group.id));
     if (newlySpotlighted) {
