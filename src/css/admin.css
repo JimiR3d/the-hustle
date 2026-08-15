@@ -131,8 +131,9 @@ body {
 .question-prompt-composer textarea:focus { border-color: #ffd700; box-shadow: 0 0 0 3px rgba(255,215,0,.08); }
 .question-prompt-composer-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 12px; }
 #question-prompt-character-count { color: #876d7d; font: 700 11px monospace; }
-.question-prompt-actions { display: flex; gap: 9px; }
-.question-prompt-actions .btn { min-height: 42px; justify-content: center; }
+.question-prompt-actions { display: flex; justify-content: flex-end; gap: 9px; }
+.question-prompt-actions .btn { min-width: 190px; min-height: 42px; justify-content: center; }
+.question-prompt-actions .btn-card-hide { background: linear-gradient(135deg, #ff4d68, #a7092a); color: #fff; box-shadow: 0 4px 18px rgba(255, 45, 83, .3); }
 
 .question-prompt-library { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .question-prompt-library section { padding: 15px; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; background: rgba(255,255,255,.025); }
@@ -816,7 +817,7 @@ body {
   .question-prompt-composer { padding: 12px; }
   .question-prompt-composer textarea { min-height: 210px; font-size: 17px; }
   .question-prompt-composer-footer { align-items: stretch; flex-direction: column; }
-  .question-prompt-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .question-prompt-actions { display: grid; grid-template-columns: 1fr; }
   .question-prompt-library { grid-template-columns: 1fr; }
 
   .timer-control-panel { display: grid; grid-template-columns: 1fr; gap: 10px; }

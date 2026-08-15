@@ -35,14 +35,19 @@ function renderAdminPanel(state) {
   }
 
   const cardStatus = document.getElementById('question-prompt-air-status');
-  const retractCardButton = document.getElementById('btn-retract-question-prompt');
+  const toggleCardButton = document.getElementById('btn-toggle-question-prompt');
+  const cardIsVisible = Boolean(state.questionPromptCard?.isVisible);
   if (cardStatus) {
-    cardStatus.textContent = state.questionPromptCard?.isVisible
+    cardStatus.textContent = cardIsVisible
       ? `${String(state.questionPromptCard.type || 'question').toUpperCase()} ON AIR`
       : 'OFF AIR';
-    cardStatus.classList.toggle('active', Boolean(state.questionPromptCard?.isVisible));
+    cardStatus.classList.toggle('active', cardIsVisible);
   }
-  if (retractCardButton) retractCardButton.disabled = !state.questionPromptCard?.isVisible;
+  if (toggleCardButton) {
+    const buttonType = cardIsVisible ? state.questionPromptCard.type : selectedQuestionPromptType;
+    toggleCardButton.textContent = `${cardIsVisible ? 'HIDE' : 'SHOW'} ${String(buttonType || 'question').toUpperCase()}`;
+    toggleCardButton.classList.toggle('btn-card-hide', cardIsVisible);
+  }
 
   if (!container) return;
   container.innerHTML = '';
@@ -188,11 +193,13 @@ function bindAdminEvents() {
 
   const cardTextInput = document.getElementById('question-prompt-text');
   const cardCount = document.getElementById('question-prompt-character-count');
-  const showCardButton = document.getElementById('btn-show-question-prompt');
+  const toggleCardButton = document.getElementById('btn-toggle-question-prompt');
   const syncCardComposer = () => {
     const length = cardTextInput?.value.length || 0;
     if (cardCount) cardCount.textContent = `${length} / 420`;
-    if (showCardButton) showCardButton.textContent = `SHOW ${selectedQuestionPromptType.toUpperCase()}`;
+    if (toggleCardButton && !gameStateStore.getState().questionPromptCard?.isVisible) {
+      toggleCardButton.textContent = `SHOW ${selectedQuestionPromptType.toUpperCase()}`;
+    }
     if (cardTextInput) cardTextInput.placeholder = `Enter the ${selectedQuestionPromptType} here...`;
   };
 
@@ -204,11 +211,12 @@ function bindAdminEvents() {
     });
   });
   cardTextInput?.addEventListener('input', syncCardComposer);
-  showCardButton?.addEventListener('click', () => {
-    gameStateStore.showQuestionPromptCard(selectedQuestionPromptType, cardTextInput?.value);
-  });
-  document.getElementById('btn-retract-question-prompt')?.addEventListener('click', () => {
-    gameStateStore.hideQuestionPromptCard();
+  toggleCardButton?.addEventListener('click', () => {
+    if (gameStateStore.getState().questionPromptCard?.isVisible) {
+      gameStateStore.hideQuestionPromptCard();
+    } else {
+      gameStateStore.showQuestionPromptCard(selectedQuestionPromptType, cardTextInput?.value);
+    }
   });
   syncCardComposer();
 
