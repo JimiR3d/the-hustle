@@ -62,10 +62,10 @@ git checkout v2-redesign      # Switch back to v2 redesign development
     - **Continuous Coin Rain Engine:** Mounted to `document.body` at `z-index: 9900;`, spawning `Coin3.png` as dominant coin (100% prominence) and `Coin1.png`/`Coin2.png` as variation (40% prominence) with randomized 3D tumbling, rotation, speed, and horizontal drift across the full screen.
     - **Dedicated Red ✕ Exit Button:** Displayed in the winner control section on the Admin panel to cleanly exit Winner mode and smoothly restore the stage.
 - **Game Timer Audio & Time's Up Sequence:**
-  - `Timer_start.mp3` plays during active timer countdown when time remaining is `> 20s`.
-  - At `00:20`, seamlessly switches to `Timer_speedUp.mp3` for the final 20 seconds.
-  - Pausing the timer pauses the active audio; resuming continues playback; stopping/resetting stops both and resets to zero.
-  - When timer reaches `00:00`, countdown audio stops before `Time_up.mp3` and `Times_up.png` trigger.
+  - A single Web Audio tick plays once per second and progressively accelerates during the final 30 seconds.
+  - Pausing, stopping, or resetting the timer immediately stops scheduling countdown ticks.
+  - At `00:00`, one synthesized finish cue plays as `Times_up.png` triggers.
+  - Round, Match, No Match, leaderboard-update, score, elimination, and progressive spotlight cues are synthesized with Web Audio.
   - Fades a 70% dark backdrop (`rgba(0, 0, 0, 0.70)`) across the Game section in `0.25s` to make the logo pop while keeping the game faintly visible.
   - Logo (`Times_up.png`) sits in front of the backdrop at `z-index: 2` and remains 100% crisp and sharp (zero blur, zero added glow) throughout the entire animation.
   - Alternates direction each trigger: 1st (Left &rarr; Center &rarr; Right), 2nd (Right &rarr; Center &rarr; Left), 3rd (Left &rarr; Center &rarr; Right), etc.

@@ -401,17 +401,18 @@ function playTimerTick(seconds) {
   }
 }
 
-function playSpotlightSfx() {
+function playSpotlightSfx(spotlightCount = 1) {
   try {
     const ctx = getShowSfxContext();
     if (!ctx) return;
     const now = ctx.currentTime;
+    const pitchMultiplier = 1 + (Math.max(1, Math.min(3, spotlightCount)) - 1) * 0.22;
     [330, 495, 740].forEach((frequency, index) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       const at = now + index * 0.07;
       osc.type = index === 2 ? 'triangle' : 'sine';
-      osc.frequency.setValueAtTime(frequency, at);
+      osc.frequency.setValueAtTime(frequency * pitchMultiplier, at);
       gain.gain.setValueAtTime(0.0001, at);
       gain.gain.exponentialRampToValueAtTime(0.12, at + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.34);
@@ -422,6 +423,45 @@ function playSpotlightSfx() {
     });
   } catch (err) {
     console.warn('[Display Audio] Spotlight cue unavailable:', err);
+  }
+}
+
+function playPresentationCueSfx(cue) {
+  try {
+    const ctx = getShowSfxContext();
+    if (!ctx || !cue) return;
+    const now = ctx.currentTime;
+    const label = String(cue.label || '').toUpperCase();
+    let notes;
+    let waveform = 'triangle';
+
+    if (cue.kind === 'round') {
+      const roundNumber = Number(label.match(/\d+/)?.[0]) || 1;
+      const base = 294 * (1 + (roundNumber - 1) * 0.08);
+      notes = [base, base * 1.26, base * 1.5];
+    } else if (label === 'MATCH') {
+      notes = [440, 554, 659, 880];
+    } else {
+      notes = [392, 311, 233, 175];
+      waveform = 'sawtooth';
+    }
+
+    notes.forEach((frequency, index) => {
+      const at = now + index * (cue.kind === 'round' ? 0.13 : 0.1);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = waveform;
+      osc.frequency.setValueAtTime(frequency, at);
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(cue.kind === 'round' ? 0.12 : 0.1, at + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.28);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(at);
+      osc.stop(at + 0.3);
+    });
+  } catch (err) {
+    console.warn('[Display Audio] Presentation cue unavailable:', err);
   }
 }
 
@@ -1080,6 +1120,7 @@ function renderIntermissionTimer(timerState) {
 
 function triggerPresentationCue(cue) {
   if (!cue?.label) return;
+  playPresentationCueSfx(cue);
   document.getElementById('presentation-cue-overlay')?.remove();
   const arenaSection = document.getElementById('main-arena-section') || document.body;
   const container = document.createElement('div');
@@ -1281,7 +1322,10 @@ syncTimerLoop(gameStateStore.getState());
 gameStateStore.onStateChange((state, meta) => {
   if (meta?.eventType === 'popup_toggle') {
     const newlySpotlighted = state.groups.some((group) => group.isPopUp && !previousSpotlightIds.has(group.id));
-    if (newlySpotlighted) playSpotlightSfx();
+    if (newlySpotlighted) {
+      const spotlightCount = state.groups.filter((group) => group.isPopUp && !group.isDisqualified).length;
+      playSpotlightSfx(spotlightCount);
+    }
   }
   previousSpotlightIds = new Set(state.groups.filter((group) => group.isPopUp).map((group) => group.id));
   renderDisplay(state, meta);
