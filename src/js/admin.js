@@ -52,9 +52,18 @@ function renderAdminPanel(state) {
   if (!container) return;
   container.innerHTML = '';
 
+  const assignedPlayerNames = new Set(
+    state.groups.flatMap((group) => [group.player1, group.player2])
+      .filter((player) => player?.isRevealed)
+      .map((player) => player.name.toLowerCase())
+  );
+
   const playerOptionsHTML = (selectedName, isRevealed) => {
     const placeholder = isRevealed ? '' : '<option value="" selected disabled>SELECT PLAYER</option>';
-    return placeholder + Object.keys(ALL_PLAYERS).map((name) => {
+    return placeholder + Object.keys(ALL_PLAYERS).filter((name) => {
+      const isCurrentPlayer = Boolean(isRevealed) && name.toLowerCase() === (selectedName || '').toLowerCase();
+      return isCurrentPlayer || !assignedPlayerNames.has(name.toLowerCase());
+    }).map((name) => {
       const isSel = Boolean(isRevealed) && name.toLowerCase() === (selectedName || '').toLowerCase();
       return `<option value="${escapeHtml(name)}" ${isSel ? 'selected' : ''}>${escapeHtml(name)}</option>`;
     }).join('');
@@ -261,6 +270,10 @@ function bindAdminEvents() {
 
   document.getElementById('btn-enter-arena')?.addEventListener('click', () => {
     gameStateStore.enterArena();
+  });
+
+  document.getElementById('btn-return-main-menu')?.addEventListener('click', () => {
+    gameStateStore.returnToMainMenu();
   });
 
   // Timer Controls (Start, Pause, Stop, Reset)

@@ -48,37 +48,39 @@ export function initParallax() {
     .to('[data-parallax-layer="ground"]', { yPercent: -38, ease: 'none' }, 0);
 
   // Scroll to Arena button click (Cinematic, smooth 3.0s auto-scroll showcasing parallax layers)
-  const scrollIndicator = document.getElementById('scroll-to-arena-btn');
-  if (scrollIndicator) {
-    scrollIndicator.addEventListener('click', () => {
-      const arenaSection = document.getElementById('main-arena-section');
-      if (arenaSection) {
-        lenis.start();
-        lenis.scrollTo(arenaSection, {
-          offset: 0,
-          duration: 3.0,
-          easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
-        });
-      }
+  const scrollToArena = () => {
+    const arenaSection = document.getElementById('main-arena-section');
+    if (!arenaSection) return;
+    lenis.start();
+    lenis.resize();
+    lenis.scrollTo(arenaSection, {
+      offset: 0,
+      duration: 3.0,
+      force: true,
+      lock: true,
+      easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
     });
-  }
-
-  const scrollToTopButton = document.getElementById('scroll-to-top-btn');
-  if (scrollToTopButton) {
-    scrollToTopButton.addEventListener('click', () => {
-      lenis.start();
-      lenis.scrollTo(0, {
-        duration: 2.4,
-        easing: (t) => 1 - Math.pow(1 - t, 4),
-      });
+  };
+  const scrollToMainMenu = () => {
+    lenis.start();
+    lenis.resize();
+    lenis.scrollTo(0, {
+      duration: 2.4,
+      force: true,
+      lock: true,
+      easing: (t) => 1 - Math.pow(1 - t, 4),
     });
-  }
+  };
+  window.addEventListener('hustle-scroll-arena', scrollToArena);
+  window.addEventListener('hustle-scroll-main-menu', scrollToMainMenu);
 
   return {
     lenis,
     destroy() {
       document.body.classList.remove('arena-performance-mode');
       visibilityObserver.disconnect();
+      window.removeEventListener('hustle-scroll-arena', scrollToArena);
+      window.removeEventListener('hustle-scroll-main-menu', scrollToMainMenu);
       gsap.ticker.remove(lenisTicker);
       ScrollTrigger.getAll().forEach((st) => st.kill());
       gsap.killTweensOf(triggerElement);

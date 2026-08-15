@@ -20,20 +20,16 @@ window.addEventListener('DOMContentLoaded', () => {
   fitStageToWindow();
   initParallax();
   document.getElementById('scroll-to-arena-btn')?.addEventListener('click', () => {
-    if (!programmaticArenaFocus) gameStateStore.enterArena();
+    gameStateStore.enterArena();
   });
 });
 
-let programmaticArenaFocus = false;
 function focusArena() {
-  const arenaButton = document.getElementById('scroll-to-arena-btn');
-  if (arenaButton) {
-    programmaticArenaFocus = true;
-    arenaButton.click();
-    programmaticArenaFocus = false;
-  } else {
-    document.getElementById('main-arena-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+  window.dispatchEvent(new CustomEvent('hustle-scroll-arena'));
+}
+
+function focusMainMenu() {
+  window.dispatchEvent(new CustomEvent('hustle-scroll-main-menu'));
 }
 
 let previousScores = {};
@@ -42,7 +38,10 @@ let leaderboardMovementState = new Map();
 let previousLeaderboardVisible = false;
 let previousWinnerGroupId = null;
 let previousArenaFocusNonce = gameStateStore.getState().arenaFocusNonce || 0;
+let previousMainMenuFocusNonce = gameStateStore.getState().mainMenuFocusNonce || 0;
 let previousCardsDealt = Boolean(gameStateStore.getState().arenaSetup?.cardsDealt);
+let previousRosterCompleteNonce = gameStateStore.getState().arenaSetup?.rosterCompleteNonce || 0;
+let rosterCelebrationTimer = null;
 let dealStartTimer = null;
 let activeDealTimeline = null;
 const revealedPlayerSlots = new Set(
@@ -62,6 +61,7 @@ let previousTimerSeconds = null;
 let lastAudibleTimerTick = '';
 let showSfxContext = null;
 let leaderboardUpdateTimer = null;
+let pendingAnimationSfxTimers = [];
 let hasLeaderboardSnapshot = false;
 let previousSpotlightIds = new Set(
   gameStateStore.getState().groups.filter((group) => group.isPopUp).map((group) => group.id)
@@ -535,6 +535,68 @@ function playLeaderboardUpdateSfx() {
   }
 }
 
+function playAnimationSfx(kind, step = 0) {
+  try {
+    const ctx = getShowSfxContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const tone = (frequency, start, duration, volume = 0.08, type = 'triangle', endFrequency = frequency) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(Math.max(20, frequency), start);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFrequency), start + duration);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(volume, start + Math.min(0.018, duration * 0.2));
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + duration + 0.02);
+    };
+
+    if (kind === 'deal') {
+      const pitch = 245 + Math.min(step, 9) * 18;
+      tone(pitch, now, 0.1, 0.065, 'triangle', pitch * 1.35);
+      tone(90, now, 0.075, 0.035, 'sine', 55);
+    } else if (kind === 'scoreboard-pop') {
+      const pitch = 310 + Math.min(step, 4) * 36;
+      tone(82, now, 0.2, 0.07, 'sine', 48);
+      tone(pitch, now + 0.025, 0.22, 0.075, 'triangle', pitch * 1.5);
+    } else if (kind === 'leaderboard-in') {
+      [220, 330, 494].forEach((frequency, index) => tone(frequency, now + index * 0.075, 0.34, 0.075, 'triangle', frequency * 1.32));
+    } else if (kind === 'leaderboard-out') {
+      [494, 330, 220].forEach((frequency, index) => tone(frequency, now + index * 0.055, 0.24, 0.055, 'sine', frequency * 0.72));
+    } else if (kind === 'winner-in') {
+      [392, 523, 659, 784, 1047].forEach((frequency, index) => tone(frequency, now + index * 0.105, 0.48, 0.1, index < 2 ? 'triangle' : 'sine', frequency * 1.03));
+      tone(98, now, 0.85, 0.12, 'sine', 55);
+    } else if (kind === 'winner-out') {
+      [659, 494, 330].forEach((frequency, index) => tone(frequency, now + index * 0.075, 0.3, 0.06, 'triangle', frequency * 0.68));
+    } else if (kind === 'scene-down') {
+      tone(180, now, 0.62, 0.065, 'sine', 520);
+      tone(70, now + 0.08, 0.52, 0.055, 'triangle', 150);
+    } else if (kind === 'scene-up') {
+      tone(520, now, 0.58, 0.06, 'sine', 180);
+      tone(150, now + 0.06, 0.46, 0.045, 'triangle', 70);
+    }
+  } catch (err) {
+    console.warn('[Display Audio] Animation cue unavailable:', err);
+  }
+}
+
+function scheduleAnimationSfx(kind, step, delayMs) {
+  const timerId = setTimeout(() => {
+    pendingAnimationSfxTimers = pendingAnimationSfxTimers.filter((id) => id !== timerId);
+    playAnimationSfx(kind, step);
+  }, delayMs);
+  pendingAnimationSfxTimers.push(timerId);
+}
+
+function clearPendingAnimationSfx() {
+  pendingAnimationSfxTimers.forEach((timerId) => clearTimeout(timerId));
+  pendingAnimationSfxTimers = [];
+}
+
 function getRankedGroups(groups) {
   const sortedGroups = [...groups].sort((a, b) => {
     if (a.isDisqualified !== b.isDisqualified) return a.isDisqualified ? 1 : -1;
@@ -728,12 +790,19 @@ function renderDisplay(state, meta = {}) {
   if (!topRow || !bottomRow) return;
 
   const cardsDealt = Boolean(state.arenaSetup?.cardsDealt);
+  const rosterCompleteNonce = state.arenaSetup?.rosterCompleteNonce || 0;
+  const shouldCelebrateRoster = rosterCompleteNonce > previousRosterCompleteNonce;
+  previousRosterCompleteNonce = rosterCompleteNonce;
   if (stage) {
     stage.classList.toggle('cards-not-dealt', !cardsDealt);
   }
 
   // Handle Full Reset Action
   if (meta && (meta.eventType === 'reset' || meta.eventType === 'clear_all_data')) {
+    clearPendingAnimationSfx();
+    if (rosterCelebrationTimer) clearTimeout(rosterCelebrationTimer);
+    rosterCelebrationTimer = null;
+    stage?.classList.remove('roster-complete-celebration');
     completedDisqualifiedIds.clear();
     activeAnimationIds.clear();
     animatingSpotlightIds.clear();
@@ -755,6 +824,11 @@ function renderDisplay(state, meta = {}) {
   }
 
   const isLeaderboardVisible = Boolean(state.leaderboard?.isVisible && !state.winnerGroupId);
+  if (isLeaderboardVisible && !previousLeaderboardVisible) {
+    playAnimationSfx('leaderboard-in');
+  } else if (!isLeaderboardVisible && previousLeaderboardVisible && !state.winnerGroupId) {
+    playAnimationSfx('leaderboard-out');
+  }
   renderLeaderboard(state, meta);
   renderIntermissionTimer(state.intermissionTimer);
   renderQuestionPromptCard(state.questionPromptCard, meta);
@@ -764,10 +838,20 @@ function renderDisplay(state, meta = {}) {
   }
   previousArenaFocusNonce = state.arenaFocusNonce || 0;
 
+  if ((state.mainMenuFocusNonce || 0) > previousMainMenuFocusNonce) {
+    focusMainMenu();
+  }
+  previousMainMenuFocusNonce = state.mainMenuFocusNonce || 0;
+
   if ((state.presentationCue?.nonce || 0) > previousPresentationCueNonce) {
     triggerPresentationCue(state.presentationCue);
   }
   previousPresentationCueNonce = state.presentationCue?.nonce || 0;
+
+  const winnerJustDeclared = Boolean(state.winnerGroupId && state.winnerGroupId !== previousWinnerGroupId);
+  const winnerJustCleared = Boolean(!state.winnerGroupId && previousWinnerGroupId);
+  if (winnerJustDeclared) playAnimationSfx('winner-in');
+  if (winnerJustCleared) playAnimationSfx('winner-out');
 
   const shouldFocusArena =
     (isLeaderboardVisible && !previousLeaderboardVisible) ||
@@ -925,7 +1009,7 @@ function renderDisplay(state, meta = {}) {
       return `
       <div class="player-card-slot ${slotClass} ${player.isRevealed ? 'is-revealed' : ''}" data-player-slot="${slotKey}" data-deal-order="${dealOrder}">
         <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img card-full-face" />
-        <img src="/assets/cards/CardBack.png" alt="" class="player-card-img player-card-back" aria-hidden="true" />
+        <img src="/assets/cards/CardBack.webp" alt="" class="player-card-img player-card-back" aria-hidden="true" />
         <div class="card-shimmer-mask" aria-hidden="true">
           <div class="card-white-light-reflection" style="${shimmerStyle}"></div>
         </div>
@@ -1031,7 +1115,7 @@ function renderDisplay(state, meta = {}) {
       if (!winnerIcon) {
         winnerIcon = document.createElement('div');
         winnerIcon.className = 'winner-icon-overlay';
-        winnerIcon.innerHTML = `<img src="/assets/WinnerIcon.png" alt="WINNERS" class="winner-icon-img" />`;
+        winnerIcon.innerHTML = `<img src="/assets/WinnerIcon.webp" alt="WINNERS" class="winner-icon-img" />`;
         groupWrapper.appendChild(winnerIcon);
       }
     } else {
@@ -1131,12 +1215,37 @@ function renderDisplay(state, meta = {}) {
 
   renderTimer(state.timer);
 
+  if (shouldCelebrateRoster) {
+    requestAnimationFrame(playRosterCompleteCelebration);
+  }
+
   if (cardsDealt && !previousCardsDealt) {
     scheduleOpeningCardDeal();
   } else if (!cardsDealt && previousCardsDealt) {
     cancelOpeningCardDeal();
   }
   previousCardsDealt = cardsDealt;
+}
+
+function playRosterCompleteCelebration() {
+  const stage = document.getElementById('app-stage');
+  if (!stage) return;
+  if (rosterCelebrationTimer) clearTimeout(rosterCelebrationTimer);
+  if (stage.classList.contains('cards-dealing') || stage.classList.contains('scoreboards-popping')) {
+    rosterCelebrationTimer = setTimeout(() => {
+      rosterCelebrationTimer = null;
+      playRosterCompleteCelebration();
+    }, 200);
+    return;
+  }
+  stage.classList.remove('roster-complete-celebration');
+  void stage.offsetWidth;
+  stage.classList.add('roster-complete-celebration');
+  playSpotlightSfx(5);
+  rosterCelebrationTimer = setTimeout(() => {
+    stage.classList.remove('roster-complete-celebration');
+    rosterCelebrationTimer = null;
+  }, 3000);
 }
 
 function cancelOpeningCardDeal() {
@@ -1168,6 +1277,9 @@ function scheduleOpeningCardDeal() {
         stage.classList.remove('cards-dealing');
         stage.querySelectorAll('.dealt-arrived').forEach((slot) => slot.classList.remove('dealt-arrived'));
         stage.classList.add('scoreboards-popping');
+        for (let scoreIndex = 0; scoreIndex < 5; scoreIndex += 1) {
+          scheduleAnimationSfx('scoreboard-pop', scoreIndex, scoreIndex * 115);
+        }
         setTimeout(() => stage.classList.remove('scoreboards-popping'), 1500);
         activeDealTimeline = null;
       },
@@ -1177,7 +1289,7 @@ function scheduleOpeningCardDeal() {
     slots.forEach((slot, index) => {
       const rect = slot.getBoundingClientRect();
       const card = document.createElement('img');
-      card.src = '/assets/cards/CardBack.png';
+      card.src = '/assets/cards/CardBack.webp';
       card.alt = '';
       card.className = 'opening-deal-card';
       stage.appendChild(card);
@@ -1196,6 +1308,7 @@ function scheduleOpeningCardDeal() {
         ease: 'power2.out',
         onComplete: () => {
           slot.classList.add('dealt-arrived');
+          playAnimationSfx('deal', index);
           card.remove();
         },
       }, index * 0.16);
@@ -1288,8 +1401,8 @@ function renderQuestionPromptCard(cardState, meta = {}) {
     const type = cardState.type === 'prompt' ? 'prompt' : 'question';
     const cleanText = String(cardState.text || '').trim();
     image.src = type === 'prompt'
-      ? '/assets/questions-prompts/PromptCard.png'
-      : '/assets/questions-prompts/QuestionCard.png';
+      ? '/assets/questions-prompts/PromptCard.webp'
+      : '/assets/questions-prompts/QuestionCard.webp';
     image.alt = `${type} card`;
     text.textContent = cleanText;
     text.classList.toggle('is-long', cleanText.length > 120 && cleanText.length <= 220);
@@ -1418,7 +1531,7 @@ function triggerTimesUpSequence() {
   container.appendChild(backdrop);
 
   const img = document.createElement('img');
-  img.src = '/assets/Times_up.png';
+  img.src = '/assets/Times_up.webp';
   img.alt = "TIME'S UP";
   img.className = 'times-up-img';
   container.appendChild(img);
@@ -1552,6 +1665,9 @@ syncTimerLoop(gameStateStore.getState());
 
 // Keep rendering the local timestamp-derived timer on every state update.
 gameStateStore.onStateChange((state, meta) => {
+  if (meta?.eventType === 'arena_focus') playAnimationSfx('scene-down');
+  if (meta?.eventType === 'main_menu_focus') playAnimationSfx('scene-up');
+
   if (meta?.eventType === 'timer_tick') {
     renderTimer(state.timer);
     const tickKey = `${state.timer.targetEndTime || 'local'}:${state.timer.seconds}`;

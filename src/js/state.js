@@ -7,16 +7,16 @@ const SUPABASE_KEY = 'sb_publishable_dD8L23d5oWUOFDIogayrXw_G-h19nK7';
 const REMOTE_SHOW_CODE = 'HUSTLE-ELLIS';
 
 export const ALL_PLAYERS = {
-  'Adrian': '/assets/Adrian.png',
-  'Aphro': '/assets/Aphro.png',
-  'Chidera': '/assets/Chidera.png',
-  'Chinazom': '/assets/Chinazom.png',
-  'EZ': '/assets/EZ.png',
-  'Kitan': '/assets/Kitan.png',
-  'Marty': '/assets/Marty.png',
-  'Tayo': '/assets/Tayo.png',
-  'Teslim': '/assets/Teslim.png',
-  'kIA': '/assets/kIA.png',
+  'Adrian': '/assets/Adrian.webp',
+  'Aphro': '/assets/Aphro.webp',
+  'Chidera': '/assets/Chidera.webp',
+  'Chinazom': '/assets/Chinazom.webp',
+  'EZ': '/assets/EZ.webp',
+  'Kitan': '/assets/Kitan.webp',
+  'Marty': '/assets/Marty.webp',
+  'Tayo': '/assets/Tayo.webp',
+  'Teslim': '/assets/Teslim.webp',
+  'kIA': '/assets/kIA.webp',
 };
 
 const DEFAULT_GROUPS = [
@@ -86,9 +86,11 @@ const DEFAULT_STATE = {
     targetEndTime: null,
   },
   arenaFocusNonce: 0,
+  mainMenuFocusNonce: 0,
   arenaSetup: {
     cardsDealt: false,
     dealNonce: 0,
+    rosterCompleteNonce: 0,
   },
   presentationCue: {
     kind: null,
@@ -297,12 +299,14 @@ class GameStateStore {
           ...group,
           player1: {
             ...group.player1,
+            image: ALL_PLAYERS[group.player1?.name] || group.player1?.image,
             isRevealed: typeof group.player1?.isRevealed === 'boolean'
               ? group.player1.isRevealed
               : isLegacyAssignmentState,
           },
           player2: {
             ...group.player2,
+            image: ALL_PLAYERS[group.player2?.name] || group.player2?.image,
             isRevealed: typeof group.player2?.isRevealed === 'boolean'
               ? group.player2.isRevealed
               : isLegacyAssignmentState,
@@ -441,6 +445,9 @@ class GameStateStore {
   updateGroupPlayer(groupId, slot, newPlayerName) {
     const group = this.state.groups.find((g) => g.id === groupId);
     if (!group || !ALL_PLAYERS[newPlayerName]) return;
+    const rosterWasComplete = this.state.groups.every((entry) =>
+      entry.player1?.isRevealed && entry.player2?.isRevealed
+    );
 
     if (slot === 'player1') {
       group.player1 = { name: newPlayerName, image: ALL_PLAYERS[newPlayerName], isRevealed: true };
@@ -452,7 +459,15 @@ class GameStateStore {
       .filter((player) => player?.isRevealed)
       .map((player) => player.name);
     group.name = revealedNames.length ? revealedNames.join(' & ').toUpperCase() : group.id.replace('-', ' ').toUpperCase();
-    this.saveAndBroadcast('player_reshuffle');
+    const rosterIsComplete = this.state.groups.every((entry) =>
+      entry.player1?.isRevealed && entry.player2?.isRevealed
+    );
+    if (rosterIsComplete && !rosterWasComplete) {
+      this.state.arenaSetup.rosterCompleteNonce = (this.state.arenaSetup.rosterCompleteNonce || 0) + 1;
+      this.saveAndBroadcast('roster_complete');
+    } else {
+      this.saveAndBroadcast('player_reshuffle');
+    }
   }
 
   togglePopUp(id) {
@@ -641,11 +656,17 @@ class GameStateStore {
         player2: { ...group.player2, isRevealed: false },
       }));
       this.state.arenaSetup = {
+        ...this.state.arenaSetup,
         cardsDealt: true,
         dealNonce: (this.state.arenaSetup?.dealNonce || 0) + 1,
       };
     }
     this.saveAndBroadcast('arena_focus');
+  }
+
+  returnToMainMenu() {
+    this.state.mainMenuFocusNonce = (this.state.mainMenuFocusNonce || 0) + 1;
+    this.saveAndBroadcast('main_menu_focus');
   }
 
   triggerPresentationCue(kind, label) {

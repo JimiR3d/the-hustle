@@ -367,7 +367,7 @@ body.arena-performance-mode .parallax-intro-section *::after {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: #0d0108 url('/assets/background_v2.png') no-repeat center center / 100% 100%;
+  background: #0d0108 url('/assets/background_v2.webp') no-repeat center center / 100% 100%;
 }
 
 /* 1920x1080 Viewport Auto-Scale Stage — 100% Line-Free & Borderless, Sits ABOVE Top Fade */
@@ -472,32 +472,28 @@ body.arena-performance-mode .parallax-intro-section *::after {
   transform: translateX(-50%);
 }
 
-.scroll-to-top-btn {
-  position: absolute;
-  top: 22px;
-  right: 22px;
-  z-index: 120;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 15px;
-  border: 1px solid rgba(255, 215, 0, 0.72);
-  border-radius: 999px;
-  color: #ffd700;
-  background: rgba(12, 2, 12, 0.78);
-  box-shadow: 0 7px 22px rgba(0, 0, 0, 0.38);
-  font-family: var(--font-family);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 1.4px;
-  cursor: pointer;
-  transition: transform .2s ease, background .2s ease, color .2s ease;
+#app-stage.roster-complete-celebration .spotlight-backdrop {
+  opacity: 1;
 }
 
-.scroll-to-top-btn:hover {
-  transform: translateY(-2px);
-  color: #120412;
-  background: #ffd700;
+#app-stage.roster-complete-celebration .group-panel-wrapper {
+  z-index: 70;
+  filter: brightness(1.18) drop-shadow(0 0 24px rgba(255, 215, 0, .72));
+}
+
+#app-stage.roster-complete-celebration .group-panel-container {
+  animation: roster-team-spotlight 3s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+#app-stage.roster-complete-celebration .player-card-slot {
+  filter: drop-shadow(0 0 22px rgba(255, 45, 164, .78));
+}
+
+@keyframes roster-team-spotlight {
+  0% { transform: scale(.92); opacity: .72; }
+  14% { transform: scale(1.12); opacity: 1; }
+  24%, 82% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 #app-stage.has-winner .display-header .logo-img {
