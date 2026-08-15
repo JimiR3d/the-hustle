@@ -65,7 +65,6 @@ function renderAdminPanel(state) {
 
       <div class="points-control-group">
         <button class="quick-pts-btn sub" data-action="pts" data-id="${group.id}" data-delta="-5" ${group.isDisqualified ? 'disabled' : ''}>-5</button>
-        <button class="quick-pts-btn sub" data-action="pts" data-id="${group.id}" data-delta="-1" ${group.isDisqualified ? 'disabled' : ''}>-1</button>
         <input 
           type="number" 
           class="pts-input" 
@@ -73,7 +72,6 @@ function renderAdminPanel(state) {
           data-id="${group.id}"
           ${group.isDisqualified ? 'disabled' : ''} 
         />
-        <button class="quick-pts-btn add" data-action="pts" data-id="${group.id}" data-delta="1" ${group.isDisqualified ? 'disabled' : ''}>+1</button>
         <button class="quick-pts-btn add" data-action="pts" data-id="${group.id}" data-delta="5" ${group.isDisqualified ? 'disabled' : ''}>+5</button>
       </div>
 

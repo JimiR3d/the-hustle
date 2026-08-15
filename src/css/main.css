@@ -1551,6 +1551,10 @@ html, body {
 }
 
 .mobile-control-pin {
+  position: absolute;
+  top: 22px;
+  right: 24px;
+  z-index: 60;
   display: flex;
   align-items: center;
   padding: 5px 8px;

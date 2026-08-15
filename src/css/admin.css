@@ -696,10 +696,8 @@ body {
 .btn-match { background: linear-gradient(135deg, #4cf0a4, #15975b); color: #04130b; }
 .btn-no-match { background: linear-gradient(135deg, #ff5b78, #a70c2d); color: #fff; }
 
-.quick-pts-btn[data-delta="1"],
-.quick-pts-btn[data-delta="-1"] { min-width: 46px; padding: 8px 13px; font-size: 14px; font-weight: 900; }
 .quick-pts-btn[data-delta="5"],
-.quick-pts-btn[data-delta="-5"] { opacity: .72; }
+.quick-pts-btn[data-delta="-5"] { min-width: 46px; padding: 8px 13px; font-size: 14px; font-weight: 900; }
 .btn-disqualify { margin-left: 8px; opacity: .62; }
 .btn-disqualify:hover { opacity: 1; }
 
@@ -716,8 +714,8 @@ body {
 .team-control-column .row-actions-group { flex-wrap: nowrap; white-space: nowrap; }
 .team-control-column .pts-input { width: 52px; }
 .team-control-column .quick-pts-btn { min-width: 34px; padding: 7px 8px; }
-.team-control-column .quick-pts-btn[data-delta="1"],
-.team-control-column .quick-pts-btn[data-delta="-1"] { min-width: 40px; padding: 7px 9px; }
+.team-control-column .quick-pts-btn[data-delta="5"],
+.team-control-column .quick-pts-btn[data-delta="-5"] { min-width: 40px; padding: 7px 9px; }
 .team-control-column .btn-spotlight,
 .team-control-column .btn-disqualify { padding: 8px 10px; }
 .team-control-column .btn-disqualify { margin-left: 2px; }
@@ -769,8 +767,8 @@ body {
   .team-control-column .points-control-group { min-width: 0; gap: 4px; }
   .team-control-column .row-actions-group { justify-content: flex-end; gap: 5px; }
   .team-control-column .quick-pts-btn,
-  .team-control-column .quick-pts-btn[data-delta="1"],
-  .team-control-column .quick-pts-btn[data-delta="-1"] { min-width: 37px; min-height: 39px; padding: 7px; }
+  .team-control-column .quick-pts-btn[data-delta="5"],
+  .team-control-column .quick-pts-btn[data-delta="-5"] { min-width: 42px; min-height: 39px; padding: 7px; }
   .team-control-column .pts-input { width: 45px; min-height: 39px; }
   .team-control-column .btn-spotlight,
   .team-control-column .btn-disqualify { min-height: 39px; padding: 7px 8px; font-size: 11px; }

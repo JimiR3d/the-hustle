@@ -95,6 +95,7 @@ const DEFAULT_STATE = {
   winnerGroupId: null,
   lastUpdated: Date.now(),
   lastTxId: null,
+  revision: 0,
   lastScoreEvent: null,
 };
 
@@ -105,6 +106,7 @@ class GameStateStore {
     this.broadcastChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : null;
     this.remoteClient = null;
     this.remoteChannel = null;
+    this.remotePushQueue = Promise.resolve();
     this.remoteHostPin = sessionStorage.getItem('hustle_remote_host_pin') || '';
     this.remoteStatus = 'connecting';
     
@@ -114,6 +116,7 @@ class GameStateStore {
     const handleIncomingState = (newState, eventType, source) => {
       if (!newState || !newState.lastTxId) return;
       if (newState.lastTxId === this.lastProcessedTxId) return; // Deduplicate
+      if ((Number(newState.revision) || 0) < (Number(this.state?.revision) || 0)) return;
       
       // Check if points changed compared to current state
       let pointsChanged = false;
@@ -222,6 +225,14 @@ class GameStateStore {
 
   async pushRemoteState(eventType = 'update') {
     if (!this.remoteHostPin) return { ok: false, skipped: true };
+    const stateSnapshot = JSON.parse(JSON.stringify(this.state));
+    const pinSnapshot = this.remoteHostPin;
+    const send = async () => this.sendRemoteState(stateSnapshot, eventType, pinSnapshot);
+    this.remotePushQueue = this.remotePushQueue.then(send, send);
+    return this.remotePushQueue;
+  }
+
+  async sendRemoteState(stateSnapshot, eventType, hostPin) {
     try {
       const response = await fetch(`${SUPABASE_URL}/functions/v1/hustle-state`, {
         method: 'POST',
@@ -231,8 +242,8 @@ class GameStateStore {
         },
         body: JSON.stringify({
           showCode: REMOTE_SHOW_CODE,
-          hostPin: this.remoteHostPin,
-          state: this.state,
+          hostPin,
+          state: stateSnapshot,
           eventType,
         }),
       });
@@ -297,6 +308,7 @@ class GameStateStore {
     const txId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     this.state.lastUpdated = Date.now();
     this.state.lastTxId = txId;
+    this.state.revision = (Number(this.state.revision) || 0) + 1;
     this.lastProcessedTxId = txId;
 
     try {
