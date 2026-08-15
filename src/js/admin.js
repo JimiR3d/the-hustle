@@ -1,10 +1,35 @@
 import { gameStateStore, ALL_PLAYERS } from './state.js';
+import { preloadShowAssets, retryFailedShowAssets, unlockAudioOnFirstGesture } from './preload.js';
 
 let pendingDisqualifyId = null;
 let selectedWinner = null;
 let renderWinnerOptions = () => {};
 let lastScoreUndo = null;
 let selectedQuestionPromptType = 'question';
+
+function renderAssetReadiness({ loaded, total, failed, complete }) {
+  const panel = document.getElementById('show-readiness-panel');
+  const label = document.getElementById('show-readiness-label');
+  const detail = document.getElementById('show-readiness-detail');
+  const count = document.getElementById('show-readiness-count');
+  const progress = document.getElementById('show-readiness-progress');
+  const retry = document.getElementById('btn-retry-assets');
+  const failures = failed?.length || 0;
+  const percent = total ? Math.round((loaded / total) * 100) : 100;
+
+  if (progress) progress.style.width = `${percent}%`;
+  if (count) count.textContent = `${loaded} / ${total}`;
+  panel?.classList.toggle('is-ready', Boolean(complete && !failures));
+  panel?.classList.toggle('has-errors', Boolean(complete && failures));
+  if (label) label.textContent = complete ? (failures ? 'ASSETS NEED ATTENTION' : 'SHOW ASSETS READY') : 'LOADING SHOW ASSETS';
+  if (detail) detail.textContent = complete
+    ? (failures ? `${failures} asset${failures === 1 ? '' : 's'} failed on this device.` : 'Graphics and audio are cached on this device.')
+    : 'Preparing graphics and audio on this device…';
+  if (retry) retry.hidden = !(complete && failures);
+}
+
+unlockAudioOnFirstGesture();
+preloadShowAssets(renderAssetReadiness);
 
 function refreshUndoButton() {
   const button = document.getElementById('btn-undo-score');
@@ -170,6 +195,12 @@ function bindAdminEvents() {
   const modalCompName = document.getElementById('modal-group-name');
   const confirmDisqualifyBtn = document.getElementById('btn-confirm-disqualify');
   const cancelDisqualifyBtn = document.getElementById('btn-cancel-disqualify');
+  const resetButton = document.getElementById('btn-reset-all');
+  const resetHome = document.getElementById('setup-reset-home');
+  if (resetButton && resetHome) resetHome.appendChild(resetButton);
+  document.getElementById('btn-retry-assets')?.addEventListener('click', () => {
+    retryFailedShowAssets(renderAssetReadiness);
+  });
 
   const cloudStatusLabel = document.getElementById('cloud-status-label');
   const cloudStatusDot = document.getElementById('cloud-status-dot');

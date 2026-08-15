@@ -33,7 +33,18 @@
     </div>
   </header>
 
-  <section class="cloud-sync-panel" aria-label="Cross-device control">
+  <section class="show-readiness-panel" id="show-readiness-panel" aria-live="polite">
+    <div class="show-readiness-icon">●</div>
+    <div class="show-readiness-copy">
+      <strong id="show-readiness-label">LOADING SHOW ASSETS</strong>
+      <span id="show-readiness-detail">Preparing graphics and audio on this device…</span>
+    </div>
+    <div class="show-readiness-meter" aria-hidden="true"><span id="show-readiness-progress"></span></div>
+    <span class="show-readiness-count" id="show-readiness-count">0 / 35</span>
+    <button class="btn btn-outline btn-sm" id="btn-retry-assets" type="button" hidden>RETRY FAILED</button>
+  </section>
+
+  <section class="cloud-sync-panel" aria-label="Cross-device control" data-control-workspace="setup" hidden>
     <div class="cloud-sync-copy">
       <span class="cloud-status-dot" id="cloud-status-dot"></span>
       <div><strong id="cloud-status-label">CONNECTING</strong><span>SHOW CODE: HUSTLE-ELLIS</span></div>
@@ -45,9 +56,22 @@
   </section>
 
   <nav class="control-workspace-tabs" aria-label="Controller workspace">
-    <button class="control-workspace-tab active" type="button" data-workspace-target="live">LIVE GAME CONTROLS</button>
+    <button class="control-workspace-tab active" type="button" data-workspace-target="live">LIVE CONTROL</button>
     <button class="control-workspace-tab" type="button" data-workspace-target="questions-prompts">QUESTIONS &amp; PROMPTS</button>
+    <button class="control-workspace-tab" type="button" data-workspace-target="setup">SETUP &amp; STATUS</button>
   </nav>
+
+  <section class="setup-status-panel" data-control-workspace="setup" hidden>
+    <div class="setup-section-heading">
+      <span class="leaderboard-control-label">DEVICE &amp; CONNECTION</span>
+      <h2>Pre-show Setup</h2>
+      <p>Confirm device readiness, connect the phone controller and reset rehearsals here.</p>
+    </div>
+    <div class="setup-danger-zone">
+      <div><strong>Reset current rehearsal</strong><span>Restores scores, timers, spotlights and overlays to their defaults.</span></div>
+      <div id="setup-reset-home"></div>
+    </div>
+  </section>
 
   <!-- Timer Controls Section (Start, Pause, Stop, Reset Timer) -->
   <section class="timer-control-panel" data-control-workspace="live">

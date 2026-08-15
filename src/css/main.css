@@ -1803,3 +1803,13 @@ body.arena-performance-mode .parallax-intro-section *::after {
 .cue-match.is-no-match .presentation-cue-kicker { color: #ff91a3; }
 .cue-match.is-no-match .presentation-cue-graphic strong { color: #fff0f3; text-shadow: 0 5px 0 #9d0925, 0 0 40px rgba(255,62,96,.72); }
 .cue-match.is-no-match .presentation-cue-rule { background: linear-gradient(90deg, transparent, #ff526d, transparent); }
+
+/* Automatic show asset readiness overlay */
+.show-preload-overlay { position:fixed; inset:0; z-index:20000; display:grid; place-items:center; padding:24px; background:radial-gradient(circle at 50% 45%,#351025 0%,#10020d 52%,#050104 100%); opacity:1; visibility:visible; transition:opacity .45s ease,visibility .45s ease; }
+.show-preload-overlay.is-complete { opacity:0; visibility:hidden; pointer-events:none; }
+.show-preload-card { width:min(520px,88vw); padding:30px; border:1px solid rgba(255,215,0,.35); border-radius:20px; background:rgba(19,3,15,.82); box-shadow:0 30px 90px rgba(0,0,0,.6),inset 0 0 45px rgba(255,215,0,.04); text-align:center; }
+.show-preload-kicker { display:block; margin-bottom:10px; color:#a87938; font:800 11px 'Outfit',sans-serif; letter-spacing:2.4px; }
+.show-preload-card strong { display:block; color:#ffe078; font:900 clamp(20px,4vw,30px) 'Outfit',sans-serif; letter-spacing:1.4px; }
+.show-preload-track { height:8px; margin:22px 0 10px; overflow:hidden; border-radius:99px; background:rgba(255,255,255,.08); }
+.show-preload-track span { display:block; width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,#d79117,#fff09a); box-shadow:0 0 18px rgba(255,215,0,.5); transition:width .16s ease; }
+.show-preload-card small { color:#8e7182; font:800 10px monospace; letter-spacing:1px; }

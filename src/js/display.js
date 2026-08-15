@@ -2,6 +2,20 @@ import { gameStateStore } from './state.js';
 import { liquidMetalFragmentShader, ShaderMount } from '@paper-design/shaders';
 import { initParallax } from './parallax.js';
 import gsap from 'gsap';
+import { preloadShowAssets, unlockAudioOnFirstGesture } from './preload.js';
+
+unlockAudioOnFirstGesture();
+preloadShowAssets(({ loaded, total, failed, complete }) => {
+  const overlay = document.getElementById('show-preload-overlay');
+  const label = document.getElementById('show-preload-label');
+  const count = document.getElementById('show-preload-count');
+  const progress = document.getElementById('show-preload-progress');
+  if (progress) progress.style.width = `${total ? (loaded / total) * 100 : 100}%`;
+  if (count) count.textContent = `${loaded} / ${total} ASSETS`;
+  if (!complete) return;
+  if (label) label.textContent = failed.length ? 'ARENA READY — SOME ASSETS WILL RETRY' : 'ARENA READY';
+  window.setTimeout(() => overlay?.classList.add('is-complete'), failed.length ? 900 : 350);
+});
 
 // Auto-scaling 1920x1080 stage fitting
 function fitStageToWindow() {
