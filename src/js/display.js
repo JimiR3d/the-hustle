@@ -870,11 +870,21 @@ function renderDisplay(state, meta = {}) {
     groupWrapper.classList.toggle('active-group', true);
     groupWrapper.classList.remove('phase1-breaking', 'phase2-tearing', 'phase3-flight');
 
-    const renderPlayerCard = (player, slotClass) => `
+    const renderPlayerCard = (player, slotClass) => {
+      const shimmerDuration = 7 + Math.random() * 9;
+      const shimmerStyle = [
+        `--shimmer-duration:${shimmerDuration.toFixed(2)}s`,
+        `--shimmer-delay:${(-Math.random() * shimmerDuration).toFixed(2)}s`,
+        `--shimmer-direction:${Math.random() > 0.5 ? 'normal' : 'reverse'}`,
+        `--shimmer-angle:${(14 + Math.random() * 16).toFixed(1)}deg`,
+        `--shimmer-start-y:${(-55 + Math.random() * 28).toFixed(1)}%`,
+        `--shimmer-end-y:${(24 + Math.random() * 34).toFixed(1)}%`,
+      ].join(';');
+      return `
       <div class="player-card-slot ${slotClass}">
         <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img card-full-face" />
         <div class="card-shimmer-mask" aria-hidden="true">
-          <div class="card-white-light-reflection"></div>
+          <div class="card-white-light-reflection" style="${shimmerStyle}"></div>
         </div>
         <div class="card-half card-half-left" aria-hidden="true">
           <img src="${player.image}" alt="" class="player-card-img" />
@@ -884,6 +894,7 @@ function renderDisplay(state, meta = {}) {
         </div>
       </div>
     `;
+    };
 
     const innerHTML = `
       <div class="team-container-frame" aria-hidden="true">
@@ -936,7 +947,7 @@ function renderDisplay(state, meta = {}) {
               0.4,
               teamNum * 0.65,
               1,
-              7000
+              3500
             );
             window.shaderMounts.set(group.id, mount);
           } catch (err) {
