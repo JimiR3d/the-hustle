@@ -1194,12 +1194,12 @@ body.arena-performance-mode .parallax-intro-section *::after {
   opacity: 0.85;
   animation: white-reflection-sweep var(--shimmer-duration, 9.5s) ease-in-out infinite;
   animation-delay: var(--shimmer-delay, 0s);
-  animation-direction: var(--shimmer-direction, normal);
+  animation-direction: normal;
 }
 
 @keyframes white-reflection-sweep {
-  0% { transform: translateX(-110%) translateY(var(--shimmer-start-y, -40%)) rotate(var(--shimmer-angle, 20deg)); }
-  45%, 100% { transform: translateX(110%) translateY(var(--shimmer-end-y, 40%)) rotate(var(--shimmer-angle, 20deg)); }
+  0% { transform: translateX(var(--shimmer-x, 0%)) translateY(-110%) rotate(var(--shimmer-angle, 20deg)); }
+  45%, 100% { transform: translateX(var(--shimmer-x, 0%)) translateY(110%) rotate(var(--shimmer-angle, 20deg)); }
 }
 
 /* ==========================================================================

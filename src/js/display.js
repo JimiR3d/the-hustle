@@ -875,10 +875,8 @@ function renderDisplay(state, meta = {}) {
       const shimmerStyle = [
         `--shimmer-duration:${shimmerDuration.toFixed(2)}s`,
         `--shimmer-delay:${(-Math.random() * shimmerDuration).toFixed(2)}s`,
-        `--shimmer-direction:${Math.random() > 0.5 ? 'normal' : 'reverse'}`,
         `--shimmer-angle:${(14 + Math.random() * 16).toFixed(1)}deg`,
-        `--shimmer-start-y:${(-55 + Math.random() * 28).toFixed(1)}%`,
-        `--shimmer-end-y:${(24 + Math.random() * 34).toFixed(1)}%`,
+        `--shimmer-x:${(-28 + Math.random() * 56).toFixed(1)}%`,
       ].join(';');
       return `
       <div class="player-card-slot ${slotClass}">
