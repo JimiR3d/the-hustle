@@ -9,6 +9,7 @@ let selectedQuestionText = '';
 let selectedQuestionOptions = [];
 let selectedQuestionCorrectIndex = null;
 let selectedQuestionTeamId = null;
+let collapsedQuestionText = '';
 let selectedPromptText = '';
 let selectedPromptTeamId = null;
 
@@ -69,8 +70,10 @@ function refreshUndoButton() {
 function renderQuestionAnswerControls(state) {
   const card = state.questionPromptCard;
   const activeQuestion = card?.isVisible && card.type === 'question' ? card : null;
+  const revealedQuestions = new Set(state.revealedContent?.questions || []);
   document.querySelectorAll('[data-question-text]').forEach((button) => {
     button.classList.toggle('selected', button.dataset.questionText === (activeQuestion?.text || selectedQuestionText));
+    button.classList.toggle('content-revealed', revealedQuestions.has(button.dataset.questionText));
   });
 
   const existingPanel = document.getElementById('active-question-controls');
@@ -84,6 +87,10 @@ function renderQuestionAnswerControls(state) {
     selectedQuestionOptions = activeQuestion.options || [];
     selectedQuestionCorrectIndex = activeQuestion.correctOptionIndex;
     selectedQuestionTeamId = activeQuestion.teamId;
+  }
+  if (collapsedQuestionText === selectedQuestionText) {
+    existingPanel?.remove();
+    return;
   }
   const activeSelectedQuestion = Boolean(activeQuestion && activeQuestion.text === selectedQuestionText);
   const hostButton = [...document.querySelectorAll('[data-question-text]')]
@@ -118,7 +125,7 @@ function renderQuestionAnswerControls(state) {
     </div>
     <div class="active-question-actions">
       <button class="btn btn-reveal-answer" type="button" id="btn-reveal-question" ${Number.isInteger(selectedIndex) ? '' : 'disabled'}>${revealed ? 'ANSWER REVEALED' : 'REVEAL ANSWER'}</button>
-      <button class="btn ${activeSelectedQuestion ? 'btn-card-hide' : 'btn-gold-solid'}" type="button" id="btn-toggle-active-question" ${!activeSelectedQuestion && !selectedQuestionTeamId ? 'disabled' : ''}>${activeSelectedQuestion ? 'HIDE QUESTION' : 'SHOW QUESTION'}</button>
+      <button class="btn ${activeSelectedQuestion ? 'btn-card-hide' : 'btn-show-question'}" type="button" id="btn-toggle-active-question" ${!activeSelectedQuestion && !selectedQuestionTeamId ? 'disabled' : ''}>${activeSelectedQuestion ? 'HIDE QUESTION' : 'SHOW QUESTION'}</button>
     </div>
   `;
   panel.querySelectorAll('[data-controller-option]').forEach((button) => {
@@ -150,14 +157,31 @@ function renderPromptControl(state) {
     if (promptButton) row.replaceWith(promptButton);
   });
   document.querySelectorAll('.team-prompt-action').forEach((action) => action.remove());
+  const revealedPrompts = new Set(state.revealedContent?.prompts || []);
+  const promptGroups = [...document.querySelectorAll('.team-prompt-group')];
+  promptGroups.forEach((groupElement, index) => {
+    const isEliminated = Boolean(state.groups[index]?.isDisqualified);
+    groupElement.classList.toggle('is-eliminated', isEliminated);
+    groupElement.querySelectorAll('[data-prompt-text]').forEach((button) => {
+      button.disabled = isEliminated;
+    });
+  });
   document.querySelectorAll('[data-prompt-text]').forEach((button) => {
-    button.classList.toggle('selected', button.dataset.promptText === (activePrompt?.text || selectedPromptText));
+    const teamIndex = promptGroups.indexOf(button.closest('.team-prompt-group'));
+    const historyKey = `group-${teamIndex + 1}:${button.dataset.promptText}`;
+    const selectedKey = `${activePrompt?.teamId || selectedPromptTeamId}:${activePrompt?.text || selectedPromptText}`;
+    button.classList.toggle('selected', historyKey === selectedKey);
+    button.classList.toggle('content-revealed', revealedPrompts.has(historyKey));
   });
   if (!selectedPromptText) return;
 
   const hostButton = [...document.querySelectorAll('[data-prompt-text]')]
-    .find((button) => button.dataset.promptText === selectedPromptText);
+    .find((button) => {
+      const teamIndex = promptGroups.indexOf(button.closest('.team-prompt-group'));
+      return button.dataset.promptText === selectedPromptText && `group-${teamIndex + 1}` === selectedPromptTeamId;
+    });
   if (!hostButton) return;
+  if (hostButton.disabled) return;
   const isThisPromptVisible = Boolean(activePrompt && activePrompt.text === selectedPromptText);
   const action = document.createElement('button');
   action.type = 'button';
@@ -406,7 +430,14 @@ function bindAdminEvents() {
       answer.dataset.labeled = 'true';
     }
     button.addEventListener('click', () => {
-      selectedQuestionText = button.dataset.questionText || '';
+      const nextQuestionText = button.dataset.questionText || '';
+      if (nextQuestionText === selectedQuestionText && document.getElementById('active-question-controls')) {
+        collapsedQuestionText = nextQuestionText;
+        document.getElementById('active-question-controls')?.remove();
+        return;
+      }
+      collapsedQuestionText = '';
+      selectedQuestionText = nextQuestionText;
       const selectedQuestion = QUESTION_CHOICES[selectedQuestionText];
       selectedQuestionOptions = selectedQuestion?.options || [];
       selectedQuestionCorrectIndex = selectedQuestion?.correct ?? null;

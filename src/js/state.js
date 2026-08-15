@@ -108,6 +108,10 @@ const DEFAULT_STATE = {
     teamId: null,
     nonce: 0,
   },
+  revealedContent: {
+    questions: [],
+    prompts: [],
+  },
   gameInstructionCard: {
     isVisible: false,
     gameId: null,
@@ -347,6 +351,14 @@ class GameStateStore {
       questionPromptCard: {
         ...DEFAULT_STATE.questionPromptCard,
         ...(savedState.questionPromptCard || {}),
+      },
+      revealedContent: {
+        questions: Array.isArray(savedState.revealedContent?.questions)
+          ? savedState.revealedContent.questions
+          : [],
+        prompts: Array.isArray(savedState.revealedContent?.prompts)
+          ? savedState.revealedContent.prompts
+          : [],
       },
       gameInstructionCard: {
         ...DEFAULT_STATE.gameInstructionCard,
@@ -714,6 +726,11 @@ class GameStateStore {
     const cleanType = type === 'prompt' ? 'prompt' : 'question';
     const cleanText = String(text || '').trim();
     if (!cleanText) return;
+    const history = this.state.revealedContent || { questions: [], prompts: [] };
+    const historyList = cleanType === 'question' ? history.questions : history.prompts;
+    const historyKey = cleanType === 'question' ? cleanText : `${teamId || 'unassigned'}:${cleanText}`;
+    if (!historyList.includes(historyKey)) historyList.push(historyKey);
+    this.state.revealedContent = history;
     this.state.questionPromptCard = {
       isVisible: true,
       type: cleanType,
@@ -784,6 +801,15 @@ class GameStateStore {
 
   showLeaderboard() {
     if (this.state.winnerGroupId) return;
+    this.state.groups.forEach((group) => { group.isPopUp = false; });
+    if (this.state.questionPromptCard?.isVisible) {
+      this.state.questionPromptCard.isVisible = false;
+      this.state.questionPromptCard.nonce = (this.state.questionPromptCard.nonce || 0) + 1;
+    }
+    if (this.state.gameInstructionCard?.isVisible) {
+      this.state.gameInstructionCard.isVisible = false;
+      this.state.gameInstructionCard.nonce = (this.state.gameInstructionCard.nonce || 0) + 1;
+    }
     this.state.leaderboard.isVisible = true;
     this.saveAndBroadcast('leaderboard_show');
   }

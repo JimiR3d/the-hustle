@@ -148,6 +148,10 @@ body {
 .question-choice-buttons button small { color:#a88f9d; font-size:10px; font-weight:500; }
 .question-choice-buttons button:hover { transform:translateX(2px); border-color:rgba(255,215,0,.48); background:rgba(255,215,0,.08); color:#ffd85c; }
 .question-choice-buttons button.selected { border-color:#ffd75a; background:rgba(255,215,0,.18); color:#ffd75a; box-shadow:0 0 14px rgba(255,215,0,.12); }
+.question-choice-buttons button.content-revealed { grid-template-columns:24px 1fr 22px; }
+.question-choice-buttons button.content-revealed::after,
+.team-prompt-buttons button.content-revealed::after { content:'✓'; display:grid; place-items:center; width:20px; height:20px; justify-self:end; border:1px solid #66ffad; border-radius:50%; background:rgba(19,205,106,.22); color:#72ffb7; font:900 14px/1 'Outfit',sans-serif; text-shadow:0 0 8px #39ff9b,0 0 16px #20e986; box-shadow:0 0 8px rgba(50,255,154,.72),inset 0 0 6px rgba(92,255,177,.28); animation:revealed-check-glow 1.8s ease-in-out infinite; }
+@keyframes revealed-check-glow { 0%,100% { filter:brightness(.9); box-shadow:0 0 6px rgba(50,255,154,.55),inset 0 0 5px rgba(92,255,177,.22); } 50% { filter:brightness(1.25); box-shadow:0 0 14px rgba(50,255,154,.95),0 0 24px rgba(32,233,134,.35),inset 0 0 8px rgba(92,255,177,.38); } }
 .question-show-actions { margin-top:14px; }
 .question-show-actions .btn { width:100%; }
 .active-question-controls { margin:2px 0 8px; padding:11px; border:1px solid rgba(255,215,0,.38); border-radius:9px; background:rgba(255,215,0,.055); box-shadow:inset 0 0 18px rgba(255,215,0,.035); }
@@ -156,6 +160,7 @@ body {
 .question-team-selector button { min-height:32px; border:1px solid rgba(255,255,255,.12); border-radius:6px; background:rgba(255,255,255,.04); color:#bfa8b5; font:900 9px var(--admin-font); cursor:pointer; }
 .question-team-selector button.selected { border-color:#ffd75a; background:#ffd75a; color:#2b071a; box-shadow:0 0 14px rgba(255,215,0,.25); }
 .question-team-selector button:disabled { opacity:.3; cursor:not-allowed; }
+.question-team-selector button:disabled { border-color:rgba(255,255,255,.06); background:rgba(110,102,108,.12); color:#665d63; filter:grayscale(1); box-shadow:none; }
 .controller-answer-options { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 .controller-answer-options button { display:grid; grid-template-columns:27px 1fr; align-items:center; min-height:38px; padding:0 9px 0 0; overflow:hidden; border:1px solid rgba(255,255,255,.11); border-radius:7px; background:rgba(255,255,255,.04); color:#e8dbe2; font:800 10px var(--admin-font); text-align:left; cursor:pointer; }
 .controller-answer-options b { display:grid; place-items:center; align-self:stretch; background:rgba(143,0,83,.48); color:#fff; }
@@ -173,6 +178,8 @@ body {
 .active-question-actions .btn { min-height:38px; justify-content:center; }
 .active-question-actions .btn-reveal-answer { border:1px solid #fff; background:linear-gradient(135deg,#fff,#ddd7db); color:#250717; box-shadow:0 5px 16px rgba(255,255,255,.14); font-weight:900; }
 .active-question-actions .btn-reveal-answer:hover:not(:disabled) { background:#fff; color:#250717; }
+.active-question-actions .btn-show-question { border:1px solid #ffe36c; background:linear-gradient(135deg,#ffe268,#d9a900); color:#2a1200; box-shadow:0 5px 18px rgba(255,215,0,.24); font-weight:900; }
+.active-question-actions .btn-show-question:hover:not(:disabled) { border-color:#fff0a1; background:linear-gradient(135deg,#ffea87,#e5b800); color:#210c00; }
 .active-question-actions .btn-card-hide { border:1px solid #ff617d; background:linear-gradient(135deg,#ff4d68,#a7092a); color:#fff; }
 @keyframes controller-correct-breathe { 0%,100% { opacity:.68; filter:brightness(.9); } 50% { opacity:1; filter:brightness(1.18); } }
 .prompt-show-actions { margin-top:14px; }
@@ -181,11 +188,15 @@ body {
 .team-prompt-groups { display:grid; gap:12px; }
 .team-prompt-group { padding:11px !important; border-color:rgba(255,215,0,.12) !important; background:rgba(20,4,16,.36) !important; }
 .team-prompt-group h4 { margin-bottom:8px; color:#ffd85c; font-size:11px; letter-spacing:1.8px; text-align:center; }
+.team-prompt-group.is-eliminated { border-color:rgba(150,142,147,.1) !important; background:rgba(80,74,78,.1) !important; filter:grayscale(1); opacity:.42; }
+.team-prompt-group.is-eliminated h4 { color:#8a8287; }
+.team-prompt-group.is-eliminated button { cursor:not-allowed; transform:none; box-shadow:none; }
 .team-prompt-buttons { display:grid; grid-template-columns:1fr; gap:6px; }
 .team-prompt-buttons button { display:grid; grid-template-columns:22px 1fr; align-items:center; min-height:34px; padding:6px 9px; border:1px solid rgba(255,255,255,.08); border-radius:7px; background:rgba(255,255,255,.035); color:#927b88; font:800 10px 'Outfit',sans-serif; text-align:left; cursor:pointer; transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease; }
 .team-prompt-buttons button span { color:#ead9e2; font-size:11px; }
 .team-prompt-buttons button:hover { transform:translateX(2px); border-color:rgba(255,215,0,.48); background:rgba(255,215,0,.08); color:#ffd85c; }
 .team-prompt-buttons button.selected { border-color:#ffd75a; background:rgba(255,215,0,.18); color:#ffd75a; box-shadow:0 0 14px rgba(255,215,0,.12); }
+.team-prompt-buttons button.content-revealed { grid-template-columns:22px 1fr 22px; }
 .team-prompt-action { width:100%; min-height:38px; margin-top:9px; justify-content:center; font-size:10px; }
 .team-prompt-action.btn-card-hide { border:1px solid #ff617d; background:linear-gradient(135deg,#ff4d68,#a7092a); color:#fff; }
 .game-instruction-control { width:100%; }
