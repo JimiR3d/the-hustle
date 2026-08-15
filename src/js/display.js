@@ -479,42 +479,18 @@ function playCardFlipSfx(direction = 'in') {
     const ctx = getShowSfxContext();
     if (!ctx) return;
     const now = ctx.currentTime;
-    const duration = 0.5;
-    const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * duration), ctx.sampleRate);
-    const channel = buffer.getChannelData(0);
-    for (let index = 0; index < channel.length; index += 1) {
-      const fade = 1 - index / channel.length;
-      channel[index] = (Math.random() * 2 - 1) * fade;
-    }
-    const noise = ctx.createBufferSource();
-    const filter = ctx.createBiquadFilter();
-    const gain = ctx.createGain();
-    noise.buffer = buffer;
-    filter.type = 'bandpass';
-    filter.Q.value = 0.8;
-    filter.frequency.setValueAtTime(direction === 'in' ? 520 : 1100, now);
-    filter.frequency.exponentialRampToValueAtTime(direction === 'in' ? 1800 : 420, now + duration);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.16, now + 0.025);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-    noise.start(now);
-    noise.stop(now + duration);
-
     const snap = ctx.createOscillator();
     const snapGain = ctx.createGain();
     snap.type = 'triangle';
-    snap.frequency.setValueAtTime(direction === 'in' ? 180 : 260, now + 0.22);
-    snap.frequency.exponentialRampToValueAtTime(direction === 'in' ? 520 : 120, now + 0.32);
-    snapGain.gain.setValueAtTime(0.0001, now + 0.2);
-    snapGain.gain.exponentialRampToValueAtTime(0.12, now + 0.23);
-    snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.37);
+    snap.frequency.setValueAtTime(direction === 'in' ? 180 : 260, now);
+    snap.frequency.exponentialRampToValueAtTime(direction === 'in' ? 520 : 120, now + 0.12);
+    snapGain.gain.setValueAtTime(0.0001, now);
+    snapGain.gain.exponentialRampToValueAtTime(0.12, now + 0.025);
+    snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.17);
     snap.connect(snapGain);
     snapGain.connect(ctx.destination);
-    snap.start(now + 0.2);
-    snap.stop(now + 0.38);
+    snap.start(now);
+    snap.stop(now + 0.18);
   } catch (err) {
     console.warn('[Display Audio] Card flip cue unavailable:', err);
   }
