@@ -47,6 +47,7 @@ let lastAudibleTimerTick = '';
 let showSfxContext = null;
 let leaderboardUpdateTimer = null;
 let hasLeaderboardSnapshot = false;
+const shaderActivityTimers = new Map();
 let previousSpotlightIds = new Set(
   gameStateStore.getState().groups.filter((group) => group.isPopUp).map((group) => group.id)
 );
@@ -933,7 +934,10 @@ function renderDisplay(state, meta = {}) {
                 u_offsetY: -0.1,
               },
               undefined,
-              0.5
+              0,
+              teamNum * 0.65,
+              1,
+              16000
             );
             window.shaderMounts.set(group.id, mount);
           } catch (err) {
@@ -1091,6 +1095,16 @@ function triggerPointAnimation(groupId, delta) {
   const scorePill = document.getElementById(`group-score-pill-${groupId}`);
 
   playScoreSfx(delta > 0 ? 'added' : 'deducted');
+
+  const shaderMount = window.shaderMounts?.get(groupId);
+  if (shaderMount?.setSpeed) {
+    shaderMount.setSpeed(0.5);
+    if (shaderActivityTimers.has(groupId)) clearTimeout(shaderActivityTimers.get(groupId));
+    shaderActivityTimers.set(groupId, setTimeout(() => {
+      shaderMount.setSpeed(0);
+      shaderActivityTimers.delete(groupId);
+    }, 900));
+  }
 
   if (container) {
     const popup = document.createElement('div');

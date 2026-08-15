@@ -28,6 +28,7 @@ export function initParallax() {
 
   const visibilityObserver = new IntersectionObserver(([entry]) => {
     introIsVisible = Boolean(entry?.isIntersecting);
+    document.body.classList.toggle('arena-performance-mode', !introIsVisible);
     if (introIsVisible) {
       lenis.start();
     } else {
@@ -71,6 +72,7 @@ export function initParallax() {
   return {
     lenis,
     destroy() {
+      document.body.classList.remove('arena-performance-mode');
       visibilityObserver.disconnect();
       gsap.ticker.remove(lenisTicker);
       ScrollTrigger.getAll().forEach((st) => st.kill());

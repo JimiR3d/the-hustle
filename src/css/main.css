@@ -59,6 +59,13 @@ html, body {
   scrollbar-color: #ff3399 rgba(13, 1, 8, 0.85);
 }
 
+/* Offscreen landing animations consume no frame budget during the live arena. */
+body.arena-performance-mode .parallax-intro-section *,
+body.arena-performance-mode .parallax-intro-section *::before,
+body.arena-performance-mode .parallax-intro-section *::after {
+  animation-play-state: paused !important;
+}
+
 /* ==========================================================================
    CUSTOM PINK GLOWING SCROLLBAR (Internal Webpage Scroll)
    ========================================================================== */
