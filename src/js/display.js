@@ -45,6 +45,7 @@ let timesUpTriggeredForCurrentRun = false;
 let previousTimerSeconds = null;
 let showSfxContext = null;
 let leaderboardUpdateTimer = null;
+let hasLeaderboardSnapshot = false;
 
 // Pre-instantiated Countdown and Time's Up audio elements
 const timerStartAudio = new Audio('/assets/Timer_start.mp3');
@@ -504,17 +505,23 @@ function renderLeaderboard(state, meta = {}) {
       clearTimeout(leaderboardUpdateTimer);
       leaderboardUpdateTimer = null;
     }
-    return;
+    if (hasLeaderboardSnapshot) return;
   }
 
-  if (meta.eventType === 'points_update') {
+  // Show the previous standings first, then reveal every score accumulated
+  // during gameplay two seconds after the leaderboard is called on air.
+  if (isVisible && meta.eventType === 'leaderboard_show') {
     if (leaderboardUpdateTimer) clearTimeout(leaderboardUpdateTimer);
     leaderboardUpdateTimer = setTimeout(() => {
       leaderboardUpdateTimer = null;
-      renderLeaderboard(gameStateStore.getState(), { eventType: 'leaderboard_delayed_points_update' });
-    }, 3000);
+      renderLeaderboard(gameStateStore.getState(), { eventType: 'leaderboard_delayed_reveal' });
+    }, 2000);
     return;
   }
+
+  // Scores are recorded on the game board while the leaderboard retains its
+  // last snapshot. They are picked up by the next delayed reveal above.
+  if (meta.eventType === 'points_update') return;
 
   const nextRanks = new Map();
   list.innerHTML = '';
@@ -536,7 +543,7 @@ function renderLeaderboard(state, meta = {}) {
     }
     const movementRecord = leaderboardMovementState.get(group.id);
     const displayedMovement = movementRecord && movementRecord.expiresAt > Date.now() ? movementRecord.movement : 0;
-    const isScoreEvent = state.lastScoreEvent?.groupId === group.id && meta.eventType === 'leaderboard_delayed_points_update';
+    const isScoreEvent = meta.eventType === 'leaderboard_delayed_reveal';
     const row = document.createElement('article');
 
     row.className = `leaderboard-row ${group.isDisqualified ? 'is-disqualified' : ''} ${rank === 1 ? 'is-first' : ''}`;
@@ -568,6 +575,7 @@ function renderLeaderboard(state, meta = {}) {
   });
 
   previousLeaderboardRanks = nextRanks;
+  hasLeaderboardSnapshot = true;
 }
 
 function renderDisplay(state, meta = {}) {
@@ -586,6 +594,11 @@ function renderDisplay(state, meta = {}) {
     previousScores = {};
     previousLeaderboardRanks.clear();
     leaderboardMovementState.clear();
+    hasLeaderboardSnapshot = false;
+    if (leaderboardUpdateTimer) {
+      clearTimeout(leaderboardUpdateTimer);
+      leaderboardUpdateTimer = null;
+    }
     previousTimerSeconds = null;
     timesUpTriggeredForCurrentRun = false;
     stopAllAudio();
@@ -1002,10 +1015,12 @@ function triggerPointAnimation(groupId, delta) {
 function renderIntermissionTimer(timerState) {
   const clock = document.getElementById('intermission-clock');
   if (!clock || !timerState) return;
+  const callout = clock.closest('.intermission-callout');
   const mins = String(Math.floor(timerState.seconds / 60)).padStart(2, '0');
   const secs = String(timerState.seconds % 60).padStart(2, '0');
   clock.textContent = `${mins}:${secs}`;
   clock.classList.toggle('is-running', timerState.isRunning);
+  callout?.classList.toggle('is-active', Boolean(timerState.isRunning));
 }
 
 function triggerPresentationCue(cue) {

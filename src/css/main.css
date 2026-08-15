@@ -1553,7 +1553,8 @@ html, body {
 }
 
 /* Intermission countdown shown with the live leaderboard */
-.intermission-callout { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 18px; color: #fff6d6; text-align: center; }
+.intermission-callout { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 18px; color: #fff6d6; text-align: center; opacity: 0; visibility: hidden; transform: translateY(10px); transition: opacity .35s ease, transform .35s ease, visibility 0s linear .35s; }
+.intermission-callout.is-active { opacity: 1; visibility: visible; transform: translateY(0); transition-delay: 0s; }
 .intermission-clock { font-family: 'Bitcount Single', monospace; font-size: 68px; line-height: .9; letter-spacing: 5px; color: #ffd85a; text-shadow: 0 0 28px rgba(255,190,0,.55); }
 .intermission-clock.is-running { animation: intermission-clock-pulse 1.2s ease-in-out infinite alternate; }
 .intermission-message { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 900; letter-spacing: 7px; }
