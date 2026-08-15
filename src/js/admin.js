@@ -5,7 +5,33 @@ let pendingDisqualifyId = null;
 let selectedWinner = null;
 let renderWinnerOptions = () => {};
 let lastScoreUndo = null;
-let selectedQuestionPromptType = 'question';
+let selectedQuestionText = '';
+let selectedQuestionOptions = [];
+let selectedQuestionCorrectIndex = null;
+let selectedPromptText = '';
+
+const QUESTION_CHOICES = {
+  'What planet is known as the Red Planet?': { options: ['Venus', 'Mars', 'Jupiter', 'Mercury'], correct: 1 },
+  'What fruit has its seeds on the outside?': { options: ['Apple', 'Raspberry', 'Strawberry', 'Kiwi'], correct: 2 },
+  "What's the minimum age to gamble on the Las Vegas Strip?": { options: ['18', '21', '25', '16'], correct: 1 },
+  'What country has the most natural lakes?': { options: ['United States', 'Russia', 'Canada', 'Brazil'], correct: 2 },
+  "What's the most common letter in the English alphabet?": { options: ['A', 'E', 'S', 'T'], correct: 1 },
+  "What's the most-watched sport in the world?": { options: ['Basketball', 'Cricket', 'Soccer', 'Tennis'], correct: 2 },
+  'Which suit in a standard deck of cards is NOT red?': { options: ['Hearts', 'Diamonds', 'Clubs or Spades', 'Hearts or Diamonds'], correct: 2 },
+  'What year did World War II end?': { options: ['1943', '1945', '1947', '1950'], correct: 1 },
+  "What's the longest river in the world?": { options: ['Amazon', 'Nile', 'Yangtze', 'Mississippi'], correct: 1 },
+  "What's the most consumed seafood in the world?": { options: ['Shrimp', 'Salmon', 'Tuna', 'Crab'], correct: 2 },
+  "What's the only Disney princess with a tattoo?": { options: ['Mulan', 'Pocahontas', 'Ariel', 'Jasmine'], correct: 1 },
+  "What's the longest-running TV game show in the US?": { options: ['Jeopardy!', 'Wheel of Fortune', 'The Price Is Right', 'Family Feud'], correct: 2 },
+  "What's the only gemstone made of a single element?": { options: ['Ruby', 'Diamond', 'Emerald', 'Sapphire'], correct: 1 },
+  'What game has the most possible moves?': { options: ['Go', 'Chess', 'Poker', 'Backgammon'], correct: 1 },
+  'How many bones are in the adult human body?': { options: ['196', '206', '216', '226'], correct: 1 },
+  'What country drinks the most coffee per person?': { options: ['Italy', 'Brazil', 'Finland', 'Ethiopia'], correct: 2 },
+  "What's the rarest blood type?": { options: ['O Negative', 'AB Negative', 'B Negative', 'A Negative'], correct: 1 },
+  "What's the only food that never spoils?": { options: ['Rice', 'Salt', 'Honey', 'Vinegar'], correct: 2 },
+  'What year did the Titanic sink?': { options: ['1905', '1912', '1918', '1923'], correct: 1 },
+  "What's the largest ocean on Earth?": { options: ['Atlantic', 'Pacific', 'Indian', 'Arctic'], correct: 1 },
+};
 
 function renderAssetReadiness({ loaded, total, failed, complete }) {
   const panel = document.getElementById('show-readiness-panel');
@@ -38,6 +64,93 @@ function refreshUndoButton() {
   button.textContent = lastScoreUndo ? `UNDO ${lastScoreUndo.label}` : 'UNDO LAST SCORE';
 }
 
+function renderQuestionAnswerControls(state) {
+  const card = state.questionPromptCard;
+  const activeQuestion = card?.isVisible && card.type === 'question' ? card : null;
+  document.querySelectorAll('[data-question-text]').forEach((button) => {
+    button.classList.toggle('selected', button.dataset.questionText === (activeQuestion?.text || selectedQuestionText));
+  });
+
+  const existingPanel = document.getElementById('active-question-controls');
+  if (!activeQuestion && !selectedQuestionText) {
+    existingPanel?.remove();
+    return;
+  }
+
+  if (activeQuestion) {
+    selectedQuestionText = activeQuestion.text;
+    selectedQuestionOptions = activeQuestion.options || [];
+    selectedQuestionCorrectIndex = activeQuestion.correctOptionIndex;
+  }
+  const activeSelectedQuestion = Boolean(activeQuestion && activeQuestion.text === selectedQuestionText);
+  const hostButton = [...document.querySelectorAll('[data-question-text]')]
+    .find((button) => button.dataset.questionText === selectedQuestionText);
+  if (!hostButton) return;
+
+  const panel = existingPanel || document.createElement('div');
+  panel.id = 'active-question-controls';
+  panel.className = 'active-question-controls';
+  if (panel.previousElementSibling !== hostButton) hostButton.insertAdjacentElement('afterend', panel);
+
+  const selectedIndex = activeSelectedQuestion ? activeQuestion.selectedOptionIndex : null;
+  const revealed = Boolean(activeSelectedQuestion && activeQuestion.answerRevealed);
+  const renderedOptions = activeSelectedQuestion ? activeQuestion.options : selectedQuestionOptions;
+  panel.innerHTML = `
+    <span class="active-question-label">TEAM'S ANSWER</span>
+    <div class="controller-answer-options">
+      ${(renderedOptions || []).map((option, index) => {
+        const isSelected = index === selectedIndex;
+        const resultClass = revealed && isSelected
+          ? (index === activeQuestion.correctOptionIndex ? ' is-correct' : ' is-wrong')
+          : '';
+        return `<button type="button" data-controller-option="${index}" class="${isSelected ? 'selected' : ''}${resultClass}" ${activeSelectedQuestion ? '' : 'disabled'}><b>${String.fromCharCode(65 + index)}</b><span>${escapeHtml(String(option))}</span></button>`;
+      }).join('')}
+    </div>
+    <div class="active-question-actions">
+      <button class="btn btn-reveal-answer" type="button" id="btn-reveal-question" ${Number.isInteger(selectedIndex) ? '' : 'disabled'}>${revealed ? 'ANSWER REVEALED' : 'REVEAL ANSWER'}</button>
+      <button class="btn ${activeSelectedQuestion ? 'btn-card-hide' : 'btn-gold-solid'}" type="button" id="btn-toggle-active-question">${activeSelectedQuestion ? 'HIDE QUESTION' : 'SHOW QUESTION'}</button>
+    </div>
+  `;
+  panel.querySelectorAll('[data-controller-option]').forEach((button) => {
+    button.addEventListener('click', () => gameStateStore.selectQuestionOption(Number(button.dataset.controllerOption)));
+  });
+  panel.querySelector('#btn-reveal-question')?.addEventListener('click', () => gameStateStore.revealQuestionAnswer());
+  panel.querySelector('#btn-toggle-active-question')?.addEventListener('click', () => {
+    if (activeSelectedQuestion) gameStateStore.hideQuestionPromptCard();
+    else gameStateStore.showQuestionPromptCard('question', selectedQuestionText, selectedQuestionOptions, selectedQuestionCorrectIndex);
+  });
+}
+
+function renderPromptControl(state) {
+  const card = state.questionPromptCard;
+  const activePrompt = card?.isVisible && card.type === 'prompt' ? card : null;
+  if (activePrompt) selectedPromptText = activePrompt.text;
+
+  document.querySelectorAll('.selected-prompt-row').forEach((row) => {
+    const promptButton = row.querySelector('[data-prompt-text]');
+    if (promptButton) row.replaceWith(promptButton);
+  });
+  document.querySelectorAll('.team-prompt-action').forEach((action) => action.remove());
+  document.querySelectorAll('[data-prompt-text]').forEach((button) => {
+    button.classList.toggle('selected', button.dataset.promptText === (activePrompt?.text || selectedPromptText));
+  });
+  if (!selectedPromptText) return;
+
+  const hostButton = [...document.querySelectorAll('[data-prompt-text]')]
+    .find((button) => button.dataset.promptText === selectedPromptText);
+  if (!hostButton) return;
+  const isThisPromptVisible = Boolean(activePrompt && activePrompt.text === selectedPromptText);
+  const action = document.createElement('button');
+  action.type = 'button';
+  action.className = `btn team-prompt-action ${isThisPromptVisible ? 'btn-card-hide' : 'btn-gold-solid'}`;
+  action.textContent = isThisPromptVisible ? 'HIDE PROMPT' : 'SHOW PROMPT';
+  action.addEventListener('click', () => {
+    if (isThisPromptVisible) gameStateStore.hideQuestionPromptCard();
+    else gameStateStore.showQuestionPromptCard('prompt', selectedPromptText);
+  });
+  hostButton.closest('.team-prompt-group')?.appendChild(action);
+}
+
 // Show audio is produced by the audience display only. Keeping the controller
 // silent prevents two open tabs (or a phone and PC) from doubling every cue.
 
@@ -60,7 +173,6 @@ function renderAdminPanel(state) {
   }
 
   const cardStatus = document.getElementById('question-prompt-air-status');
-  const toggleCardButton = document.getElementById('btn-toggle-question-prompt');
   const cardIsVisible = Boolean(state.questionPromptCard?.isVisible);
   if (cardStatus) {
     cardStatus.textContent = cardIsVisible
@@ -68,11 +180,24 @@ function renderAdminPanel(state) {
       : 'OFF AIR';
     cardStatus.classList.toggle('active', cardIsVisible);
   }
-  if (toggleCardButton) {
-    const buttonType = cardIsVisible ? state.questionPromptCard.type : selectedQuestionPromptType;
-    toggleCardButton.textContent = `${cardIsVisible ? 'HIDE' : 'SHOW'} ${String(buttonType || 'question').toUpperCase()}`;
-    toggleCardButton.classList.toggle('btn-card-hide', cardIsVisible);
+
+  const instructionState = state.gameInstructionCard || {};
+  const instructionVisible = Boolean(instructionState.isVisible);
+  const instructionStatus = document.getElementById('game-instruction-air-status');
+  if (instructionStatus) {
+    instructionStatus.textContent = instructionVisible ? `GAME ${instructionState.gameId} ON AIR` : 'OFF AIR';
+    instructionStatus.classList.toggle('active', instructionVisible);
   }
+  document.querySelectorAll('[data-game-instruction-card]').forEach((card) => {
+    card.classList.toggle('is-on-air', instructionVisible && Number(card.dataset.gameInstructionCard) === Number(instructionState.gameId));
+  });
+  document.querySelectorAll('[data-game-instruction-id]').forEach((button) => {
+    const isThisVisible = instructionVisible && Number(button.dataset.gameInstructionId) === Number(instructionState.gameId);
+    button.textContent = `${isThisVisible ? 'HIDE' : 'SHOW'} GAME ${button.dataset.gameInstructionId}`;
+    button.classList.toggle('btn-card-hide', isThisVisible);
+  });
+  renderQuestionAnswerControls(state);
+  renderPromptControl(state);
 
   if (!container) return;
   container.innerHTML = '';
@@ -198,6 +323,18 @@ function bindAdminEvents() {
   const resetButton = document.getElementById('btn-reset-all');
   const resetHome = document.getElementById('setup-reset-home');
   if (resetButton && resetHome) resetHome.appendChild(resetButton);
+  const liveControlColumn = document.querySelector('.live-control-column');
+  const workspaceTabs = document.querySelector('.control-workspace-tabs');
+  const cloudSyncPanel = document.querySelector('.cloud-sync-panel');
+  const hudTimerPanel = document.querySelector('.timer-control-panel');
+  const leaderboardPanel = document.getElementById('leaderboard-control-section');
+  const intermissionPanel = document.querySelector('.intermission-control-card');
+  if (liveControlColumn && hudTimerPanel) liveControlColumn.prepend(hudTimerPanel);
+  if (workspaceTabs && cloudSyncPanel) workspaceTabs.insertAdjacentElement('afterend', cloudSyncPanel);
+  if (leaderboardPanel && intermissionPanel) {
+    leaderboardPanel.classList.add('has-intermission-timer');
+    leaderboardPanel.appendChild(intermissionPanel);
+  }
   document.getElementById('btn-retry-assets')?.addEventListener('click', () => {
     retryFailedShowAssets(renderAssetReadiness);
   });
@@ -232,34 +369,48 @@ function bindAdminEvents() {
     });
   });
 
-  const cardTextInput = document.getElementById('question-prompt-text');
-  const cardCount = document.getElementById('question-prompt-character-count');
-  const toggleCardButton = document.getElementById('btn-toggle-question-prompt');
-  const syncCardComposer = () => {
-    const length = cardTextInput?.value.length || 0;
-    if (cardCount) cardCount.textContent = `${length} / 420`;
-    if (toggleCardButton && !gameStateStore.getState().questionPromptCard?.isVisible) {
-      toggleCardButton.textContent = `SHOW ${selectedQuestionPromptType.toUpperCase()}`;
-    }
-    if (cardTextInput) cardTextInput.placeholder = `Enter the ${selectedQuestionPromptType} here...`;
-  };
-
-  document.querySelectorAll('[data-card-type]').forEach((button) => {
+  document.querySelectorAll('[data-card-workspace-target]').forEach((button) => {
     button.addEventListener('click', () => {
-      selectedQuestionPromptType = button.dataset.cardType === 'prompt' ? 'prompt' : 'question';
-      document.querySelectorAll('[data-card-type]').forEach((tab) => tab.classList.toggle('active', tab === button));
-      syncCardComposer();
+      const target = button.dataset.cardWorkspaceTarget;
+      document.querySelectorAll('[data-card-workspace-target]').forEach((tab) => tab.classList.toggle('active', tab === button));
+      document.querySelectorAll('[data-card-workspace]').forEach((workspace) => {
+        workspace.hidden = workspace.dataset.cardWorkspace !== target;
+      });
     });
   });
-  cardTextInput?.addEventListener('input', syncCardComposer);
-  toggleCardButton?.addEventListener('click', () => {
-    if (gameStateStore.getState().questionPromptCard?.isVisible) {
-      gameStateStore.hideQuestionPromptCard();
-    } else {
-      gameStateStore.showQuestionPromptCard(selectedQuestionPromptType, cardTextInput?.value);
+
+  document.querySelectorAll('[data-question-text]').forEach((button) => {
+    const question = QUESTION_CHOICES[button.dataset.questionText];
+    const answer = button.querySelector('small');
+    if (question && answer && !answer.dataset.labeled) {
+      answer.textContent = `Correct: ${String.fromCharCode(65 + question.correct)} — ${answer.textContent}`;
+      answer.dataset.labeled = 'true';
     }
+    button.addEventListener('click', () => {
+      selectedQuestionText = button.dataset.questionText || '';
+      const selectedQuestion = QUESTION_CHOICES[selectedQuestionText];
+      selectedQuestionOptions = selectedQuestion?.options || [];
+      selectedQuestionCorrectIndex = selectedQuestion?.correct ?? null;
+      renderQuestionAnswerControls(gameStateStore.getState());
+    });
   });
-  syncCardComposer();
+  document.querySelectorAll('[data-prompt-text]').forEach((button) => {
+    button.addEventListener('click', () => {
+      selectedPromptText = button.dataset.promptText || '';
+      renderPromptControl(gameStateStore.getState());
+    });
+  });
+  document.querySelectorAll('[data-game-instruction-id]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const current = gameStateStore.getState().gameInstructionCard;
+      const gameId = Number(button.dataset.gameInstructionId);
+      if (current?.isVisible && Number(current.gameId) === gameId) {
+        gameStateStore.hideGameInstruction();
+      } else {
+        gameStateStore.showGameInstruction(gameId, button.dataset.gameInstructionText);
+      }
+    });
+  });
 
   cloudConnectButton?.addEventListener('click', async () => {
     cloudConnectButton.disabled = true;

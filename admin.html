@@ -57,7 +57,7 @@
 
   <nav class="control-workspace-tabs" aria-label="Controller workspace">
     <button class="control-workspace-tab active" type="button" data-workspace-target="live">LIVE CONTROL</button>
-    <button class="control-workspace-tab" type="button" data-workspace-target="questions-prompts">QUESTIONS &amp; PROMPTS</button>
+    <button class="control-workspace-tab" type="button" data-workspace-target="cards">ON-SCREEN CONTENT</button>
     <button class="control-workspace-tab" type="button" data-workspace-target="setup">SETUP &amp; STATUS</button>
   </nav>
 
@@ -99,42 +99,134 @@
     </div>
   </section>
 
-  <section class="question-prompt-panel" data-control-workspace="questions-prompts" hidden>
+  <section class="cards-workspace" data-control-workspace="cards" hidden>
+    <nav class="card-workspace-tabs" aria-label="Show card workspace">
+      <button class="card-workspace-tab active" type="button" data-card-workspace-target="questions-prompts">QUESTIONS &amp; PROMPTS</button>
+      <button class="card-workspace-tab" type="button" data-card-workspace-target="game-instructions">GAME INSTRUCTIONS</button>
+    </nav>
+
+  <section class="question-prompt-panel" data-card-workspace="questions-prompts">
     <div class="question-prompt-heading">
       <div>
         <span class="leaderboard-control-label">CARD CONTROL</span>
         <h2>Questions &amp; Prompts</h2>
-        <p>Select the card type, enter its text, then send it to the arena.</p>
+        <p>Write a question on the left or choose a team prompt on the right.</p>
       </div>
       <span class="question-prompt-air-status" id="question-prompt-air-status">OFF AIR</span>
     </div>
 
-    <div class="question-prompt-type-tabs" role="group" aria-label="Card type">
-      <button class="question-prompt-type active" type="button" data-card-type="question">QUESTION</button>
-      <button class="question-prompt-type" type="button" data-card-type="prompt">PROMPT</button>
-    </div>
-
-    <div class="question-prompt-composer">
-      <label for="question-prompt-text">CARD TEXT</label>
-      <textarea id="question-prompt-text" maxlength="420" placeholder="Enter the question here..."></textarea>
-      <div class="question-prompt-composer-footer">
-        <span id="question-prompt-character-count">0 / 420</span>
-        <div class="question-prompt-actions">
-          <button class="btn btn-gold-solid" id="btn-toggle-question-prompt" type="button">SHOW QUESTION</button>
-        </div>
-      </div>
-    </div>
-
     <div class="question-prompt-library">
-      <section>
+      <section class="question-column">
         <h3>QUESTIONS</h3>
-        <div class="question-prompt-library-empty">Questions supplied later will appear here.</div>
+        <div class="question-choice-buttons">
+          <button type="button" data-question-text="What planet is known as the Red Planet?">1 <span><strong>What planet is known as the Red Planet?</strong><small>Mars</small></span></button>
+          <button type="button" data-question-text="What fruit has its seeds on the outside?">2 <span><strong>What fruit has its seeds on the outside?</strong><small>Strawberry</small></span></button>
+          <button type="button" data-question-text="What's the minimum age to gamble on the Las Vegas Strip?">3 <span><strong>What's the minimum age to gamble on the Las Vegas Strip?</strong><small>21</small></span></button>
+          <button type="button" data-question-text="What country has the most natural lakes?">4 <span><strong>What country has the most natural lakes?</strong><small>Canada</small></span></button>
+          <button type="button" data-question-text="What's the most common letter in the English alphabet?">5 <span><strong>What's the most common letter in the English alphabet?</strong><small>E</small></span></button>
+          <button type="button" data-question-text="What's the most-watched sport in the world?">6 <span><strong>What's the most-watched sport in the world?</strong><small>Soccer</small></span></button>
+          <button type="button" data-question-text="Which suit in a standard deck of cards is NOT red?">7 <span><strong>Which suit in a standard deck of cards is NOT red?</strong><small>Clubs or Spades</small></span></button>
+          <button type="button" data-question-text="What year did World War II end?">8 <span><strong>What year did World War II end?</strong><small>1945</small></span></button>
+          <button type="button" data-question-text="What's the longest river in the world?">9 <span><strong>What's the longest river in the world?</strong><small>Nile</small></span></button>
+          <button type="button" data-question-text="What's the most consumed seafood in the world?">10 <span><strong>What's the most consumed seafood in the world?</strong><small>Tuna</small></span></button>
+          <button type="button" data-question-text="What's the only Disney princess with a tattoo?">11 <span><strong>What's the only Disney princess with a tattoo?</strong><small>Pocahontas</small></span></button>
+          <button type="button" data-question-text="What's the longest-running TV game show in the US?">12 <span><strong>What's the longest-running TV game show in the US?</strong><small>The Price Is Right</small></span></button>
+          <button type="button" data-question-text="What's the only gemstone made of a single element?">13 <span><strong>What's the only gemstone made of a single element?</strong><small>Diamond</small></span></button>
+          <button type="button" data-question-text="What game has the most possible moves?">14 <span><strong>What game has the most possible moves?</strong><small>Chess</small></span></button>
+          <button type="button" data-question-text="How many bones are in the adult human body?">15 <span><strong>How many bones are in the adult human body?</strong><small>206</small></span></button>
+          <button type="button" data-question-text="What country drinks the most coffee per person?">16 <span><strong>What country drinks the most coffee per person?</strong><small>Finland</small></span></button>
+          <button type="button" data-question-text="What's the rarest blood type?">17 <span><strong>What's the rarest blood type?</strong><small>AB Negative</small></span></button>
+          <button type="button" data-question-text="What's the only food that never spoils?">18 <span><strong>What's the only food that never spoils?</strong><small>Honey</small></span></button>
+          <button type="button" data-question-text="What year did the Titanic sink?">19 <span><strong>What year did the Titanic sink?</strong><small>1912</small></span></button>
+          <button type="button" data-question-text="What's the largest ocean on Earth?">20 <span><strong>What's the largest ocean on Earth?</strong><small>Pacific</small></span></button>
+        </div>
       </section>
-      <section>
+      <section class="prompt-column">
         <h3>PROMPTS</h3>
-        <div class="question-prompt-library-empty">Prompts supplied later will appear here.</div>
+        <div class="team-prompt-groups">
+          <section class="team-prompt-group">
+            <h4>TEAM 1</h4>
+            <div class="team-prompt-buttons">
+              <button type="button" data-prompt-text="Heads or Tails">1 <span>Heads or Tails</span></button>
+              <button type="button" data-prompt-text="Hustle or Balance">2 <span>Hustle or Balance</span></button>
+              <button type="button" data-prompt-text="Save or Spend">3 <span>Save or Spend</span></button>
+              <button type="button" data-prompt-text="Love or Money">4 <span>Love or Money</span></button>
+              <button type="button" data-prompt-text="High Roller or Safe Bet">5 <span>High Roller or Safe Bet</span></button>
+            </div>
+          </section>
+          <section class="team-prompt-group">
+            <h4>TEAM 2</h4>
+            <div class="team-prompt-buttons">
+              <button type="button" data-prompt-text="All In or Fold">6 <span>All In or Fold</span></button>
+              <button type="button" data-prompt-text="Early Bird or Last Minute">7 <span>Early Bird or Last Minute</span></button>
+              <button type="button" data-prompt-text="Love or Money">8 <span>Love or Money</span></button>
+              <button type="button" data-prompt-text="Cash or Card">9 <span>Cash or Card</span></button>
+              <button type="button" data-prompt-text="Wealth or Wellness">10 <span>Wealth or Wellness</span></button>
+            </div>
+          </section>
+          <section class="team-prompt-group">
+            <h4>TEAM 3</h4>
+            <div class="team-prompt-buttons">
+              <button type="button" data-prompt-text="Love or Money">11 <span>Love or Money</span></button>
+              <button type="button" data-prompt-text="Diamond or Spade">12 <span>Diamond or Spade</span></button>
+              <button type="button" data-prompt-text="Left or Right">13 <span>Left or Right</span></button>
+              <button type="button" data-prompt-text="Shortcut or Scenic Route">14 <span>Shortcut or Scenic Route</span></button>
+              <button type="button" data-prompt-text="Passion or Stability">15 <span>Passion or Stability</span></button>
+            </div>
+          </section>
+          <section class="team-prompt-group">
+            <h4>TEAM 4</h4>
+            <div class="team-prompt-buttons">
+              <button type="button" data-prompt-text="Optimist or Realist">16 <span>Optimist or Realist</span></button>
+              <button type="button" data-prompt-text="Depth or Excitement">17 <span>Depth or Excitement</span></button>
+              <button type="button" data-prompt-text="Dreamer or Doer">18 <span>Dreamer or Doer</span></button>
+              <button type="button" data-prompt-text="Love or Money">19 <span>Love or Money</span></button>
+              <button type="button" data-prompt-text="Pawn or King">20 <span>Pawn or King</span></button>
+            </div>
+          </section>
+          <section class="team-prompt-group">
+            <h4>TEAM 5</h4>
+            <div class="team-prompt-buttons">
+              <button type="button" data-prompt-text="Luck or Skill">21 <span>Luck or Skill</span></button>
+              <button type="button" data-prompt-text="Love or Money">22 <span>Love or Money</span></button>
+              <button type="button" data-prompt-text="Risk or Reward">23 <span>Risk or Reward</span></button>
+              <button type="button" data-prompt-text="Work Hard or Work Smart">24 <span>Work Hard or Work Smart</span></button>
+              <button type="button" data-prompt-text="Lead or Follow">25 <span>Lead or Follow</span></button>
+            </div>
+          </section>
+        </div>
       </section>
     </div>
+  </section>
+
+  <section class="question-prompt-panel" data-card-workspace="game-instructions" hidden>
+    <section class="game-instruction-control">
+      <div class="game-instruction-heading">
+        <div>
+          <span class="leaderboard-control-label">FIXED SHOW CARDS</span>
+          <h3>GAME INSTRUCTIONS</h3>
+        </div>
+        <span class="question-prompt-air-status" id="game-instruction-air-status">OFF AIR</span>
+      </div>
+      <div class="game-instruction-grid">
+        <article class="game-instruction-item" data-game-instruction-card="1">
+          <strong>GAME 1 · SYNC OR SINK</strong>
+          <p>Partners must sync their answers to gain points.</p>
+          <button class="btn btn-gold-solid" type="button" data-game-instruction-id="1" data-game-instruction-text="Partners must sync their answers to gain points.">SHOW GAME 1</button>
+        </article>
+        <article class="game-instruction-item" data-game-instruction-card="2">
+          <strong>GAME 2 · THE TELL</strong>
+          <p>Teams have three tries per hand to guess correctly and steal cards from other teams.</p>
+          <button class="btn btn-gold-solid" type="button" data-game-instruction-id="2" data-game-instruction-text="Teams have three tries per hand to guess correctly and steal cards from other teams.">SHOW GAME 2</button>
+        </article>
+        <article class="game-instruction-item" data-game-instruction-card="3">
+          <strong>GAME 3 · THE SPLIT</strong>
+          <p>Play to win. Answer correctly to win points.</p>
+          <button class="btn btn-gold-solid" type="button" data-game-instruction-id="3" data-game-instruction-text="Play to win. Answer correctly to win points.">SHOW GAME 3</button>
+        </article>
+      </div>
+    </section>
+  </section>
   </section>
 
   <!-- Competitor Teams Control Panel -->

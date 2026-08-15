@@ -974,6 +974,29 @@ body.arena-performance-mode .parallax-intro-section *::after {
 
 .question-prompt-display-text.is-long { font-size: 50px; line-height: 1.2; }
 .question-prompt-display-text.is-very-long { font-size: 40px; line-height: 1.24; }
+.question-card-options { position:absolute; z-index:2; top:50%; right:13%; bottom:17%; left:13%; display:grid; grid-template-columns:1fr 1fr; align-content:center; gap:18px 22px; }
+.question-card-options[hidden] { display:none; }
+.question-card-options > div { display:grid; grid-template-columns:54px 1fr; align-items:center; min-height:92px; overflow:hidden; border:3px solid rgba(124,6,78,.78); border-radius:18px; background:rgba(255,250,246,.68); color:#740348; box-shadow:0 8px 20px rgba(103,0,60,.08); }
+.question-card-options > div.is-selected { border-color:#f0b900; background:#fff1a9; box-shadow:0 0 0 5px rgba(255,207,43,.24),0 10px 24px rgba(103,0,60,.12); }
+.question-card-options > div.is-selected b { background:#d99d00; }
+.question-card-options > div.is-correct { border-color:#16a85d; background:#caffdf; box-shadow:0 0 0 6px rgba(31,206,111,.22),0 10px 28px rgba(11,104,54,.2); }
+.question-card-options > div.is-correct b { background:#12934f; }
+.question-card-options > div.is-wrong { border-color:#df284e; background:#ffd0d9; box-shadow:0 0 0 6px rgba(239,48,85,.2),0 10px 28px rgba(142,13,39,.2); }
+.question-card-options > div.is-wrong b { background:#c9183d; }
+.question-card-options b { display:grid; place-items:center; align-self:stretch; background:#870052; color:#fff7ef; font:900 35px 'Outfit',sans-serif; }
+.question-card-options span { padding:12px 18px; font:900 31px/1.12 'Outfit',sans-serif; text-align:left; overflow-wrap:anywhere; }
+.question-prompt-overlay.has-question-options .question-prompt-display-text { top:20%; bottom:51%; padding:28px 70px; font-size:48px; line-height:1.16; }
+.question-prompt-overlay.has-question-options .question-prompt-display-text.is-long { font-size:42px; }
+.question-prompt-overlay.has-question-options .question-prompt-display-text.is-very-long { font-size:36px; }
+.question-prompt-overlay.is-game-instruction .question-prompt-display-text {
+  top: 23%;
+  right: 12%;
+  bottom: 17%;
+  left: 12%;
+  padding: 44px 80px;
+  font-size: 58px;
+  line-height: 1.22;
+}
 
 /* Dim all non-spotlighted teams to let highlighted team stand out */
 #app-stage.has-spotlight .group-panel-wrapper:not(.is-popup) {

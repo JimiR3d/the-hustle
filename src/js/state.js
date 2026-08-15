@@ -101,6 +101,16 @@ const DEFAULT_STATE = {
     isVisible: false,
     type: 'question',
     text: '',
+    options: [],
+    correctOptionIndex: null,
+    selectedOptionIndex: null,
+    answerRevealed: false,
+    nonce: 0,
+  },
+  gameInstructionCard: {
+    isVisible: false,
+    gameId: null,
+    text: '',
     nonce: 0,
   },
   winner: null,
@@ -336,6 +346,10 @@ class GameStateStore {
       questionPromptCard: {
         ...DEFAULT_STATE.questionPromptCard,
         ...(savedState.questionPromptCard || {}),
+      },
+      gameInstructionCard: {
+        ...DEFAULT_STATE.gameInstructionCard,
+        ...(savedState.gameInstructionCard || {}),
       },
       winner: savedState.winner || (savedState.winnerGroupId ? {
         type: 'group',
@@ -678,7 +692,7 @@ class GameStateStore {
     this.saveAndBroadcast('presentation_cue');
   }
 
-  showQuestionPromptCard(type, text) {
+  showQuestionPromptCard(type, text, options = [], correctOptionIndex = null) {
     const cleanType = type === 'prompt' ? 'prompt' : 'question';
     const cleanText = String(text || '').trim();
     if (!cleanText) return;
@@ -686,8 +700,13 @@ class GameStateStore {
       isVisible: true,
       type: cleanType,
       text: cleanText,
+      options: cleanType === 'question' && Array.isArray(options) ? options.slice(0, 4).map(String) : [],
+      correctOptionIndex: cleanType === 'question' && Number.isInteger(correctOptionIndex) ? correctOptionIndex : null,
+      selectedOptionIndex: null,
+      answerRevealed: false,
       nonce: (this.state.questionPromptCard?.nonce || 0) + 1,
     };
+    this.state.gameInstructionCard.isVisible = false;
     this.state.leaderboard.isVisible = false;
     this.saveAndBroadcast('question_prompt_show');
   }
@@ -700,6 +719,47 @@ class GameStateStore {
       nonce: (this.state.questionPromptCard?.nonce || 0) + 1,
     };
     this.saveAndBroadcast('question_prompt_hide');
+  }
+
+  selectQuestionOption(optionIndex) {
+    const card = this.state.questionPromptCard;
+    const index = Number(optionIndex);
+    if (!card?.isVisible || card.type !== 'question' || !Number.isInteger(index) || index < 0 || index >= card.options.length) return;
+    card.selectedOptionIndex = index;
+    card.answerRevealed = false;
+    this.saveAndBroadcast('question_option_select');
+  }
+
+  revealQuestionAnswer() {
+    const card = this.state.questionPromptCard;
+    if (!card?.isVisible || card.type !== 'question' || !Number.isInteger(card.selectedOptionIndex)) return;
+    card.answerRevealed = true;
+    this.saveAndBroadcast('question_answer_reveal');
+  }
+
+  showGameInstruction(gameId, text) {
+    const cleanGameId = Number(gameId);
+    const cleanText = String(text || '').trim();
+    if (![1, 2, 3].includes(cleanGameId) || !cleanText) return;
+    this.state.gameInstructionCard = {
+      isVisible: true,
+      gameId: cleanGameId,
+      text: cleanText,
+      nonce: (this.state.gameInstructionCard?.nonce || 0) + 1,
+    };
+    this.state.questionPromptCard.isVisible = false;
+    this.state.leaderboard.isVisible = false;
+    this.saveAndBroadcast('game_instruction_show');
+  }
+
+  hideGameInstruction() {
+    if (!this.state.gameInstructionCard?.isVisible) return;
+    this.state.gameInstructionCard = {
+      ...this.state.gameInstructionCard,
+      isVisible: false,
+      nonce: (this.state.gameInstructionCard?.nonce || 0) + 1,
+    };
+    this.saveAndBroadcast('game_instruction_hide');
   }
 
   showLeaderboard() {

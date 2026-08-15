@@ -66,6 +66,7 @@ const revealedPlayerSlots = new Set(
 );
 let previousPresentationCueNonce = gameStateStore.getState().presentationCue?.nonce || 0;
 let previousQuestionPromptNonce = gameStateStore.getState().questionPromptCard?.nonce || 0;
+let previousGameInstructionNonce = gameStateStore.getState().gameInstructionCard?.nonce || 0;
 let activeAnimationIds = new Set();
 let animatingSpotlightIds = new Set();
 let completedDisqualifiedIds = new Set();
@@ -845,7 +846,7 @@ function renderDisplay(state, meta = {}) {
   }
   renderLeaderboard(state, meta);
   renderIntermissionTimer(state.intermissionTimer);
-  renderQuestionPromptCard(state.questionPromptCard, meta);
+  renderArenaCard(state.questionPromptCard, state.gameInstructionCard, meta);
 
   if ((state.arenaFocusNonce || 0) > previousArenaFocusNonce) {
     focusArena();
@@ -1060,6 +1061,11 @@ function renderDisplay(state, meta = {}) {
     // Exclude isPopUp and points from structureKey so DOM is persistent and never destroyed during spotlight
     const structureKey = `${group.name}_${group.player1.name}_${group.player2.name}_${group.player1.image}_${group.player2.image}_${group.player1.isRevealed}_${group.player2.isRevealed}_${individualWinnerName || ''}`;
     if (groupWrapper.dataset.renderedStructure !== structureKey) {
+      const staleShaderMount = window.shaderMounts?.get(group.id);
+      if (staleShaderMount) {
+        try { staleShaderMount.destroy?.(); } catch (error) {}
+        window.shaderMounts.delete(group.id);
+      }
       groupWrapper.innerHTML = innerHTML;
       groupWrapper.dataset.renderedStructure = structureKey;
 
@@ -1397,28 +1403,56 @@ function renderIntermissionTimer(timerState) {
   callout?.classList.toggle('is-active', Boolean(timerState.isRunning));
 }
 
-function renderQuestionPromptCard(cardState, meta = {}) {
+function renderArenaCard(cardState, instructionState, meta = {}) {
   const overlay = document.getElementById('question-prompt-overlay');
   const backdrop = overlay?.querySelector('.question-prompt-backdrop');
   const card = document.getElementById('question-prompt-display-card');
   const image = document.getElementById('question-prompt-card-image');
   const text = document.getElementById('question-prompt-display-text');
-  if (!overlay || !backdrop || !card || !image || !text) return;
+  const options = document.getElementById('question-card-options');
+  if (!overlay || !backdrop || !card || !image || !text || !options) return;
 
-  const isVisible = Boolean(cardState?.isVisible && cardState.text);
-  const nonce = cardState?.nonce || 0;
-  const shouldEnter = isVisible && (nonce !== previousQuestionPromptNonce || !overlay.classList.contains('active'));
+  const instructionVisible = Boolean(instructionState?.isVisible && instructionState.text && instructionState.gameId);
+  const questionVisible = Boolean(cardState?.isVisible && cardState.text);
+  const isVisible = instructionVisible || questionVisible;
+  const nonce = instructionVisible ? (instructionState?.nonce || 0) : (cardState?.nonce || 0);
+  const previousNonce = instructionVisible ? previousGameInstructionNonce : previousQuestionPromptNonce;
+  const shouldEnter = isVisible && (nonce !== previousNonce || !overlay.classList.contains('active'));
   const shouldExit = !isVisible && overlay.classList.contains('active');
-  previousQuestionPromptNonce = nonce;
+  previousQuestionPromptNonce = cardState?.nonce || 0;
+  previousGameInstructionNonce = instructionState?.nonce || 0;
+
+  const cardType = cardState?.type === 'prompt' ? 'prompt' : 'question';
+  const questionOptions = !instructionVisible && cardType === 'question' && Array.isArray(cardState?.options)
+    ? cardState.options.slice(0, 4)
+    : [];
+  const hasQuestionOptions = questionOptions.length === 4;
+  overlay.classList.toggle('has-question-options', hasQuestionOptions);
+  options.hidden = !hasQuestionOptions;
+  options.innerHTML = hasQuestionOptions
+    ? questionOptions.map((option, index) => {
+      const isSelected = index === cardState.selectedOptionIndex;
+      const isRevealed = isSelected && cardState.answerRevealed;
+      const resultClass = isRevealed
+        ? (index === cardState.correctOptionIndex ? ' is-correct' : ' is-wrong')
+        : '';
+      return `<div class="${isSelected ? 'is-selected' : ''}${resultClass}"><b>${String.fromCharCode(65 + index)}</b><span>${escapeHtml(String(option))}</span></div>`;
+    }).join('')
+    : '';
 
   if (shouldEnter) {
-    const type = cardState.type === 'prompt' ? 'prompt' : 'question';
-    const cleanText = String(cardState.text || '').trim();
-    image.src = type === 'prompt'
-      ? '/assets/questions-prompts/PromptCard.webp'
-      : '/assets/questions-prompts/QuestionCard.webp';
-    image.alt = `${type} card`;
+    const cleanText = String(instructionVisible ? instructionState.text : cardState.text || '').trim();
+    if (instructionVisible) {
+      image.src = `/assets/game-instructions/Game${instructionState.gameId}.webp`;
+      image.alt = `Game ${instructionState.gameId} instructions`;
+    } else {
+      image.src = cardType === 'prompt'
+        ? '/assets/questions-prompts/PromptCard.webp'
+        : '/assets/questions-prompts/QuestionCard.webp';
+      image.alt = `${cardType} card`;
+    }
     text.textContent = cleanText;
+    overlay.classList.toggle('is-game-instruction', instructionVisible);
     text.classList.toggle('is-long', cleanText.length > 120 && cleanText.length <= 220);
     text.classList.toggle('is-very-long', cleanText.length > 220);
     overlay.classList.add('active');

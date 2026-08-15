@@ -2,6 +2,8 @@ const SHOW_ASSETS = [
   '/assets/background_v2.webp', '/assets/logo.webp', '/assets/WinnerIcon.webp',
   '/assets/Times_up.webp', '/assets/cards/CardBack.webp',
   '/assets/questions-prompts/QuestionCard.webp', '/assets/questions-prompts/PromptCard.webp',
+  '/assets/game-instructions/Game1.webp', '/assets/game-instructions/Game2.webp',
+  '/assets/game-instructions/Game3.webp',
   '/assets/parallax/sky.webp', '/assets/parallax/Buildings.webp', '/assets/parallax/Ground.webp',
   '/assets/parallax/PiggyBank.webp', '/assets/parallax/homeLogo.webp', '/assets/parallax/Hosts.webp',
   '/assets/parallax/signHustle.webp', '/assets/parallax/sponsoreLogoss.webp',
