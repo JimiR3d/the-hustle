@@ -732,6 +732,64 @@ body {
   .show-tools-grid { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 760px) {
+  body { padding: 8px; overflow-x: hidden; }
+  .admin-header, .timer-control-panel, .competitors-panel { padding: 12px; border-radius: 11px; }
+  .admin-header { align-items: stretch; }
+  .admin-title-group h1 { font-size: 17px; }
+  .admin-title-group p { display: none; }
+  .header-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .header-actions .btn { justify-content: center; min-height: 42px; padding: 8px; font-size: 11px; }
+  #btn-launch-display { grid-column: 1 / -1; }
+
+  .cloud-sync-panel { align-items: stretch; flex-direction: column; padding: 12px; }
+  .cloud-sync-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+  .cloud-pin-input { width: 100%; min-height: 42px; }
+  .btn-cloud-connect { justify-content: center; }
+
+  .timer-control-panel { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .timer-display-box { justify-content: space-between; }
+  .timer-val { font-size: 32px; }
+  .timer-custom-set { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; }
+  .timer-input { min-height: 40px; width: 100%; }
+  .timer-control-panel .btn-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .timer-control-panel .btn-group .btn { justify-content: center; min-height: 42px; }
+
+  .competitors-panel { overflow: visible; }
+  .controller-split-layout { display: flex; flex-direction: column; min-width: 0; gap: 18px; }
+  .team-control-column, .live-control-column { width: 100%; }
+  .panel-heading { align-items: stretch; }
+  .panel-heading > div:first-child { width: 100%; }
+  .panel-live-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 7px; }
+  .panel-live-actions .btn { justify-content: center; padding: 8px 6px; font-size: 10px; }
+
+  .team-control-column .competitor-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 9px; padding: 11px; }
+  .team-control-column .comp-info { grid-column: 1 / -1; }
+  .team-control-column .player-select { width: calc(50% - 4px); min-height: 39px; flex: 1 1 auto; }
+  .team-control-column .points-control-group { min-width: 0; gap: 4px; }
+  .team-control-column .row-actions-group { justify-content: flex-end; gap: 5px; }
+  .team-control-column .quick-pts-btn,
+  .team-control-column .quick-pts-btn[data-delta="1"],
+  .team-control-column .quick-pts-btn[data-delta="-1"] { min-width: 37px; min-height: 39px; padding: 7px; }
+  .team-control-column .pts-input { width: 45px; min-height: 39px; }
+  .team-control-column .btn-spotlight,
+  .team-control-column .btn-disqualify { min-height: 39px; padding: 7px 8px; font-size: 11px; }
+
+  .leaderboard-control-section { padding: 14px; }
+  .leaderboard-control-section .btn { justify-content: center; min-height: 46px; }
+  .show-tool-card { padding: 14px; }
+  .tool-control-row, .cue-button-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tool-control-row .timer-input { width: 100%; }
+  .tool-control-row .btn, .cue-button-row .btn { justify-content: center; min-height: 42px; }
+  .winner-control-section .btn-winner-main { width: 100%; justify-content: center; min-height: 54px; }
+
+  .modal-winner-card { width: calc(100vw - 16px); max-width: none; padding: 16px 12px; }
+  .winner-options-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .winner-option-card { min-height: 56px; padding: 8px; }
+  .modal-actions { flex-wrap: wrap; }
+  .modal-actions .btn { flex: 1 1 130px; justify-content: center; min-height: 42px; }
+}
+
 .btn-gold-solid {
   background: #ffd700;
   color: #0d0108;

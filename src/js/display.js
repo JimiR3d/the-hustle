@@ -46,104 +46,25 @@ let previousTimerSeconds = null;
 let showSfxContext = null;
 let leaderboardUpdateTimer = null;
 let hasLeaderboardSnapshot = false;
-
-// Pre-instantiated Countdown and Time's Up audio elements
-const timerStartAudio = new Audio('/assets/Timer_start.mp3');
-timerStartAudio.loop = true;
-timerStartAudio.volume = 1.0;
-
-const timerSpeedUpAudio = new Audio('/assets/Timer_speedUp.mp3');
-timerSpeedUpAudio.loop = true;
-timerSpeedUpAudio.volume = 1.0;
+let previousSpotlightIds = new Set(
+  gameStateStore.getState().groups.filter((group) => group.isPopUp).map((group) => group.id)
+);
 
 const timesUpAudio = new Audio('/assets/Time_up.mp3');
 timesUpAudio.loop = false;
 timesUpAudio.volume = 1.0;
 
-let currentAudioTrack = null; // null | 'start' | 'speedUp'
-
-function syncTimerAudio(timerState) {
-  if (!timerState) return;
-  const currentSecs = timerState.seconds;
-  const isRunning = Boolean(timerState.isRunning && currentSecs > 0);
-
-  if (!isRunning) {
-    if (currentSecs === 0) {
-      if (!timerStartAudio.paused) {
-        timerStartAudio.pause();
-        timerStartAudio.currentTime = 0;
-      }
-      if (!timerSpeedUpAudio.paused) {
-        timerSpeedUpAudio.pause();
-        timerSpeedUpAudio.currentTime = 0;
-      }
-      currentAudioTrack = null;
-    } else {
-      // Paused: pause without resetting position
-      if (!timerStartAudio.paused) timerStartAudio.pause();
-      if (!timerSpeedUpAudio.paused) timerSpeedUpAudio.pause();
-    }
-    return;
-  }
-
-  // Active countdown
-  if (currentSecs > 20) {
-    if (currentAudioTrack !== 'start') {
-      if (!timerSpeedUpAudio.paused) {
-        timerSpeedUpAudio.pause();
-        timerSpeedUpAudio.currentTime = 0;
-      }
-      currentAudioTrack = 'start';
-      timerStartAudio.currentTime = 0;
-    }
-    if (timerStartAudio.paused) {
-      const p = timerStartAudio.play();
-      if (p !== undefined) {
-        p.catch((err) => {
-          console.warn('[Display Audio] Timer_start.mp3 play blocked:', err);
-        });
-      }
-    }
-  } else {
-    // 0 < currentSecs <= 20
-    if (currentAudioTrack !== 'speedUp') {
-      if (!timerStartAudio.paused) {
-        timerStartAudio.pause();
-        timerStartAudio.currentTime = 0;
-      }
-      currentAudioTrack = 'speedUp';
-      timerSpeedUpAudio.currentTime = 0;
-    }
-    if (timerSpeedUpAudio.paused) {
-      const p = timerSpeedUpAudio.play();
-      if (p !== undefined) {
-        p.catch((err) => {
-          console.warn('[Display Audio] Timer_speedUp.mp3 play blocked:', err);
-        });
-      }
-    }
-  }
-}
-
 function stopAllAudio() {
-  [timerStartAudio, timerSpeedUpAudio, timesUpAudio].forEach((audio) => {
+  [timesUpAudio].forEach((audio) => {
     try {
       audio.pause();
       audio.currentTime = 0;
     } catch (e) {}
   });
-  currentAudioTrack = null;
 }
 
-function onDisplayUserGesture() {
-  const state = gameStateStore.getState();
-  if (state && state.timer && state.timer.isRunning && state.timer.seconds > 0) {
-    syncTimerAudio(state.timer);
-  }
-}
-
-['click', 'touchstart', 'mousedown', 'keydown', 'wheel', 'scroll'].forEach((evt) => {
-  window.addEventListener(evt, onDisplayUserGesture, { passive: true });
+['click', 'touchstart', 'mousedown', 'keydown'].forEach((evt) => {
+  window.addEventListener(evt, () => getShowSfxContext(), { passive: true, once: true });
 });
 
 if (!window.shaderMounts) window.shaderMounts = new Map();
@@ -463,6 +384,80 @@ function playScoreSfx(kind) {
   }
 }
 
+function playTimerTick(seconds) {
+  try {
+    const ctx = getShowSfxContext();
+    if (!ctx || !seconds) return;
+    const now = ctx.currentTime;
+    const beats = seconds > 30 ? 1 : seconds > 20 ? 2 : seconds > 10 ? 3 : 4;
+    const spacing = 0.82 / beats;
+    for (let index = 0; index < beats; index += 1) {
+      const at = now + index * spacing;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(seconds <= 10 ? 1120 : 820, at);
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(index === 0 ? 0.11 : 0.055, at + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.07);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(at);
+      osc.stop(at + 0.08);
+    }
+  } catch (err) {
+    console.warn('[Display Audio] Timer tick unavailable:', err);
+  }
+}
+
+function playSpotlightSfx() {
+  try {
+    const ctx = getShowSfxContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [330, 495, 740].forEach((frequency, index) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const at = now + index * 0.07;
+      osc.type = index === 2 ? 'triangle' : 'sine';
+      osc.frequency.setValueAtTime(frequency, at);
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(0.12, at + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.34);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(at);
+      osc.stop(at + 0.36);
+    });
+  } catch (err) {
+    console.warn('[Display Audio] Spotlight cue unavailable:', err);
+  }
+}
+
+function playLeaderboardUpdateSfx() {
+  try {
+    const ctx = getShowSfxContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [523, 659, 784, 1047].forEach((frequency, index) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const at = now + index * 0.11;
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(frequency, at);
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(0.1, at + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.2);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(at);
+      osc.stop(at + 0.22);
+    });
+  } catch (err) {
+    console.warn('[Display Audio] Leaderboard cue unavailable:', err);
+  }
+}
+
 function getRankedGroups(groups) {
   const sortedGroups = [...groups].sort((a, b) => {
     if (a.isDisqualified !== b.isDisqualified) return a.isDisqualified ? 1 : -1;
@@ -639,6 +634,7 @@ function renderLeaderboard(state, meta = {}) {
   });
 
   if (meta.eventType === 'leaderboard_delayed_reveal') {
+    playLeaderboardUpdateSfx();
     animateLeaderboardSwaps(list, previousOrder, rankedGroups.map(({ group }) => group.id));
   }
 
@@ -1135,17 +1131,6 @@ function triggerTimesUpSequence() {
   const isLeftToRight = timesUpTriggerCount % 2 === 0;
   timesUpTriggerCount++;
 
-  // Stop countdown audio before Time's Up sound plays
-  if (!timerStartAudio.paused) {
-    timerStartAudio.pause();
-    timerStartAudio.currentTime = 0;
-  }
-  if (!timerSpeedUpAudio.paused) {
-    timerSpeedUpAudio.pause();
-    timerSpeedUpAudio.currentTime = 0;
-  }
-  currentAudioTrack = null;
-
   // Play uploaded Time's Up sound effect synchronized with entrance
   try {
     timesUpAudio.pause();
@@ -1250,6 +1235,12 @@ function renderTimer(timerState) {
   }
 
   const currentSecs = timerState.seconds;
+  const timerBadge = document.getElementById('hud-timer-badge');
+  timerBadge?.classList.toggle('is-urgent', Boolean(timerState.isRunning && currentSecs <= 30 && currentSecs > 0));
+
+  if (timerState.isRunning && currentSecs > 0 && previousTimerSeconds !== null && currentSecs < previousTimerSeconds) {
+    playTimerTick(currentSecs);
+  }
 
   // Re-arm when timer is set or reset above 0
   if (currentSecs > 0) {
@@ -1308,11 +1299,14 @@ function syncTimerLoop(state) {
 fitStageToWindow();
 renderDisplay(gameStateStore.getState());
 syncTimerLoop(gameStateStore.getState());
-syncTimerAudio(gameStateStore.getState().timer);
 
-// Ensure syncTimerLoop and syncTimerAudio are called on EVERY state update
+// Keep rendering the local timestamp-derived timer on every state update.
 gameStateStore.onStateChange((state, meta) => {
+  if (meta?.eventType === 'popup_toggle') {
+    const newlySpotlighted = state.groups.some((group) => group.isPopUp && !previousSpotlightIds.has(group.id));
+    if (newlySpotlighted) playSpotlightSfx();
+  }
+  previousSpotlightIds = new Set(state.groups.filter((group) => group.isPopUp).map((group) => group.id));
   renderDisplay(state, meta);
   syncTimerLoop(state);
-  syncTimerAudio(state.timer);
 });

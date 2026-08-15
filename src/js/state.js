@@ -128,6 +128,7 @@ class GameStateStore {
 
       this.lastProcessedTxId = newState.lastTxId;
       this.state = this.normalizeState(newState);
+      this.refreshRunningTimers();
 
       const resolvedEventType = (eventType === 'storage_update' && pointsChanged) ? 'points_update' : (eventType || 'update');
       this.notifyListeners({ source, eventType: resolvedEventType });
@@ -330,6 +331,27 @@ class GameStateStore {
     return this.state;
   }
 
+  refreshRunningTimers() {
+    ['timer', 'intermissionTimer'].forEach((key) => {
+      const timer = this.state[key];
+      if (!timer?.isRunning || !timer.targetEndTime) return;
+      timer.seconds = Math.max(0, Math.ceil((timer.targetEndTime - Date.now()) / 1000));
+      if (timer.seconds === 0) {
+        timer.isRunning = false;
+        timer.targetEndTime = null;
+      }
+    });
+  }
+
+  saveLocalTimerFrame(eventType) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+    } catch (e) {
+      console.warn('Local timer frame could not be saved', e);
+    }
+    this.notifyListeners({ source: 'local-timer', eventType });
+  }
+
   // --- Actions ---
 
   updateGroupPoints(id, delta) {
@@ -480,14 +502,14 @@ class GameStateStore {
             this.state.timer.isRunning = false;
             this.state.timer.targetEndTime = null;
           }
-          this.saveAndBroadcast('timer_tick');
+          this.saveLocalTimerFrame('timer_tick');
         }
       } else if (this.state.timer.seconds > 0) {
         this.state.timer.seconds -= 1;
         if (this.state.timer.seconds === 0) {
           this.state.timer.isRunning = false;
         }
-        this.saveAndBroadcast('timer_tick');
+        this.saveLocalTimerFrame('timer_tick');
       }
     }
   }
@@ -554,7 +576,7 @@ class GameStateStore {
       timer.isRunning = false;
       timer.targetEndTime = null;
     }
-    this.saveAndBroadcast('intermission_timer_tick');
+    this.saveLocalTimerFrame('intermission_timer_tick');
   }
 
   enterArena() {

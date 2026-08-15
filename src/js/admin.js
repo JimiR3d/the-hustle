@@ -12,104 +12,8 @@ function refreshUndoButton() {
   button.textContent = lastScoreUndo ? `UNDO ${lastScoreUndo.label}` : 'UNDO LAST SCORE';
 }
 
-// Persistent Countdown & Time's Up audio elements on Admin Panel
-const timerStartAudio = new Audio('/assets/Timer_start.mp3');
-timerStartAudio.loop = true;
-timerStartAudio.volume = 1.0;
-
-const timerSpeedUpAudio = new Audio('/assets/Timer_speedUp.mp3');
-timerSpeedUpAudio.loop = true;
-timerSpeedUpAudio.volume = 1.0;
-
-const timesUpAudio = new Audio('/assets/Time_up.mp3');
-timesUpAudio.loop = false;
-timesUpAudio.volume = 1.0;
-
-let currentAudioTrack = null; // null | 'start' | 'speedUp'
-
-function syncTimerAudio(timerState) {
-  if (!timerState) return;
-  const currentSecs = timerState.seconds;
-  const isRunning = Boolean(timerState.isRunning && currentSecs > 0);
-
-  if (!isRunning) {
-    if (currentSecs === 0) {
-      if (!timerStartAudio.paused) {
-        timerStartAudio.pause();
-        timerStartAudio.currentTime = 0;
-      }
-      if (!timerSpeedUpAudio.paused) {
-        timerSpeedUpAudio.pause();
-        timerSpeedUpAudio.currentTime = 0;
-      }
-      currentAudioTrack = null;
-    } else {
-      // Paused: pause without resetting position
-      if (!timerStartAudio.paused) timerStartAudio.pause();
-      if (!timerSpeedUpAudio.paused) timerSpeedUpAudio.pause();
-    }
-    return;
-  }
-
-  // Active countdown
-  if (currentSecs > 20) {
-    if (currentAudioTrack !== 'start') {
-      if (!timerSpeedUpAudio.paused) {
-        timerSpeedUpAudio.pause();
-        timerSpeedUpAudio.currentTime = 0;
-      }
-      currentAudioTrack = 'start';
-      timerStartAudio.currentTime = 0;
-    }
-    if (timerStartAudio.paused) {
-      const p = timerStartAudio.play();
-      if (p !== undefined) {
-        p.catch((err) => {
-          console.warn('[Admin Audio] Timer_start.mp3 play blocked:', err);
-        });
-      }
-    }
-  } else {
-    // 0 < currentSecs <= 20
-    if (currentAudioTrack !== 'speedUp') {
-      if (!timerStartAudio.paused) {
-        timerStartAudio.pause();
-        timerStartAudio.currentTime = 0;
-      }
-      currentAudioTrack = 'speedUp';
-      timerSpeedUpAudio.currentTime = 0;
-    }
-    if (timerSpeedUpAudio.paused) {
-      const p = timerSpeedUpAudio.play();
-      if (p !== undefined) {
-        p.catch((err) => {
-          console.warn('[Admin Audio] Timer_speedUp.mp3 play blocked:', err);
-        });
-      }
-    }
-  }
-}
-
-function stopAllAudio() {
-  [timerStartAudio, timerSpeedUpAudio, timesUpAudio].forEach((audio) => {
-    try {
-      audio.pause();
-      audio.currentTime = 0;
-    } catch (e) {}
-  });
-  currentAudioTrack = null;
-}
-
-function onAdminUserGesture() {
-  const state = gameStateStore.getState();
-  if (state && state.timer && state.timer.isRunning && state.timer.seconds > 0) {
-    syncTimerAudio(state.timer);
-  }
-}
-
-['click', 'touchstart', 'mousedown', 'keydown'].forEach((evt) => {
-  window.addEventListener(evt, onAdminUserGesture, { passive: true });
-});
+// Show audio is produced by the audience display only. Keeping the controller
+// silent prevents two open tabs (or a phone and PC) from doubling every cue.
 
 function renderAdminPanel(state) {
   const container = document.getElementById('competitors-list');
@@ -312,28 +216,24 @@ function bindAdminEvents() {
         secs = state.timer.initialSeconds || 300;
       }
       gameStateStore.updateTimer(secs, true);
-      syncTimerAudio(gameStateStore.getState().timer);
     });
   }
 
   if (btnTimerPause) {
     btnTimerPause.addEventListener('click', () => {
       gameStateStore.pauseTimer();
-      syncTimerAudio(gameStateStore.getState().timer);
     });
   }
 
   if (btnTimerStop) {
     btnTimerStop.addEventListener('click', () => {
       gameStateStore.stopTimer();
-      syncTimerAudio(gameStateStore.getState().timer);
     });
   }
 
   if (btnTimerReset) {
     btnTimerReset.addEventListener('click', () => {
       gameStateStore.resetTimer();
-      syncTimerAudio(gameStateStore.getState().timer);
     });
   }
 
@@ -675,16 +575,10 @@ function syncAdminTimerLoop(state) {
 renderAdminPanel(gameStateStore.getState());
 bindAdminEvents();
 syncAdminTimerLoop(gameStateStore.getState());
-syncTimerAudio(gameStateStore.getState().timer);
 
 gameStateStore.onStateChange((state, meta) => {
   renderAdminPanel(state);
   syncAdminTimerLoop(state);
-  syncTimerAudio(state.timer);
-
-  if (meta && meta.eventType === 'reset') {
-    stopAllAudio();
-  }
 
   // Live update Winner Select Modal if currently open
   const winnerSelectModal = document.getElementById('winner-select-modal');
