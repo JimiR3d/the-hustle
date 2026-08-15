@@ -985,6 +985,14 @@ body {
   .modal-actions .btn { flex: 1 1 130px; justify-content: center; min-height: 42px; }
 }
 
+@media (max-width: 600px) {
+  .team-control-column .points-control-group { gap:2px; }
+  .team-control-column .quick-pts-btn,
+  .team-control-column .quick-pts-btn[data-delta="5"],
+  .team-control-column .quick-pts-btn[data-delta="-5"] { min-width:31px; padding:6px 3px; font-size:10px; }
+  .team-control-column .pts-input { width:38px; padding:6px 2px; font-size:12px; }
+}
+
 .btn-gold-solid {
   background: #ffd700;
   color: #0d0108;

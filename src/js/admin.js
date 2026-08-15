@@ -292,6 +292,9 @@ function renderAdminPanel(state) {
           ${group.isDisqualified ? 'disabled' : ''} 
         />
         <button class="quick-pts-btn add" data-action="pts" data-id="${group.id}" data-delta="5" ${group.isDisqualified ? 'disabled' : ''}>+5</button>
+        <button class="quick-pts-btn add" data-action="pts" data-id="${group.id}" data-delta="10" ${group.isDisqualified ? 'disabled' : ''}>+10</button>
+        <button class="quick-pts-btn add" data-action="pts" data-id="${group.id}" data-delta="15" ${group.isDisqualified ? 'disabled' : ''}>+15</button>
+        <button class="quick-pts-btn add" data-action="pts" data-id="${group.id}" data-delta="20" ${group.isDisqualified ? 'disabled' : ''}>+20</button>
       </div>
 
       <div class="row-actions-group">

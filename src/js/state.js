@@ -875,7 +875,22 @@ class GameStateStore {
       ? { type: 'group', groupId: winner, playerName: null }
       : winner;
     if (!normalizedWinner?.groupId) return;
+    this.questionResolutionToken += 1;
     this.state.leaderboard.isVisible = false;
+    this.state.groups.forEach((group) => { group.isPopUp = false; });
+    if (this.state.questionPromptCard?.isVisible) {
+      this.state.questionPromptCard.isVisible = false;
+      this.state.questionPromptCard.nonce = (this.state.questionPromptCard.nonce || 0) + 1;
+    }
+    if (this.state.gameInstructionCard?.isVisible) {
+      this.state.gameInstructionCard.isVisible = false;
+      this.state.gameInstructionCard.nonce = (this.state.gameInstructionCard.nonce || 0) + 1;
+    }
+    this.state.presentationCue = {
+      kind: null,
+      label: '',
+      nonce: (this.state.presentationCue?.nonce || 0) + 1,
+    };
     this.state.winner = normalizedWinner;
     this.state.winnerGroupId = normalizedWinner.groupId;
     this.saveAndBroadcast('winner_declared');

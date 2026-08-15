@@ -705,13 +705,13 @@ function renderLeaderboard(state, meta = {}) {
 
   if (!overlay || !list) return;
 
-  if (meta.eventType === 'disqualify') {
+  if (meta.eventType === 'disqualify' || meta.eventType === 'winner_declared') {
     overlay.style.transition = 'none';
     if (viewportBackdrop) viewportBackdrop.style.transition = 'none';
   }
   overlay.classList.toggle('active', isVisible);
   if (viewportBackdrop) viewportBackdrop.classList.toggle('active', isVisible);
-  if (meta.eventType === 'disqualify') {
+  if (meta.eventType === 'disqualify' || meta.eventType === 'winner_declared') {
     requestAnimationFrame(() => {
       overlay.style.removeProperty('transition');
       viewportBackdrop?.style.removeProperty('transition');
@@ -875,7 +875,10 @@ function renderDisplay(state, meta = {}) {
 
   const winnerJustDeclared = Boolean(state.winnerGroupId && state.winnerGroupId !== previousWinnerGroupId);
   const winnerJustCleared = Boolean(!state.winnerGroupId && previousWinnerGroupId);
-  if (winnerJustDeclared) playAnimationSfx('winner-in');
+  if (winnerJustDeclared) {
+    document.getElementById('presentation-cue-overlay')?.remove();
+    playAnimationSfx('winner-in');
+  }
   if (winnerJustCleared) playAnimationSfx('winner-out');
 
   const shouldFocusArena =
@@ -1538,7 +1541,7 @@ function renderArenaCard(cardState, instructionState, groups = [], meta = {}) {
     focusArena();
   } else if (shouldExit) {
     gsap.killTweensOf([backdrop, card]);
-    if (meta.eventType === 'disqualify' || meta.eventType === 'question_correct_award') {
+    if (meta.eventType === 'disqualify' || meta.eventType === 'question_correct_award' || meta.eventType === 'winner_declared') {
       overlay.classList.remove('active');
       overlay.setAttribute('aria-hidden', 'true');
       gsap.set([overlay, backdrop, card], { opacity: 0 });
