@@ -59,14 +59,6 @@ body {
   flex-wrap: wrap;
 }
 
-.controller-mode-switch { position: sticky; top: 8px; z-index: 120; display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 16px; padding: 10px 14px; border: 1px solid rgba(255,215,0,.32); border-radius: 12px; background: rgba(22,4,17,.94); box-shadow: 0 10px 30px rgba(0,0,0,.45); backdrop-filter: blur(14px); }
-.controller-mode-switch > div:first-child { display: flex; flex-direction: column; gap: 2px; }
-.mode-switch-eyebrow { color: #a98c56; font-size: 9px; font-weight: 900; letter-spacing: 2px; }
-.controller-mode-switch strong { color: #fff3c7; font-size: 16px; }
-.mode-switch-buttons { display: flex; gap: 6px; padding: 4px; border-radius: 9px; background: rgba(0,0,0,.35); }
-.mode-switch-btn { padding: 7px 16px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #9d8b99; font: 800 11px/1 var(--admin-font); letter-spacing: 1px; cursor: pointer; }
-.mode-switch-btn.active { color: #1a1000; border-color: #ffe06c; background: linear-gradient(135deg,#ffe878,#e9ad11); box-shadow: 0 0 16px rgba(255,215,0,.25); }
-
 /* Timer Control Panel Bar */
 .timer-control-panel {
   display: flex;
@@ -688,20 +680,20 @@ body {
 .btn-disqualify { margin-left: 8px; opacity: .62; }
 .btn-disqualify:hover { opacity: 1; }
 
-body.controller-mode-live .player-select-group { display: none; }
-body.controller-mode-live .comp-info { flex: 0 1 245px; min-width: 190px; }
-body.controller-mode-live .leaderboard-control-section { order: 1; margin-top: 0; margin-bottom: 14px; }
-body.controller-mode-live .show-tools-grid { order: 2; margin-top: 0; margin-bottom: 14px; }
-body.controller-mode-live .winner-control-section { order: 3; margin: 0 0 14px; padding: 12px 0; }
-body.controller-mode-live .competitors-list { order: 4; }
-body.controller-mode-setup .timer-control-panel,
-body.controller-mode-setup .panel-live-actions,
-body.controller-mode-setup .points-control-group,
-body.controller-mode-setup .row-actions-group,
-body.controller-mode-setup .leaderboard-control-section,
-body.controller-mode-setup .show-tools-grid,
-body.controller-mode-setup .winner-control-section { display: none; }
-body.controller-mode-setup .competitors-list { order: 1; }
+.controller-split-layout { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(360px,.8fr); gap: 18px; align-items: start; }
+.team-control-column, .live-control-column { min-width: 0; }
+.live-control-column { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 14px; }
+.live-control-column .leaderboard-control-section { margin-top: 0; }
+.live-control-column .show-tools-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 0; }
+.live-control-column .show-tool-card { padding: 16px; }
+.team-control-column .competitor-row { padding: 12px; }
+.team-control-column .comp-info { flex-basis: 100%; }
+.winner-control-section { margin-top: 18px; }
+
+@media (max-width: 1050px) {
+  .controller-split-layout { grid-template-columns: 1fr; }
+  .live-control-column { position: static; }
+}
 
 @media (max-width: 1100px) {
   .show-tools-grid { grid-template-columns: 1fr; }

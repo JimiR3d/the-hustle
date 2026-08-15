@@ -485,6 +485,68 @@ function getRankedGroups(groups) {
   });
 }
 
+function animateLeaderboardSwaps(list, previousOrder, nextOrder) {
+  if (previousOrder.length !== nextOrder.length || previousOrder.some((id) => !nextOrder.includes(id))) return;
+
+  const rows = new Map(
+    [...list.querySelectorAll('.leaderboard-row')].map((row) => [row.dataset.groupId, row])
+  );
+  const finalIndexes = new Map(nextOrder.map((id, index) => [id, index]));
+  const simulatedOrder = [...previousOrder];
+
+  previousOrder.forEach((id, oldIndex) => {
+    const row = rows.get(id);
+    const finalIndex = finalIndexes.get(id);
+    if (row && finalIndex != null) {
+      gsap.set(row, { y: (oldIndex - finalIndex) * 112, scale: 1, zIndex: 1 });
+    }
+  });
+
+  const timeline = gsap.timeline();
+  let swapStep = 0;
+
+  nextOrder.forEach((targetId, targetIndex) => {
+    let currentIndex = simulatedOrder.indexOf(targetId);
+    while (currentIndex > targetIndex) {
+      const movingUpId = simulatedOrder[currentIndex];
+      const movingDownId = simulatedOrder[currentIndex - 1];
+      const movingUpRow = rows.get(movingUpId);
+      const movingDownRow = rows.get(movingDownId);
+      const startAt = swapStep * 0.62;
+
+      [simulatedOrder[currentIndex - 1], simulatedOrder[currentIndex]] =
+        [simulatedOrder[currentIndex], simulatedOrder[currentIndex - 1]];
+
+      if (movingUpRow && movingDownRow) {
+        timeline
+          .to(movingUpRow, {
+            y: ((currentIndex - 1) - finalIndexes.get(movingUpId)) * 112,
+            scale: 1.025,
+            zIndex: 10,
+            duration: 0.54,
+            ease: 'power2.inOut',
+          }, startAt)
+          .to(movingDownRow, {
+            y: (currentIndex - finalIndexes.get(movingDownId)) * 112,
+            scale: 0.985,
+            zIndex: 8,
+            duration: 0.54,
+            ease: 'power2.inOut',
+          }, startAt)
+          .to([movingUpRow, movingDownRow], {
+            scale: 1,
+            zIndex: 1,
+            duration: 0.12,
+            ease: 'power1.out',
+          }, startAt + 0.5);
+      }
+
+      currentIndex -= 1;
+      swapStep += 1;
+    }
+  });
+}
+
 function renderLeaderboard(state, meta = {}) {
   const overlay = document.getElementById('leaderboard-overlay');
   const viewportBackdrop = document.getElementById('leaderboard-viewport-backdrop');
@@ -524,15 +586,18 @@ function renderLeaderboard(state, meta = {}) {
   if (meta.eventType === 'points_update') return;
 
   const nextRanks = new Map();
-  let movementSequence = 0;
+  const previousOrder = [...previousLeaderboardRanks.entries()]
+    .sort((a, b) => a[1] - b[1])
+    .map(([id]) => id);
+  const rankedGroups = getRankedGroups(state.groups);
   list.innerHTML = '';
 
-  getRankedGroups(state.groups).forEach(({ group, rank }, index) => {
+  rankedGroups.forEach(({ group, rank }, index) => {
     nextRanks.set(group.id, index);
     const previousIndex = previousLeaderboardRanks.get(group.id);
     const movement = previousIndex == null ? 0 : previousIndex - index;
     if (movement !== 0) {
-      const expiresAt = Date.now() + 2800;
+      const expiresAt = Date.now() + 5200;
       leaderboardMovementState.set(group.id, { movement, expiresAt });
       setTimeout(() => {
         const currentMovement = leaderboardMovementState.get(group.id);
@@ -540,7 +605,7 @@ function renderLeaderboard(state, meta = {}) {
           leaderboardMovementState.delete(group.id);
           renderLeaderboard(gameStateStore.getState(), { eventType: 'leaderboard_movement_expire' });
         }
-      }, 2850);
+      }, 5250);
     }
     const movementRecord = leaderboardMovementState.get(group.id);
     const displayedMovement = movementRecord && movementRecord.expiresAt > Date.now() ? movementRecord.movement : 0;
@@ -568,18 +633,14 @@ function renderLeaderboard(state, meta = {}) {
     `;
     list.appendChild(row);
 
-    if (previousIndex != null && previousIndex !== index) {
-      const staggerDelay = meta.eventType === 'leaderboard_delayed_reveal' ? movementSequence * 0.32 : 0;
-      movementSequence += 1;
-      gsap.fromTo(
-        row,
-        { y: (previousIndex - index) * 112, scale: 0.985, zIndex: 5 },
-        { y: 0, scale: 1, zIndex: 1, duration: 0.9, delay: staggerDelay, ease: 'power3.inOut' }
-      );
-    } else if (previousIndex == null) {
+    if (previousIndex == null) {
       gsap.fromTo(row, { x: 80, opacity: 0 }, { x: 0, opacity: 1, duration: 0.55, delay: index * 0.07, ease: 'power3.out' });
     }
   });
+
+  if (meta.eventType === 'leaderboard_delayed_reveal') {
+    animateLeaderboardSwaps(list, previousOrder, rankedGroups.map(({ group }) => group.id));
+  }
 
   previousLeaderboardRanks = nextRanks;
   hasLeaderboardSnapshot = true;

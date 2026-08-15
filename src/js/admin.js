@@ -12,18 +12,6 @@ function refreshUndoButton() {
   button.textContent = lastScoreUndo ? `UNDO ${lastScoreUndo.label}` : 'UNDO LAST SCORE';
 }
 
-function applyControllerMode(mode) {
-  const resolvedMode = mode === 'setup' ? 'setup' : 'live';
-  document.body.classList.toggle('controller-mode-setup', resolvedMode === 'setup');
-  document.body.classList.toggle('controller-mode-live', resolvedMode === 'live');
-  document.querySelectorAll('[data-controller-mode]').forEach((button) => {
-    button.classList.toggle('active', button.dataset.controllerMode === resolvedMode);
-  });
-  const title = document.getElementById('controller-mode-title');
-  if (title) title.textContent = resolvedMode === 'setup' ? 'Contestant Setup' : 'Live Show';
-  localStorage.setItem('hustle-controller-mode', resolvedMode);
-}
-
 // Persistent Countdown & Time's Up audio elements on Admin Panel
 const timerStartAudio = new Audio('/assets/Timer_start.mp3');
 timerStartAudio.loop = true;
@@ -254,11 +242,6 @@ function bindAdminEvents() {
   const modalCompName = document.getElementById('modal-group-name');
   const confirmDisqualifyBtn = document.getElementById('btn-confirm-disqualify');
   const cancelDisqualifyBtn = document.getElementById('btn-cancel-disqualify');
-
-  document.querySelectorAll('[data-controller-mode]').forEach((button) => {
-    button.addEventListener('click', () => applyControllerMode(button.dataset.controllerMode));
-  });
-  applyControllerMode(localStorage.getItem('hustle-controller-mode') || 'live');
 
   document.getElementById('btn-undo-score')?.addEventListener('click', () => {
     if (!lastScoreUndo) return;

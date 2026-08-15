@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/css/admin.css">
 </head>
-<body class="controller-mode-live">
+<body>
 
   <!-- Admin Control Panel Header -->
   <header class="admin-header">
@@ -29,17 +29,6 @@
       </button>
     </div>
   </header>
-
-  <nav class="controller-mode-switch" aria-label="Controller mode">
-    <div>
-      <span class="mode-switch-eyebrow">CONTROL WORKSPACE</span>
-      <strong id="controller-mode-title">Live Show</strong>
-    </div>
-    <div class="mode-switch-buttons">
-      <button class="mode-switch-btn" type="button" data-controller-mode="setup">SETUP</button>
-      <button class="mode-switch-btn active" type="button" data-controller-mode="live">LIVE SHOW</button>
-    </div>
-  </nav>
 
   <!-- Timer Controls Section (Start, Pause, Stop, Reset Timer) -->
   <section class="timer-control-panel">
@@ -69,6 +58,8 @@
 
   <!-- Competitor Teams Control Panel -->
   <main class="competitors-panel">
+    <div class="controller-split-layout">
+      <section class="team-control-column">
     <div class="panel-heading">
       <div>
         <h2>Team Groups (5 Teams of 2 Players)</h2>
@@ -86,6 +77,9 @@
       <!-- Dynamically rendered team rows with player select dropdowns -->
     </div>
 
+      </section>
+      <aside class="live-control-column">
+
     <!-- Live Leaderboard Control -->
     <div class="leaderboard-control-section" id="leaderboard-control-section">
       <div class="leaderboard-control-copy">
@@ -96,7 +90,6 @@
       <button class="btn btn-leaderboard" id="btn-toggle-leaderboard">
         SHOW LEADERBOARD
       </button>
-      </div>
     </div>
 
     <div class="show-tools-grid">
@@ -135,6 +128,9 @@
           <button class="btn btn-no-match" data-cue-kind="match" data-cue-label="NO MATCH">NO MATCH</button>
         </div>
       </section>
+    </div>
+
+      </aside>
     </div>
 
     <!-- Standalone Winner Button Section at Bottom of Control Panel -->

@@ -507,6 +507,17 @@ html, body {
   transition: opacity 0.3s ease !important;
 }
 
+.group-panel-wrapper.is-winner-group .score-led-value { display: none; }
+.group-panel-wrapper.is-winner-group .group-name-text {
+  width: 225px;
+  margin-top: 0;
+  font-size: 18px;
+  line-height: 1.15;
+  font-weight: 900;
+  letter-spacing: 1.8px;
+  text-shadow: 0 0 14px rgba(255,255,255,.45), 0 3px 8px rgba(0,0,0,.95);
+}
+
 /* Winner Crown leads the celebration above the complete team container */
 .winner-icon-overlay {
   position: absolute;
