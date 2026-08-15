@@ -21,11 +21,22 @@ window.addEventListener('DOMContentLoaded', () => {
   initParallax();
 });
 
+function focusArena() {
+  const arenaButton = document.getElementById('scroll-to-arena-btn');
+  if (arenaButton) {
+    arenaButton.click();
+  } else {
+    document.getElementById('main-arena-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 let previousScores = {};
 let previousLeaderboardRanks = new Map();
 let leaderboardMovementState = new Map();
 let previousLeaderboardVisible = false;
 let previousWinnerGroupId = null;
+let previousArenaFocusNonce = gameStateStore.getState().arenaFocusNonce || 0;
+let previousPresentationCueNonce = gameStateStore.getState().presentationCue?.nonce || 0;
 let activeAnimationIds = new Set();
 let animatingSpotlightIds = new Set();
 let completedDisqualifiedIds = new Set();
@@ -504,13 +515,24 @@ function renderDisplay(state, meta = {}) {
 
   const isLeaderboardVisible = Boolean(state.leaderboard?.isVisible && !state.winnerGroupId);
   renderLeaderboard(state, meta);
+  renderIntermissionTimer(state.intermissionTimer);
+
+  if ((state.arenaFocusNonce || 0) > previousArenaFocusNonce) {
+    focusArena();
+  }
+  previousArenaFocusNonce = state.arenaFocusNonce || 0;
+
+  if ((state.presentationCue?.nonce || 0) > previousPresentationCueNonce) {
+    triggerPresentationCue(state.presentationCue);
+  }
+  previousPresentationCueNonce = state.presentationCue?.nonce || 0;
 
   const shouldFocusArena =
     (isLeaderboardVisible && !previousLeaderboardVisible) ||
     (state.winnerGroupId && state.winnerGroupId !== previousWinnerGroupId);
   if (shouldFocusArena) {
     requestAnimationFrame(() => {
-      document.getElementById('main-arena-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      focusArena();
     });
   }
   previousLeaderboardVisible = isLeaderboardVisible;
@@ -634,6 +656,7 @@ function renderDisplay(state, meta = {}) {
       !completedDisqualifiedIds.has(group.id)
     );
     const isWinner = state.winnerGroupId === group.id;
+    const individualWinnerName = isWinner && state.winner?.type === 'player' ? state.winner.playerName : null;
     const transform = getSpotlightTransform(group.id, presentationSpotlightedGroups, state.winnerGroupId, state);
 
     if (!activeAnimationIds.has(group.id)) {
@@ -643,6 +666,9 @@ function renderDisplay(state, meta = {}) {
     groupWrapper.classList.add(`team-${teamNum}`);
     groupWrapper.classList.toggle('is-popup', isSpotlighted);
     groupWrapper.classList.toggle('is-winner-group', isWinner);
+    groupWrapper.classList.toggle('is-individual-winner', Boolean(individualWinnerName));
+    groupWrapper.classList.toggle('winner-player-p1', individualWinnerName === group.player1.name);
+    groupWrapper.classList.toggle('winner-player-p2', individualWinnerName === group.player2.name);
     groupWrapper.classList.toggle('active-group', true);
     groupWrapper.classList.remove('phase1-breaking', 'phase2-tearing', 'phase3-flight');
 
@@ -675,14 +701,14 @@ function renderDisplay(state, meta = {}) {
 
         <div class="group-score-pill" id="group-score-pill-${group.id}">
           <div class="score-pill-shader" id="score-shader-${group.id}"></div>
-          <span class="group-name-text">${escapeHtml(group.name)}</span>
+          <span class="group-name-text">${escapeHtml(individualWinnerName || group.name)}</span>
           <span class="score-led-value" id="score-led-${group.id}">${group.points}</span>
         </div>
       </div>
     `;
 
     // Exclude isPopUp and points from structureKey so DOM is persistent and never destroyed during spotlight
-    const structureKey = `${group.name}_${group.player1.name}_${group.player2.name}_${group.player1.image}_${group.player2.image}`;
+    const structureKey = `${group.name}_${group.player1.name}_${group.player2.name}_${group.player1.image}_${group.player2.image}_${individualWinnerName || ''}`;
     if (groupWrapper.dataset.renderedStructure !== structureKey) {
       groupWrapper.innerHTML = innerHTML;
       groupWrapper.dataset.renderedStructure = structureKey;
@@ -888,6 +914,54 @@ function triggerPointAnimation(groupId, delta) {
   }
 }
 
+function renderIntermissionTimer(timerState) {
+  const clock = document.getElementById('intermission-clock');
+  if (!clock || !timerState) return;
+  const mins = String(Math.floor(timerState.seconds / 60)).padStart(2, '0');
+  const secs = String(timerState.seconds % 60).padStart(2, '0');
+  clock.textContent = `${mins}:${secs}`;
+  clock.classList.toggle('is-running', timerState.isRunning);
+}
+
+function triggerPresentationCue(cue) {
+  if (!cue?.label) return;
+  document.getElementById('presentation-cue-overlay')?.remove();
+  const arenaSection = document.getElementById('main-arena-section') || document.body;
+  const container = document.createElement('div');
+  container.id = 'presentation-cue-overlay';
+  container.className = `presentation-cue-overlay cue-${cue.kind || 'round'}`;
+  container.innerHTML = `
+    <div class="presentation-cue-backdrop"></div>
+    <div class="presentation-cue-graphic">
+      <span class="presentation-cue-kicker">THE HUSTLE</span>
+      <strong>${escapeHtml(cue.label)}</strong>
+      <span class="presentation-cue-rule"></span>
+    </div>
+  `;
+  arenaSection.appendChild(container);
+  focusArena();
+
+  const backdrop = container.querySelector('.presentation-cue-backdrop');
+  const graphic = container.querySelector('.presentation-cue-graphic');
+  const isMatchCue = cue.kind === 'match';
+  gsap.set(backdrop, { opacity: 0 });
+  gsap.set(graphic, { opacity: 0, scale: isMatchCue ? 0.08 : 0.92, y: isMatchCue ? 0 : 28 });
+
+  const timeline = gsap.timeline({ onComplete: () => container.remove() });
+  timeline.to(backdrop, { opacity: 1, duration: 0.32, ease: 'power2.out' }, 0);
+  if (isMatchCue) {
+    timeline.to(graphic, { opacity: 1, scale: 1.14, duration: 0.55, ease: 'back.out(2.1)' }, 0.08)
+      .to(graphic, { scale: 1, duration: 0.28, ease: 'power2.out' })
+      .to(graphic, { scale: 1.04, duration: 0.75, ease: 'sine.inOut' })
+      .to(graphic, { opacity: 0, scale: 0.55, duration: 0.38, ease: 'back.in(1.5)' });
+  } else {
+    timeline.to(graphic, { opacity: 1, scale: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 0.08)
+      .to(graphic, { opacity: 1, duration: 1.15 })
+      .to(graphic, { opacity: 0, scale: 1.04, y: -20, duration: 0.55, ease: 'power2.in' });
+  }
+  timeline.to(backdrop, { opacity: 0, duration: 0.4, ease: 'power2.inOut' }, '-=0.35');
+}
+
 function triggerTimesUpSequence() {
   const isLeftToRight = timesUpTriggerCount % 2 === 0;
   timesUpTriggerCount++;
@@ -1034,18 +1108,24 @@ function escapeHtml(str) {
 // Robust Multi-Window Timer Interval Loop
 let timerInterval = null;
 
-function syncTimerLoop(timerState) {
+function syncTimerLoop(state) {
   if (timerInterval) {
     clearInterval(timerInterval);
     timerInterval = null;
   }
 
-  if (timerState && timerState.isRunning && timerState.seconds > 0) {
+  const gameRunning = state?.timer?.isRunning && state.timer.seconds > 0;
+  const intermissionRunning = state?.intermissionTimer?.isRunning && state.intermissionTimer.seconds > 0;
+  if (gameRunning || intermissionRunning) {
     timerInterval = setInterval(() => {
-      const state = gameStateStore.getState();
-      if (state.timer.isRunning && state.timer.seconds > 0) {
+      const current = gameStateStore.getState();
+      if (current.timer.isRunning && current.timer.seconds > 0) {
         gameStateStore.tickTimer();
-      } else {
+      }
+      if (current.intermissionTimer.isRunning && current.intermissionTimer.seconds > 0) {
+        gameStateStore.tickIntermissionTimer();
+      }
+      if (!current.timer.isRunning && !current.intermissionTimer.isRunning) {
         if (timerInterval) {
           clearInterval(timerInterval);
           timerInterval = null;
@@ -1058,12 +1138,12 @@ function syncTimerLoop(timerState) {
 // Initialize Display
 fitStageToWindow();
 renderDisplay(gameStateStore.getState());
-syncTimerLoop(gameStateStore.getState().timer);
+syncTimerLoop(gameStateStore.getState());
 syncTimerAudio(gameStateStore.getState().timer);
 
 // Ensure syncTimerLoop and syncTimerAudio are called on EVERY state update
 gameStateStore.onStateChange((state, meta) => {
   renderDisplay(state, meta);
-  syncTimerLoop(state.timer);
+  syncTimerLoop(state);
   syncTimerAudio(state.timer);
 });

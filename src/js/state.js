@@ -76,6 +76,19 @@ const DEFAULT_STATE = {
     isVisible: false,
     title: 'CURRENT STANDINGS',
   },
+  intermissionTimer: {
+    seconds: 300,
+    initialSeconds: 300,
+    isRunning: false,
+    targetEndTime: null,
+  },
+  arenaFocusNonce: 0,
+  presentationCue: {
+    kind: null,
+    label: '',
+    nonce: 0,
+  },
+  winner: null,
   winnerGroupId: null,
   lastUpdated: Date.now(),
   lastTxId: null,
@@ -162,6 +175,19 @@ class GameStateStore {
         ...DEFAULT_STATE.leaderboard,
         ...(savedState.leaderboard || {}),
       },
+      intermissionTimer: {
+        ...DEFAULT_STATE.intermissionTimer,
+        ...(savedState.intermissionTimer || {}),
+      },
+      presentationCue: {
+        ...DEFAULT_STATE.presentationCue,
+        ...(savedState.presentationCue || {}),
+      },
+      winner: savedState.winner || (savedState.winnerGroupId ? {
+        type: 'group',
+        groupId: savedState.winnerGroupId,
+        playerName: null,
+      } : null),
     };
   }
 
@@ -377,6 +403,71 @@ class GameStateStore {
     this.saveAndBroadcast('timer_expand');
   }
 
+  updateIntermissionTimer(seconds, isRunning) {
+    const timer = this.state.intermissionTimer;
+    timer.seconds = Math.max(0, seconds);
+    timer.isRunning = Boolean(isRunning && timer.seconds > 0);
+    timer.targetEndTime = timer.isRunning ? Date.now() + timer.seconds * 1000 : null;
+    this.saveAndBroadcast('intermission_timer_update');
+  }
+
+  pauseIntermissionTimer() {
+    const timer = this.state.intermissionTimer;
+    if (timer.isRunning && timer.targetEndTime) {
+      timer.seconds = Math.max(0, Math.ceil((timer.targetEndTime - Date.now()) / 1000));
+    }
+    timer.isRunning = false;
+    timer.targetEndTime = null;
+    this.saveAndBroadcast('intermission_timer_update');
+  }
+
+  resetIntermissionTimer() {
+    const timer = this.state.intermissionTimer;
+    timer.isRunning = false;
+    timer.targetEndTime = null;
+    timer.seconds = timer.initialSeconds || 300;
+    this.saveAndBroadcast('intermission_timer_update');
+  }
+
+  setIntermissionDuration(seconds) {
+    const targetSecs = Math.max(0, parseInt(seconds, 10) || 0);
+    const timer = this.state.intermissionTimer;
+    timer.seconds = targetSecs;
+    timer.initialSeconds = targetSecs;
+    timer.isRunning = false;
+    timer.targetEndTime = null;
+    this.saveAndBroadcast('intermission_timer_duration');
+  }
+
+  tickIntermissionTimer() {
+    const timer = this.state.intermissionTimer;
+    if (!timer.isRunning) return;
+    const remaining = timer.targetEndTime
+      ? Math.max(0, Math.ceil((timer.targetEndTime - Date.now()) / 1000))
+      : Math.max(0, timer.seconds - 1);
+    if (remaining === timer.seconds) return;
+    timer.seconds = remaining;
+    if (remaining === 0) {
+      timer.isRunning = false;
+      timer.targetEndTime = null;
+    }
+    this.saveAndBroadcast('intermission_timer_tick');
+  }
+
+  enterArena() {
+    this.state.arenaFocusNonce = (this.state.arenaFocusNonce || 0) + 1;
+    this.saveAndBroadcast('arena_focus');
+  }
+
+  triggerPresentationCue(kind, label) {
+    this.state.presentationCue = {
+      kind,
+      label,
+      nonce: (this.state.presentationCue?.nonce || 0) + 1,
+    };
+    this.saveAndBroadcast('presentation_cue');
+  }
+
   showLeaderboard() {
     if (this.state.winnerGroupId) return;
     this.state.leaderboard.isVisible = true;
@@ -396,13 +487,19 @@ class GameStateStore {
     }
   }
 
-  declareWinner(groupId) {
+  declareWinner(winner) {
+    const normalizedWinner = typeof winner === 'string'
+      ? { type: 'group', groupId: winner, playerName: null }
+      : winner;
+    if (!normalizedWinner?.groupId) return;
     this.state.leaderboard.isVisible = false;
-    this.state.winnerGroupId = groupId;
+    this.state.winner = normalizedWinner;
+    this.state.winnerGroupId = normalizedWinner.groupId;
     this.saveAndBroadcast('winner_declared');
   }
 
   clearWinner() {
+    this.state.winner = null;
     this.state.winnerGroupId = null;
     this.saveAndBroadcast('winner_cleared');
   }

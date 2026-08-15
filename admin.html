@@ -21,6 +21,9 @@
       <button class="btn btn-gold" id="btn-launch-display">
         📺 Launch Arena Display Window
       </button>
+      <button class="btn btn-green" id="btn-enter-arena">
+        ↓ Enter Arena
+      </button>
       <button class="btn btn-outline" id="btn-reset-all">
         🔄 Reset All Data
       </button>
@@ -81,6 +84,44 @@
       </button>
     </div>
 
+    <div class="show-tools-grid">
+      <section class="show-tool-card intermission-control-card">
+        <div class="show-tool-heading">
+          <div>
+            <span class="leaderboard-control-label">INTERMISSION</span>
+            <strong>Break Timer</strong>
+          </div>
+          <div class="tool-timer-value" id="admin-intermission-val">05:00</div>
+        </div>
+        <div class="tool-control-row">
+          <input type="text" class="timer-input" id="input-intermission-timer" value="05:00" placeholder="MM:SS" />
+          <button class="btn btn-outline btn-sm" id="btn-set-intermission">Set</button>
+          <button class="btn btn-green btn-sm" id="btn-intermission-start">▶ Start</button>
+          <button class="btn btn-outline btn-sm" id="btn-intermission-pause">⏸ Pause</button>
+          <button class="btn btn-gold btn-sm" id="btn-intermission-reset">↻ Reset</button>
+        </div>
+      </section>
+
+      <section class="show-tool-card">
+        <span class="leaderboard-control-label">ROUND GRAPHICS</span>
+        <strong>Display Round</strong>
+        <div class="cue-button-row">
+          <button class="btn btn-outline" data-cue-kind="round" data-cue-label="ROUND 1">Round 1</button>
+          <button class="btn btn-outline" data-cue-kind="round" data-cue-label="ROUND 2">Round 2</button>
+          <button class="btn btn-outline" data-cue-kind="round" data-cue-label="ROUND 3">Round 3</button>
+        </div>
+      </section>
+
+      <section class="show-tool-card match-control-card">
+        <span class="leaderboard-control-label">GAME GRAPHICS</span>
+        <strong>Match Result</strong>
+        <div class="cue-button-row">
+          <button class="btn btn-match" data-cue-kind="match" data-cue-label="MATCH">MATCH</button>
+          <button class="btn btn-no-match" data-cue-kind="match" data-cue-label="NO MATCH">NO MATCH</button>
+        </div>
+      </section>
+    </div>
+
     <!-- Standalone Winner Button Section at Bottom of Control Panel -->
     <div class="winner-control-section" id="winner-control-section">
       <button class="btn btn-winner-main" id="btn-open-winner-modal">
@@ -110,7 +151,7 @@
   <div class="modal-backdrop" id="winner-select-modal">
     <div class="modal-card modal-winner-card">
       <h3 style="color: #ffd700;">🏆 SELECT YOUR WINNER</h3>
-      <p>Choose the winning team to celebrate on the Game Arena Display:</p>
+      <p>Choose either a complete group or one individual player to celebrate:</p>
       <div class="winner-options-list" id="winner-options-list">
         <!-- Dynamically rendered team choices -->
       </div>

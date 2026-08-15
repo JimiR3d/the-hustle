@@ -1,6 +1,8 @@
 import { gameStateStore, ALL_PLAYERS } from './state.js';
 
 let pendingDisqualifyId = null;
+let selectedWinner = null;
+let renderWinnerOptions = () => {};
 
 // Persistent Countdown & Time's Up audio elements on Admin Panel
 const timerStartAudio = new Audio('/assets/Timer_start.mp3');
@@ -109,6 +111,14 @@ function renderAdminPanel(state) {
     const mins = String(Math.floor(state.timer.seconds / 60)).padStart(2, '0');
     const secs = String(state.timer.seconds % 60).padStart(2, '0');
     timerVal.textContent = `${mins}:${secs}`;
+  }
+
+  const intermissionVal = document.getElementById('admin-intermission-val');
+  if (intermissionVal && state.intermissionTimer) {
+    const mins = String(Math.floor(state.intermissionTimer.seconds / 60)).padStart(2, '0');
+    const secs = String(state.intermissionTimer.seconds % 60).padStart(2, '0');
+    intermissionVal.textContent = `${mins}:${secs}`;
+    intermissionVal.classList.toggle('is-running', state.intermissionTimer.isRunning);
   }
 
   if (!container) return;
@@ -233,6 +243,10 @@ function bindAdminEvents() {
     });
   }
 
+  document.getElementById('btn-enter-arena')?.addEventListener('click', () => {
+    gameStateStore.enterArena();
+  });
+
   // Timer Controls (Start, Pause, Stop, Reset)
   const btnTimerStart = document.getElementById('btn-timer-start');
   const btnTimerPause = document.getElementById('btn-timer-pause');
@@ -292,6 +306,35 @@ function bindAdminEvents() {
       gameStateStore.setTimerDuration(totalSeconds);
     });
   }
+
+  const inputIntermission = document.getElementById('input-intermission-timer');
+  const parseClockInput = (value) => {
+    const parts = value.trim().split(':');
+    if (parts.length === 2) {
+      return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+    }
+    return (parseInt(parts[0], 10) || 0) * 60;
+  };
+
+  document.getElementById('btn-set-intermission')?.addEventListener('click', () => {
+    gameStateStore.setIntermissionDuration(parseClockInput(inputIntermission?.value || '05:00'));
+  });
+  document.getElementById('btn-intermission-start')?.addEventListener('click', () => {
+    const timer = gameStateStore.getState().intermissionTimer;
+    gameStateStore.updateIntermissionTimer(timer.seconds > 0 ? timer.seconds : timer.initialSeconds, true);
+  });
+  document.getElementById('btn-intermission-pause')?.addEventListener('click', () => {
+    gameStateStore.pauseIntermissionTimer();
+  });
+  document.getElementById('btn-intermission-reset')?.addEventListener('click', () => {
+    gameStateStore.resetIntermissionTimer();
+  });
+
+  document.querySelectorAll('[data-cue-kind]').forEach((button) => {
+    button.addEventListener('click', () => {
+      gameStateStore.triggerPresentationCue(button.dataset.cueKind, button.dataset.cueLabel);
+    });
+  });
 
   // Quick Preset Buttons (5m, 10m)
   document.addEventListener('click', (e) => {
@@ -397,9 +440,7 @@ function bindAdminEvents() {
   const btnConfirmWinnerFinal = document.getElementById('btn-confirm-winner-final');
   const confirmWinnerTeamName = document.getElementById('confirm-winner-team-name');
 
-  let selectedWinnerId = null;
-
-  function renderWinnerOptions(state) {
+  renderWinnerOptions = function renderWinnerOptionsForState(state) {
     if (!winnerOptionsList) return;
     winnerOptionsList.innerHTML = '';
 
@@ -408,49 +449,58 @@ function bindAdminEvents() {
 
     if (eligibleGroups.length === 0) {
       winnerOptionsList.innerHTML = '<div style="padding: 16px; color: #ff1744; text-align: center; font-weight: 700;">No eligible teams remaining!</div>';
-      selectedWinnerId = null;
+      selectedWinner = null;
       if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = true;
       return;
     }
 
     // Verify currently selected team is still eligible
-    if (selectedWinnerId && !eligibleGroups.some((g) => g.id === selectedWinnerId)) {
-      selectedWinnerId = null;
+    if (selectedWinner && !eligibleGroups.some((g) => g.id === selectedWinner.groupId)) {
+      selectedWinner = null;
       if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = true;
     }
 
-    eligibleGroups.forEach((group) => {
+    const appendOption = (group, target, title, subtitle, badge) => {
       const opt = document.createElement('div');
-      const isSelected = group.id === selectedWinnerId;
+      const isSelected = selectedWinner && selectedWinner.type === target.type &&
+        selectedWinner.groupId === target.groupId && selectedWinner.playerName === target.playerName;
       opt.className = `winner-option-card ${isSelected ? 'selected' : ''}`;
-      opt.dataset.id = group.id;
       opt.innerHTML = `
         <div>
-          <div class="winner-opt-team-name">${escapeHtml(group.name)}</div>
-          <div class="winner-opt-players">${escapeHtml(group.player1?.name || '')} &amp; ${escapeHtml(group.player2?.name || '')}</div>
+          <div class="winner-opt-team-name">${escapeHtml(title)}</div>
+          <div class="winner-opt-players">${escapeHtml(subtitle)}</div>
         </div>
-        <div class="winner-opt-score">${group.points} PTS</div>
+        <div class="winner-opt-score">${escapeHtml(badge)}</div>
       `;
 
       opt.addEventListener('click', () => {
-        selectedWinnerId = group.id;
+        selectedWinner = target;
         Array.from(winnerOptionsList.children).forEach((c) => c.classList.remove('selected'));
         opt.classList.add('selected');
         if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = false;
       });
 
       winnerOptionsList.appendChild(opt);
+    };
+
+    eligibleGroups.forEach((group) => {
+      appendOption(group, { type: 'group', groupId: group.id, playerName: null }, group.name,
+        `${group.player1?.name || ''} & ${group.player2?.name || ''}`, `${group.points} PTS · GROUP`);
+      [group.player1, group.player2].forEach((player) => {
+        appendOption(group, { type: 'player', groupId: group.id, playerName: player.name }, player.name,
+          `Individual winner · ${group.name}`, 'PLAYER');
+      });
     });
 
     if (btnProceedWinnerConfirm) {
-      btnProceedWinnerConfirm.disabled = !selectedWinnerId;
+      btnProceedWinnerConfirm.disabled = !selectedWinner;
     }
-  }
+  };
 
   if (btnOpenWinnerModal && winnerSelectModal) {
     btnOpenWinnerModal.addEventListener('click', () => {
       const state = gameStateStore.getState();
-      selectedWinnerId = null;
+      selectedWinner = null;
       renderWinnerOptions(state);
       winnerSelectModal.classList.add('open');
     });
@@ -458,24 +508,24 @@ function bindAdminEvents() {
 
   if (btnCancelWinnerSelect && winnerSelectModal) {
     btnCancelWinnerSelect.addEventListener('click', () => {
-      selectedWinnerId = null;
+      selectedWinner = null;
       winnerSelectModal.classList.remove('open');
     });
   }
 
   if (btnProceedWinnerConfirm && winnerConfirmModal && winnerSelectModal) {
     btnProceedWinnerConfirm.addEventListener('click', () => {
-      if (!selectedWinnerId) return;
+      if (!selectedWinner) return;
       const state = gameStateStore.getState();
-      const group = state.groups.find((g) => g.id === selectedWinnerId);
+      const group = state.groups.find((g) => g.id === selectedWinner.groupId);
       if (!group || group.isDisqualified) {
-        selectedWinnerId = null;
+        selectedWinner = null;
         renderWinnerOptions(state);
         return;
       }
 
       if (confirmWinnerTeamName) {
-        confirmWinnerTeamName.textContent = group.name;
+        confirmWinnerTeamName.textContent = selectedWinner.type === 'player' ? selectedWinner.playerName : group.name;
       }
 
       winnerSelectModal.classList.remove('open');
@@ -492,13 +542,13 @@ function bindAdminEvents() {
 
   if (btnConfirmWinnerFinal && winnerConfirmModal) {
     btnConfirmWinnerFinal.addEventListener('click', () => {
-      if (selectedWinnerId) {
+      if (selectedWinner) {
         const state = gameStateStore.getState();
-        const group = state.groups.find((g) => g.id === selectedWinnerId);
+        const group = state.groups.find((g) => g.id === selectedWinner.groupId);
         if (group && !group.isDisqualified) {
-          gameStateStore.declareWinner(selectedWinnerId);
+          gameStateStore.declareWinner(selectedWinner);
         }
-        selectedWinnerId = null;
+        selectedWinner = null;
         winnerConfirmModal.classList.remove('open');
       }
     });
@@ -520,18 +570,24 @@ function bindAdminEvents() {
 
 // Robust Admin Multi-Window Timer Loop
 let adminTimerInterval = null;
-function syncAdminTimerLoop(timerState) {
+function syncAdminTimerLoop(state) {
   if (adminTimerInterval) {
     clearInterval(adminTimerInterval);
     adminTimerInterval = null;
   }
 
-  if (timerState && timerState.isRunning && timerState.seconds > 0) {
+  const gameRunning = state?.timer?.isRunning && state.timer.seconds > 0;
+  const intermissionRunning = state?.intermissionTimer?.isRunning && state.intermissionTimer.seconds > 0;
+  if (gameRunning || intermissionRunning) {
     adminTimerInterval = setInterval(() => {
-      const state = gameStateStore.getState();
-      if (state.timer.isRunning && state.timer.seconds > 0) {
+      const current = gameStateStore.getState();
+      if (current.timer.isRunning && current.timer.seconds > 0) {
         gameStateStore.tickTimer();
-      } else {
+      }
+      if (current.intermissionTimer.isRunning && current.intermissionTimer.seconds > 0) {
+        gameStateStore.tickIntermissionTimer();
+      }
+      if (!current.timer.isRunning && !current.intermissionTimer.isRunning) {
         if (adminTimerInterval) {
           clearInterval(adminTimerInterval);
           adminTimerInterval = null;
@@ -544,12 +600,12 @@ function syncAdminTimerLoop(timerState) {
 // Initialize Admin UI
 renderAdminPanel(gameStateStore.getState());
 bindAdminEvents();
-syncAdminTimerLoop(gameStateStore.getState().timer);
+syncAdminTimerLoop(gameStateStore.getState());
 syncTimerAudio(gameStateStore.getState().timer);
 
 gameStateStore.onStateChange((state, meta) => {
   renderAdminPanel(state);
-  syncAdminTimerLoop(state.timer);
+  syncAdminTimerLoop(state);
   syncTimerAudio(state.timer);
 
   if (meta && meta.eventType === 'reset') {
@@ -567,10 +623,10 @@ gameStateStore.onStateChange((state, meta) => {
   if (winnerConfirmModal && winnerConfirmModal.classList.contains('open')) {
     const confirmNameEl = document.getElementById('confirm-winner-team-name');
     if (confirmNameEl) {
-      const dqMatch = state.groups.find((g) => g.name === confirmNameEl.textContent && g.isDisqualified);
+      const dqMatch = selectedWinner && state.groups.find((g) => g.id === selectedWinner.groupId && g.isDisqualified);
       if (dqMatch) {
         winnerConfirmModal.classList.remove('open');
-        selectedWinnerId = null;
+        selectedWinner = null;
         if (winnerSelectModal) {
           renderWinnerOptions(state);
           winnerSelectModal.classList.add('open');
