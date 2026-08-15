@@ -64,7 +64,7 @@ git checkout v2-redesign      # Switch back to v2 redesign development
 - **Game Timer Audio & Time's Up Sequence:**
   - A single Web Audio tick plays once per second and progressively accelerates during the final 30 seconds.
   - Pausing, stopping, or resetting the timer immediately stops scheduling countdown ticks.
-  - At `00:00`, one synthesized finish cue plays as `Times_up.png` triggers.
+  - At `00:00`, the producer-provided `Time_up.mp3` plays as `Times_up.png` triggers, with a synthesized fallback only if browser playback is blocked.
   - Round, Match, No Match, leaderboard-update, score, elimination, and progressive spotlight cues are synthesized with Web Audio.
   - Fades a 70% dark backdrop (`rgba(0, 0, 0, 0.70)`) across the Game section in `0.25s` to make the logo pop while keeping the game faintly visible.
   - Logo (`Times_up.png`) sits in front of the backdrop at `z-index: 2` and remains 100% crisp and sharp (zero blur, zero added glow) throughout the entire animation.

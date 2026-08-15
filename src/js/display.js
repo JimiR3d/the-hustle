@@ -51,8 +51,15 @@ let previousSpotlightIds = new Set(
   gameStateStore.getState().groups.filter((group) => group.isPopUp).map((group) => group.id)
 );
 
+const timesUpAudio = new Audio('/assets/Time_up.mp3');
+timesUpAudio.preload = 'auto';
+timesUpAudio.volume = 1.0;
+
 function stopAllAudio() {
-  // Current show cues are short synthesized sounds and stop naturally.
+  try {
+    timesUpAudio.pause();
+    timesUpAudio.currentTime = 0;
+  } catch (e) {}
 }
 
 ['click', 'touchstart', 'mousedown', 'keydown'].forEach((evt) => {
@@ -1164,8 +1171,21 @@ function triggerTimesUpSequence() {
   const isLeftToRight = timesUpTriggerCount % 2 === 0;
   timesUpTriggerCount++;
 
-  // The old timer MP3 is retired; play one clean synthesized finish cue.
-  playZeroBuzzerSound();
+  // Keep the producer-provided Time Up cue separate from countdown ticking.
+  try {
+    timesUpAudio.pause();
+    timesUpAudio.currentTime = 0;
+    const playPromise = timesUpAudio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn('Time Up audio was blocked; using synthesized fallback:', err);
+        playZeroBuzzerSound();
+      });
+    }
+  } catch (err) {
+    console.warn('Time Up audio unavailable; using synthesized fallback:', err);
+    playZeroBuzzerSound();
+  }
 
   // Remove any leftover Time's Up container
   const oldContainer = document.getElementById('times-up-overlay');
