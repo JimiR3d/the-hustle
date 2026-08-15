@@ -129,6 +129,7 @@ const DEFAULT_STATE = {
 class GameStateStore {
   constructor() {
     this.listeners = new Set();
+    this.questionResolutionToken = 0;
     this.lastProcessedTxId = null;
     this.broadcastChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : null;
     this.remoteClient = null;
@@ -529,8 +530,17 @@ class GameStateStore {
   disqualifyGroup(id) {
     const group = this.state.groups.find((g) => g.id === id);
     if (group) {
+      this.state.leaderboard.isVisible = false;
+      this.state.groups.forEach((candidate) => { candidate.isPopUp = false; });
+      if (this.state.questionPromptCard?.isVisible) {
+        this.state.questionPromptCard.isVisible = false;
+        this.state.questionPromptCard.nonce = (this.state.questionPromptCard.nonce || 0) + 1;
+      }
+      if (this.state.gameInstructionCard?.isVisible) {
+        this.state.gameInstructionCard.isVisible = false;
+        this.state.gameInstructionCard.nonce = (this.state.gameInstructionCard.nonce || 0) + 1;
+      }
       group.isDisqualified = true;
-      group.isPopUp = false;
       this.saveAndBroadcast('disqualify');
     }
   }
@@ -726,6 +736,7 @@ class GameStateStore {
     const cleanType = type === 'prompt' ? 'prompt' : 'question';
     const cleanText = String(text || '').trim();
     if (!cleanText) return;
+    this.questionResolutionToken += 1;
     const history = this.state.revealedContent || { questions: [], prompts: [] };
     const historyList = cleanType === 'question' ? history.questions : history.prompts;
     const historyKey = cleanType === 'question' ? cleanText : `${teamId || 'unassigned'}:${cleanText}`;
@@ -750,6 +761,7 @@ class GameStateStore {
 
   hideQuestionPromptCard() {
     if (!this.state.questionPromptCard?.isVisible) return;
+    this.questionResolutionToken += 1;
     this.state.questionPromptCard = {
       ...this.state.questionPromptCard,
       isVisible: false,
@@ -762,6 +774,7 @@ class GameStateStore {
     const card = this.state.questionPromptCard;
     const index = Number(optionIndex);
     if (!card?.isVisible || card.type !== 'question' || !Number.isInteger(index) || index < 0 || index >= card.options.length) return;
+    this.questionResolutionToken += 1;
     card.selectedOptionIndex = index;
     card.answerRevealed = false;
     this.saveAndBroadcast('question_option_select');
@@ -769,9 +782,39 @@ class GameStateStore {
 
   revealQuestionAnswer() {
     const card = this.state.questionPromptCard;
-    if (!card?.isVisible || card.type !== 'question' || !Number.isInteger(card.selectedOptionIndex)) return;
+    if (!card?.isVisible || card.type !== 'question' || card.answerRevealed || !Number.isInteger(card.selectedOptionIndex)) return;
     card.answerRevealed = true;
     this.saveAndBroadcast('question_answer_reveal');
+    if (card.selectedOptionIndex !== card.correctOptionIndex || !card.teamId) return;
+
+    const resolutionToken = ++this.questionResolutionToken;
+    const cardNonce = card.nonce;
+    const teamId = card.teamId;
+    setTimeout(() => {
+      const currentCard = this.state.questionPromptCard;
+      const group = this.state.groups.find((entry) => entry.id === teamId);
+      if (this.questionResolutionToken !== resolutionToken
+        || !currentCard?.isVisible
+        || currentCard.nonce !== cardNonce
+        || !currentCard.answerRevealed
+        || !group
+        || group.isDisqualified) return;
+
+      currentCard.isVisible = false;
+      currentCard.nonce = (currentCard.nonce || 0) + 1;
+      this.state.groups.forEach((entry) => { entry.isPopUp = entry.id === teamId; });
+      group.points += 5;
+      this.state.lastScoreEvent = { groupId: teamId, delta: 5, timestamp: Date.now() };
+      this.saveAndBroadcast('question_correct_award');
+
+      setTimeout(() => {
+        if (this.questionResolutionToken !== resolutionToken) return;
+        const awardedGroup = this.state.groups.find((entry) => entry.id === teamId);
+        if (!awardedGroup?.isPopUp) return;
+        awardedGroup.isPopUp = false;
+        this.saveAndBroadcast('question_correct_spotlight_end');
+      }, 3000);
+    }, 3500);
   }
 
   showGameInstruction(gameId, text) {

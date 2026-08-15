@@ -705,8 +705,18 @@ function renderLeaderboard(state, meta = {}) {
 
   if (!overlay || !list) return;
 
+  if (meta.eventType === 'disqualify') {
+    overlay.style.transition = 'none';
+    if (viewportBackdrop) viewportBackdrop.style.transition = 'none';
+  }
   overlay.classList.toggle('active', isVisible);
   if (viewportBackdrop) viewportBackdrop.classList.toggle('active', isVisible);
+  if (meta.eventType === 'disqualify') {
+    requestAnimationFrame(() => {
+      overlay.style.removeProperty('transition');
+      viewportBackdrop?.style.removeProperty('transition');
+    });
+  }
   overlay.setAttribute('aria-hidden', String(!isVisible));
   if (title) title.textContent = state.leaderboard?.title || 'CURRENT STANDINGS';
   // The hidden board keeps its last on-air snapshot. Rankings and movement are
@@ -1528,6 +1538,13 @@ function renderArenaCard(cardState, instructionState, groups = [], meta = {}) {
     focusArena();
   } else if (shouldExit) {
     gsap.killTweensOf([backdrop, card]);
+    if (meta.eventType === 'disqualify' || meta.eventType === 'question_correct_award') {
+      overlay.classList.remove('active');
+      overlay.setAttribute('aria-hidden', 'true');
+      gsap.set([overlay, backdrop, card], { opacity: 0 });
+      image.removeAttribute('src');
+      return;
+    }
     playCardFlipSfx('out');
     gsap.to(backdrop, { opacity: 0, duration: 0.42, ease: 'power2.in' });
     gsap.to(card, {
