@@ -765,6 +765,7 @@ body {
   .team-control-column .comp-info { grid-column: 1 / -1; }
   .team-control-column .player-select { width: calc(50% - 4px); min-height: 39px; flex: 1 1 auto; }
   .team-control-column .points-control-group { min-width: 0; gap: 4px; }
+  .team-control-column .points-control-group .quick-pts-btn[data-delta="5"] { flex: 1 1 auto; justify-content: center; }
   .team-control-column .row-actions-group { justify-content: flex-end; gap: 5px; }
   .team-control-column .quick-pts-btn,
   .team-control-column .quick-pts-btn[data-delta="5"],
