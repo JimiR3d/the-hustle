@@ -65,10 +65,23 @@
     <!-- Top Black Gradient Fade (Smoothly transitions from black into Game Section) -->
     <div class="game-section__top-fade" aria-hidden="true"></div>
 
+    <!-- True viewport veil prevents letterbox edges around leaderboard mode -->
+    <div class="leaderboard-viewport-backdrop" id="leaderboard-viewport-backdrop" aria-hidden="true"></div>
+
     <div id="app-stage">
       
       <!-- Theatrical Spotlight Backdrop Dimmer -->
       <div class="spotlight-backdrop" id="spotlight-backdrop" aria-hidden="true"></div>
+
+      <!-- Live Leaderboard Presentation -->
+      <section class="leaderboard-overlay" id="leaderboard-overlay" aria-hidden="true">
+        <div class="leaderboard-heading">
+          <span class="leaderboard-kicker">THE HUSTLE LOVE &amp; MONEY</span>
+          <h2 id="leaderboard-title">CURRENT STANDINGS</h2>
+          <span class="leaderboard-live-pill">LIVE LEADERBOARD</span>
+        </div>
+        <div class="leaderboard-list" id="leaderboard-list"></div>
+      </section>
 
       <!-- Top Header with Custom Logo Image & Dynamic HUD Timer -->
       <header class="display-header">

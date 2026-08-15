@@ -456,10 +456,19 @@ html, body {
   z-index: 9100;
 }
 
-/* Stacking Order: Keep Main 'The Hustle' Header Logo Above Dark Overlay & Fully Bright */
+/* Winner mode swaps the show logo below the team while the crown moves above it */
+#app-stage.has-winner .display-header .logo-container {
+  position: absolute;
+  top: 900px;
+  left: 50%;
+  z-index: 9600;
+  transform: translateX(-50%);
+}
+
 #app-stage.has-winner .display-header .logo-img {
   position: relative;
-  z-index: 9200;
+  z-index: 9600;
+  height: 110px;
   opacity: 1 !important;
   filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.8)) !important;
 }
@@ -487,23 +496,22 @@ html, body {
   transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-/* Hide Team Container Border/Frame and Scoreboard ONLY during Winner Mode */
+/* Keep the complete winning team identity visible during Winner Mode */
 .group-panel-wrapper.is-winner-group .team-container-frame {
-  opacity: 0 !important;
-  pointer-events: none !important;
+  opacity: 1 !important;
   transition: opacity 0.3s ease !important;
 }
 
-.group-panel-wrapper.is-winner-group .group-scoreboard {
-  opacity: 0 !important;
-  pointer-events: none !important;
+.group-panel-wrapper.is-winner-group .group-score-pill {
+  opacity: 1 !important;
   transition: opacity 0.3s ease !important;
 }
 
-/* Winner Crown & WINNERS Badge Overlay - 45% Smaller (~55% size) Positioned Lower Under Cards */
+/* Winner Crown leads the celebration above the complete team container */
 .winner-icon-overlay {
   position: absolute;
-  bottom: -44px;
+  top: -150px;
+  bottom: auto;
   left: 50%;
   transform: translateX(-50%) scale(1);
   z-index: 9600;
@@ -550,6 +558,246 @@ html, body {
 /* ==========================================================================
    HEADER SECTION - Custom Logo Image & Prominent Dynamic HUD Timer
    ========================================================================== */
+.leaderboard-viewport-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 14;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 186, 0, 0.18), transparent 34%),
+    #080008;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.45s ease, visibility 0s linear 0.45s;
+}
+
+.leaderboard-viewport-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.leaderboard-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 420;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 142px 245px 88px;
+  background: transparent;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(1.025);
+  transition: opacity 0.5s ease, transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.65s;
+}
+
+.leaderboard-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 215, 0, 0.06) 50%, transparent 70%);
+  pointer-events: none;
+}
+
+.leaderboard-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.leaderboard-heading {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  padding-bottom: 22px;
+  border-bottom: 2px solid rgba(255, 201, 38, 0.55);
+}
+
+.leaderboard-kicker,
+.leaderboard-live-pill {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #d5b771;
+}
+
+.leaderboard-heading h2 {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 48px;
+  line-height: 1;
+  letter-spacing: 2px;
+  color: #fff7d5;
+  text-shadow: 0 0 28px rgba(255, 190, 0, 0.4);
+}
+
+.leaderboard-live-pill {
+  justify-self: end;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 203, 58, 0.65);
+  border-radius: 999px;
+  color: #ffd75e;
+  background: rgba(255, 193, 7, 0.08);
+}
+
+.leaderboard-list {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.leaderboard-row {
+  min-height: 102px;
+  display: grid;
+  grid-template-columns: 98px 150px 1fr 90px 190px;
+  align-items: center;
+  border: 1px solid rgba(255, 206, 84, 0.28);
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(90deg, rgba(43, 13, 36, 0.97), rgba(18, 6, 22, 0.95));
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.leaderboard-row.is-first {
+  border-color: rgba(255, 210, 67, 0.9);
+  background: linear-gradient(90deg, rgba(92, 50, 4, 0.98), rgba(43, 18, 25, 0.97));
+  box-shadow: 0 0 30px rgba(255, 183, 0, 0.18), inset 0 1px 0 rgba(255, 243, 190, 0.18);
+}
+
+.leaderboard-rank {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-family: 'Bitcount Single', monospace;
+  font-size: 48px;
+  font-weight: 700;
+  color: #1a0b00;
+  background: linear-gradient(145deg, #fff0a3, #d89100);
+}
+
+.leaderboard-portraits {
+  display: flex;
+  justify-content: center;
+  padding-left: 16px;
+}
+
+.leaderboard-portraits img {
+  width: 70px;
+  height: 78px;
+  object-fit: cover;
+  object-position: top center;
+  border: 2px solid #f4c84c;
+  border-radius: 10px;
+  background: #1a0615;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+}
+
+.leaderboard-portraits img + img {
+  margin-left: -25px;
+  transform: rotate(4deg);
+}
+
+.leaderboard-team {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 22px;
+}
+
+.leaderboard-team-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+
+.leaderboard-player-names {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: #c8aebd;
+  text-transform: uppercase;
+}
+
+.leaderboard-movement {
+  font-family: 'Outfit', sans-serif;
+  font-size: 17px;
+  font-weight: 900;
+  color: #806d78;
+  text-align: center;
+}
+
+.leaderboard-movement.up { color: #53f0a6; }
+.leaderboard-movement.down { color: #ff647d; }
+
+.leaderboard-points {
+  height: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  border-left: 1px solid rgba(255, 210, 84, 0.22);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.leaderboard-points strong {
+  font-family: 'Bitcount Single', monospace;
+  font-size: 48px;
+  color: #ffe071;
+}
+
+.leaderboard-points span {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: #ad8f47;
+}
+
+.leaderboard-points.is-changing strong {
+  animation: leaderboard-score-pulse 0.7s ease;
+}
+
+.leaderboard-row.is-disqualified {
+  opacity: 0.55;
+  filter: grayscale(0.55);
+  border-color: rgba(255, 55, 86, 0.35);
+}
+
+.leaderboard-row.is-disqualified .leaderboard-rank {
+  font-family: 'Outfit', sans-serif;
+  font-size: 26px;
+  color: #fff;
+  background: linear-gradient(145deg, #a81732, #4f0715);
+}
+
+@keyframes leaderboard-score-pulse {
+  0%, 100% { transform: scale(1); text-shadow: none; }
+  45% { transform: scale(1.2); text-shadow: 0 0 24px #ffd43b; }
+}
+
+#app-stage.has-leaderboard .groups-stage-container,
+#app-stage.has-leaderboard .disqualified-stack-container,
+#app-stage.has-leaderboard .display-footer,
+#app-stage.has-leaderboard .hud-timer-badge {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
 .display-header {
   position: relative;
   z-index: 100;

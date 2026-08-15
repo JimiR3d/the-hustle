@@ -72,6 +72,10 @@ const DEFAULT_STATE = {
     isRunning: false,
     isExpanded: false,
   },
+  leaderboard: {
+    isVisible: false,
+    title: 'CURRENT STANDINGS',
+  },
   winnerGroupId: null,
   lastUpdated: Date.now(),
   lastTxId: null,
@@ -84,7 +88,7 @@ class GameStateStore {
     this.lastProcessedTxId = null;
     this.broadcastChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : null;
     
-    this.state = this.loadStateFromStorage() || DEFAULT_STATE;
+    this.state = this.normalizeState(this.loadStateFromStorage());
 
     // Dual-Channel Sync Engine (BroadcastChannel + LocalStorage Storage Event)
     const handleIncomingState = (newState, eventType, source) => {
@@ -103,7 +107,7 @@ class GameStateStore {
       }
 
       this.lastProcessedTxId = newState.lastTxId;
-      this.state = newState;
+      this.state = this.normalizeState(newState);
 
       const resolvedEventType = (eventType === 'storage_update' && pointsChanged) ? 'points_update' : (eventType || 'update');
       this.notifyListeners({ source, eventType: resolvedEventType });
@@ -139,6 +143,26 @@ class GameStateStore {
       console.warn('Could not access localStorage', e);
     }
     return null;
+  }
+
+  normalizeState(savedState) {
+    if (!savedState) {
+      return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    }
+
+    return {
+      ...DEFAULT_STATE,
+      ...savedState,
+      groups: Array.isArray(savedState.groups) ? savedState.groups : JSON.parse(JSON.stringify(DEFAULT_GROUPS)),
+      timer: {
+        ...DEFAULT_STATE.timer,
+        ...(savedState.timer || {}),
+      },
+      leaderboard: {
+        ...DEFAULT_STATE.leaderboard,
+        ...(savedState.leaderboard || {}),
+      },
+    };
   }
 
   saveAndBroadcast(eventType = 'update') {
@@ -353,7 +377,27 @@ class GameStateStore {
     this.saveAndBroadcast('timer_expand');
   }
 
+  showLeaderboard() {
+    if (this.state.winnerGroupId) return;
+    this.state.leaderboard.isVisible = true;
+    this.saveAndBroadcast('leaderboard_show');
+  }
+
+  hideLeaderboard() {
+    this.state.leaderboard.isVisible = false;
+    this.saveAndBroadcast('leaderboard_hide');
+  }
+
+  toggleLeaderboard() {
+    if (this.state.leaderboard.isVisible) {
+      this.hideLeaderboard();
+    } else {
+      this.showLeaderboard();
+    }
+  }
+
   declareWinner(groupId) {
+    this.state.leaderboard.isVisible = false;
     this.state.winnerGroupId = groupId;
     this.saveAndBroadcast('winner_declared');
   }

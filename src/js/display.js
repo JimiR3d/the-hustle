@@ -22,6 +22,10 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 let previousScores = {};
+let previousLeaderboardRanks = new Map();
+let leaderboardMovementState = new Map();
+let previousLeaderboardVisible = false;
+let previousWinnerGroupId = null;
 let activeAnimationIds = new Set();
 let animatingSpotlightIds = new Set();
 let completedDisqualifiedIds = new Set();
@@ -382,6 +386,97 @@ function getSpotlightTransform(groupId, spotlightedGroups, winnerGroupId, state)
   };
 }
 
+function getRankedGroups(groups) {
+  const sortedGroups = [...groups].sort((a, b) => {
+    if (a.isDisqualified !== b.isDisqualified) return a.isDisqualified ? 1 : -1;
+    if (b.points !== a.points) return b.points - a.points;
+    return a.id.localeCompare(b.id);
+  });
+
+  let previousPoints = null;
+  let previousRank = 0;
+  let eligibleIndex = 0;
+
+  return sortedGroups.map((group) => {
+    if (group.isDisqualified) return { group, rank: null };
+    eligibleIndex += 1;
+    if (group.points !== previousPoints) {
+      previousRank = eligibleIndex;
+      previousPoints = group.points;
+    }
+    return { group, rank: previousRank };
+  });
+}
+
+function renderLeaderboard(state, meta = {}) {
+  const overlay = document.getElementById('leaderboard-overlay');
+  const viewportBackdrop = document.getElementById('leaderboard-viewport-backdrop');
+  const list = document.getElementById('leaderboard-list');
+  const title = document.getElementById('leaderboard-title');
+  const isVisible = Boolean(state.leaderboard?.isVisible && !state.winnerGroupId);
+
+  if (!overlay || !list) return;
+
+  overlay.classList.toggle('active', isVisible);
+  if (viewportBackdrop) viewportBackdrop.classList.toggle('active', isVisible);
+  overlay.setAttribute('aria-hidden', String(!isVisible));
+  if (title) title.textContent = state.leaderboard?.title || 'CURRENT STANDINGS';
+  if (!isVisible) return;
+
+  const nextRanks = new Map();
+  list.innerHTML = '';
+
+  getRankedGroups(state.groups).forEach(({ group, rank }, index) => {
+    nextRanks.set(group.id, index);
+    const previousIndex = previousLeaderboardRanks.get(group.id);
+    const movement = previousIndex == null ? 0 : previousIndex - index;
+    if (movement !== 0) {
+      const expiresAt = Date.now() + 2800;
+      leaderboardMovementState.set(group.id, { movement, expiresAt });
+      setTimeout(() => {
+        const currentMovement = leaderboardMovementState.get(group.id);
+        if (currentMovement && currentMovement.expiresAt <= Date.now()) {
+          leaderboardMovementState.delete(group.id);
+          renderLeaderboard(gameStateStore.getState(), { eventType: 'leaderboard_movement_expire' });
+        }
+      }, 2850);
+    }
+    const movementRecord = leaderboardMovementState.get(group.id);
+    const displayedMovement = movementRecord && movementRecord.expiresAt > Date.now() ? movementRecord.movement : 0;
+    const isScoreEvent = state.lastScoreEvent?.groupId === group.id && meta.eventType === 'points_update';
+    const row = document.createElement('article');
+
+    row.className = `leaderboard-row ${group.isDisqualified ? 'is-disqualified' : ''} ${rank === 1 ? 'is-first' : ''}`;
+    row.dataset.groupId = group.id;
+    row.innerHTML = `
+      <div class="leaderboard-rank">${group.isDisqualified ? 'DQ' : rank}</div>
+      <div class="leaderboard-portraits" aria-hidden="true">
+        <img src="${group.player1.image}" alt="" />
+        <img src="${group.player2.image}" alt="" />
+      </div>
+      <div class="leaderboard-team">
+        <span class="leaderboard-team-name">${escapeHtml(group.name)}</span>
+        <span class="leaderboard-player-names">${escapeHtml(group.player1.name)} &amp; ${escapeHtml(group.player2.name)}</span>
+      </div>
+      <div class="leaderboard-movement ${displayedMovement > 0 ? 'up' : displayedMovement < 0 ? 'down' : ''}">
+        ${displayedMovement > 0 ? `&#9650; ${displayedMovement}` : displayedMovement < 0 ? `&#9660; ${Math.abs(displayedMovement)}` : '&mdash;'}
+      </div>
+      <div class="leaderboard-points ${isScoreEvent ? 'is-changing' : ''}">
+        <strong>${group.points}</strong><span>PTS</span>
+      </div>
+    `;
+    list.appendChild(row);
+
+    if (previousIndex != null && previousIndex !== index) {
+      gsap.fromTo(row, { y: (previousIndex - index) * 112 }, { y: 0, duration: 0.75, ease: 'power3.out' });
+    } else if (previousIndex == null) {
+      gsap.fromTo(row, { x: 80, opacity: 0 }, { x: 0, opacity: 1, duration: 0.55, delay: index * 0.07, ease: 'power3.out' });
+    }
+  });
+
+  previousLeaderboardRanks = nextRanks;
+}
+
 function renderDisplay(state, meta = {}) {
   const stage = document.getElementById('app-stage');
   const topRow = document.getElementById('groups-row-top');
@@ -396,6 +491,8 @@ function renderDisplay(state, meta = {}) {
     activeAnimationIds.clear();
     animatingSpotlightIds.clear();
     previousScores = {};
+    previousLeaderboardRanks.clear();
+    leaderboardMovementState.clear();
     previousTimerSeconds = null;
     timesUpTriggeredForCurrentRun = false;
     stopAllAudio();
@@ -404,6 +501,20 @@ function renderDisplay(state, meta = {}) {
     const oldTimesUp = document.getElementById('times-up-overlay');
     if (oldTimesUp) oldTimesUp.remove();
   }
+
+  const isLeaderboardVisible = Boolean(state.leaderboard?.isVisible && !state.winnerGroupId);
+  renderLeaderboard(state, meta);
+
+  const shouldFocusArena =
+    (isLeaderboardVisible && !previousLeaderboardVisible) ||
+    (state.winnerGroupId && state.winnerGroupId !== previousWinnerGroupId);
+  if (shouldFocusArena) {
+    requestAnimationFrame(() => {
+      document.getElementById('main-arena-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+  previousLeaderboardVisible = isLeaderboardVisible;
+  previousWinnerGroupId = state.winnerGroupId;
 
   // Handle True Full-Viewport Winner Celebration Backdrop attached directly to document.body
   let winnerBackdrop = document.getElementById('winner-celebration-backdrop');
@@ -423,6 +534,7 @@ function renderDisplay(state, meta = {}) {
     if (stage) stage.classList.remove('has-winner');
     stopCoinRain();
   }
+  if (stage) stage.classList.toggle('has-leaderboard', isLeaderboardVisible);
 
   // 1. Sync completed disqualified set with state FIRST (handles reset/restore)
   state.groups.forEach(g => {
@@ -452,10 +564,11 @@ function renderDisplay(state, meta = {}) {
 
   // Spotlighted groups: include groups currently in DQ flight so remaining spotlighted groups do NOT jump or fight animations
   const spotlightedGroups = state.groups.filter(g => (g.isPopUp || animatingSpotlightIds.has(g.id)) && !completedDisqualifiedIds.has(g.id));
+  const presentationSpotlightedGroups = (state.winnerGroupId || isLeaderboardVisible) ? [] : spotlightedGroups;
 
   // Toggle theatrical spotlight backdrop dimmer (strictly based on spotlighted groups, independent of timer)
   const spotlightBackdrop = document.getElementById('spotlight-backdrop');
-  const hasSpotlight = spotlightedGroups.length > 0 && !state.winnerGroupId;
+  const hasSpotlight = presentationSpotlightedGroups.length > 0;
   if (spotlightBackdrop) {
     spotlightBackdrop.classList.toggle('active', hasSpotlight);
   }
@@ -514,9 +627,14 @@ function renderDisplay(state, meta = {}) {
     }
 
     // Dynamic smooth 3D spotlight or winner positioning
-    const isSpotlighted = Boolean(group.isPopUp && !completedDisqualifiedIds.has(group.id));
+    const isSpotlighted = Boolean(
+      !state.winnerGroupId &&
+      !isLeaderboardVisible &&
+      group.isPopUp &&
+      !completedDisqualifiedIds.has(group.id)
+    );
     const isWinner = state.winnerGroupId === group.id;
-    const transform = getSpotlightTransform(group.id, spotlightedGroups, state.winnerGroupId, state);
+    const transform = getSpotlightTransform(group.id, presentationSpotlightedGroups, state.winnerGroupId, state);
 
     if (!activeAnimationIds.has(group.id)) {
       groupWrapper.style.transform = `translate3d(${Math.round(transform.tx)}px, ${Math.round(transform.ty)}px, 0px) scale(${transform.scale})`;

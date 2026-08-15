@@ -192,6 +192,19 @@ function renderAdminPanel(state) {
       winnerActiveControls.style.display = 'none';
     }
   }
+
+  const btnToggleLeaderboard = document.getElementById('btn-toggle-leaderboard');
+  const leaderboardStatus = document.getElementById('leaderboard-status');
+  const leaderboardVisible = Boolean(state.leaderboard?.isVisible);
+  if (btnToggleLeaderboard) {
+    btnToggleLeaderboard.textContent = leaderboardVisible ? 'HIDE LEADERBOARD' : 'SHOW LEADERBOARD';
+    btnToggleLeaderboard.classList.toggle('active', leaderboardVisible);
+    btnToggleLeaderboard.disabled = Boolean(state.winnerGroupId);
+  }
+  if (leaderboardStatus) {
+    leaderboardStatus.textContent = leaderboardVisible ? 'ON AIR' : 'HIDDEN';
+    leaderboardStatus.classList.toggle('active', leaderboardVisible);
+  }
 }
 
 function escapeHtml(str) {
@@ -344,6 +357,13 @@ function bindAdminEvents() {
   if (btnResetSpotlights) {
     btnResetSpotlights.addEventListener('click', () => {
       gameStateStore.resetSpotlights();
+    });
+  }
+
+  const btnToggleLeaderboard = document.getElementById('btn-toggle-leaderboard');
+  if (btnToggleLeaderboard) {
+    btnToggleLeaderboard.addEventListener('click', () => {
+      gameStateStore.toggleLeaderboard();
     });
   }
 
