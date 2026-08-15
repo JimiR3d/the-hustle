@@ -8,7 +8,9 @@ let lastScoreUndo = null;
 let selectedQuestionText = '';
 let selectedQuestionOptions = [];
 let selectedQuestionCorrectIndex = null;
+let selectedQuestionTeamId = null;
 let selectedPromptText = '';
+let selectedPromptTeamId = null;
 
 const QUESTION_CHOICES = {
   'What planet is known as the Red Planet?': { options: ['Venus', 'Mars', 'Jupiter', 'Mercury'], correct: 1 },
@@ -81,6 +83,7 @@ function renderQuestionAnswerControls(state) {
     selectedQuestionText = activeQuestion.text;
     selectedQuestionOptions = activeQuestion.options || [];
     selectedQuestionCorrectIndex = activeQuestion.correctOptionIndex;
+    selectedQuestionTeamId = activeQuestion.teamId;
   }
   const activeSelectedQuestion = Boolean(activeQuestion && activeQuestion.text === selectedQuestionText);
   const hostButton = [...document.querySelectorAll('[data-question-text]')]
@@ -96,35 +99,51 @@ function renderQuestionAnswerControls(state) {
   const revealed = Boolean(activeSelectedQuestion && activeQuestion.answerRevealed);
   const renderedOptions = activeSelectedQuestion ? activeQuestion.options : selectedQuestionOptions;
   panel.innerHTML = `
+    <span class="active-question-label">SELECT TEAM</span>
+    <div class="question-team-selector">
+      ${state.groups.map((group, index) => `<button type="button" data-question-team="${group.id}" class="${selectedQuestionTeamId === group.id ? 'selected' : ''}" ${group.isDisqualified ? 'disabled' : ''}>TEAM ${index + 1}</button>`).join('')}
+    </div>
     <span class="active-question-label">TEAM'S ANSWER</span>
     <div class="controller-answer-options">
       ${(renderedOptions || []).map((option, index) => {
         const isSelected = index === selectedIndex;
+        const showCorrectAnswer = revealed
+          && selectedIndex !== activeQuestion.correctOptionIndex
+          && index === activeQuestion.correctOptionIndex;
         const resultClass = revealed && isSelected
           ? (index === activeQuestion.correctOptionIndex ? ' is-correct' : ' is-wrong')
-          : '';
+          : (showCorrectAnswer ? ' is-correct-answer' : '');
         return `<button type="button" data-controller-option="${index}" class="${isSelected ? 'selected' : ''}${resultClass}" ${activeSelectedQuestion ? '' : 'disabled'}><b>${String.fromCharCode(65 + index)}</b><span>${escapeHtml(String(option))}</span></button>`;
       }).join('')}
     </div>
     <div class="active-question-actions">
       <button class="btn btn-reveal-answer" type="button" id="btn-reveal-question" ${Number.isInteger(selectedIndex) ? '' : 'disabled'}>${revealed ? 'ANSWER REVEALED' : 'REVEAL ANSWER'}</button>
-      <button class="btn ${activeSelectedQuestion ? 'btn-card-hide' : 'btn-gold-solid'}" type="button" id="btn-toggle-active-question">${activeSelectedQuestion ? 'HIDE QUESTION' : 'SHOW QUESTION'}</button>
+      <button class="btn ${activeSelectedQuestion ? 'btn-card-hide' : 'btn-gold-solid'}" type="button" id="btn-toggle-active-question" ${!activeSelectedQuestion && !selectedQuestionTeamId ? 'disabled' : ''}>${activeSelectedQuestion ? 'HIDE QUESTION' : 'SHOW QUESTION'}</button>
     </div>
   `;
   panel.querySelectorAll('[data-controller-option]').forEach((button) => {
     button.addEventListener('click', () => gameStateStore.selectQuestionOption(Number(button.dataset.controllerOption)));
   });
+  panel.querySelectorAll('[data-question-team]').forEach((button) => {
+    button.addEventListener('click', () => {
+      selectedQuestionTeamId = button.dataset.questionTeam;
+      gameStateStore.prepareContentTeam(selectedQuestionTeamId);
+    });
+  });
   panel.querySelector('#btn-reveal-question')?.addEventListener('click', () => gameStateStore.revealQuestionAnswer());
   panel.querySelector('#btn-toggle-active-question')?.addEventListener('click', () => {
     if (activeSelectedQuestion) gameStateStore.hideQuestionPromptCard();
-    else gameStateStore.showQuestionPromptCard('question', selectedQuestionText, selectedQuestionOptions, selectedQuestionCorrectIndex);
+    else gameStateStore.showQuestionPromptCard('question', selectedQuestionText, selectedQuestionOptions, selectedQuestionCorrectIndex, selectedQuestionTeamId);
   });
 }
 
 function renderPromptControl(state) {
   const card = state.questionPromptCard;
   const activePrompt = card?.isVisible && card.type === 'prompt' ? card : null;
-  if (activePrompt) selectedPromptText = activePrompt.text;
+  if (activePrompt) {
+    selectedPromptText = activePrompt.text;
+    selectedPromptTeamId = activePrompt.teamId;
+  }
 
   document.querySelectorAll('.selected-prompt-row').forEach((row) => {
     const promptButton = row.querySelector('[data-prompt-text]');
@@ -146,7 +165,7 @@ function renderPromptControl(state) {
   action.textContent = isThisPromptVisible ? 'HIDE PROMPT' : 'SHOW PROMPT';
   action.addEventListener('click', () => {
     if (isThisPromptVisible) gameStateStore.hideQuestionPromptCard();
-    else gameStateStore.showQuestionPromptCard('prompt', selectedPromptText);
+    else gameStateStore.showQuestionPromptCard('prompt', selectedPromptText, [], null, selectedPromptTeamId);
   });
   hostButton.closest('.team-prompt-group')?.appendChild(action);
 }
@@ -391,13 +410,19 @@ function bindAdminEvents() {
       const selectedQuestion = QUESTION_CHOICES[selectedQuestionText];
       selectedQuestionOptions = selectedQuestion?.options || [];
       selectedQuestionCorrectIndex = selectedQuestion?.correct ?? null;
+      selectedQuestionTeamId = null;
+      gameStateStore.prepareContentTeam();
       renderQuestionAnswerControls(gameStateStore.getState());
     });
   });
   document.querySelectorAll('[data-prompt-text]').forEach((button) => {
     button.addEventListener('click', () => {
       selectedPromptText = button.dataset.promptText || '';
-      renderPromptControl(gameStateStore.getState());
+      const promptGroups = [...document.querySelectorAll('.team-prompt-group')];
+      const teamIndex = promptGroups.indexOf(button.closest('.team-prompt-group'));
+      selectedPromptTeamId = teamIndex >= 0 ? `group-${teamIndex + 1}` : null;
+      if (selectedPromptTeamId) gameStateStore.prepareContentTeam(selectedPromptTeamId);
+      else renderPromptControl(gameStateStore.getState());
     });
   });
   document.querySelectorAll('[data-game-instruction-id]').forEach((button) => {

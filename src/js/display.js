@@ -846,7 +846,7 @@ function renderDisplay(state, meta = {}) {
   }
   renderLeaderboard(state, meta);
   renderIntermissionTimer(state.intermissionTimer);
-  renderArenaCard(state.questionPromptCard, state.gameInstructionCard, meta);
+  renderArenaCard(state.questionPromptCard, state.gameInstructionCard, state.groups, meta);
 
   if ((state.arenaFocusNonce || 0) > previousArenaFocusNonce) {
     focusArena();
@@ -1403,14 +1403,17 @@ function renderIntermissionTimer(timerState) {
   callout?.classList.toggle('is-active', Boolean(timerState.isRunning));
 }
 
-function renderArenaCard(cardState, instructionState, meta = {}) {
+function renderArenaCard(cardState, instructionState, groups = [], meta = {}) {
   const overlay = document.getElementById('question-prompt-overlay');
   const backdrop = overlay?.querySelector('.question-prompt-backdrop');
   const card = document.getElementById('question-prompt-display-card');
   const image = document.getElementById('question-prompt-card-image');
   const text = document.getElementById('question-prompt-display-text');
   const options = document.getElementById('question-card-options');
-  if (!overlay || !backdrop || !card || !image || !text || !options) return;
+  const teamScoreboard = document.getElementById('content-team-scoreboard');
+  const teamName = document.getElementById('content-team-name');
+  const teamPoints = document.getElementById('content-team-points');
+  if (!overlay || !backdrop || !card || !image || !text || !options || !teamScoreboard || !teamName || !teamPoints) return;
 
   const instructionVisible = Boolean(instructionState?.isVisible && instructionState.text && instructionState.gameId);
   const questionVisible = Boolean(cardState?.isVisible && cardState.text);
@@ -1433,12 +1436,56 @@ function renderArenaCard(cardState, instructionState, meta = {}) {
     ? questionOptions.map((option, index) => {
       const isSelected = index === cardState.selectedOptionIndex;
       const isRevealed = isSelected && cardState.answerRevealed;
+      const showCorrectAnswer = cardState.answerRevealed
+        && cardState.selectedOptionIndex !== cardState.correctOptionIndex
+        && index === cardState.correctOptionIndex;
       const resultClass = isRevealed
         ? (index === cardState.correctOptionIndex ? ' is-correct' : ' is-wrong')
-        : '';
+        : (showCorrectAnswer ? ' is-correct-answer' : '');
       return `<div class="${isSelected ? 'is-selected' : ''}${resultClass}"><b>${String.fromCharCode(65 + index)}</b><span>${escapeHtml(String(option))}</span></div>`;
     }).join('')
     : '';
+  const contentTeam = !instructionVisible && cardState?.teamId
+    ? groups.find((group) => group.id === cardState.teamId)
+    : null;
+  teamScoreboard.hidden = !contentTeam;
+  if (contentTeam) {
+    const teamNumber = Number(String(contentTeam.id).replace('group-', '')) || '';
+    teamName.textContent = `TEAM ${teamNumber} · ${contentTeam.name}`;
+    teamPoints.textContent = String(contentTeam.points);
+    const shaderContainer = document.getElementById('content-score-shader');
+    if (shaderContainer && !window.contentScoreShaderMount) {
+      requestAnimationFrame(() => {
+        if (window.contentScoreShaderMount || !shaderContainer.isConnected) return;
+        try {
+          window.contentScoreShaderMount = new ShaderMount(
+            shaderContainer,
+            liquidMetalFragmentShader,
+            {
+              u_repetition: 4,
+              u_softness: 0.5,
+              u_shiftRed: 0.3,
+              u_shiftBlue: 0.3,
+              u_distortion: 0,
+              u_contour: 0,
+              u_angle: 45,
+              u_scale: 8,
+              u_shape: 1,
+              u_offsetX: 0.1,
+              u_offsetY: -0.1,
+            },
+            undefined,
+            0.4,
+            0.65,
+            1,
+            3500
+          );
+        } catch (error) {
+          console.warn('Content scoreboard ShaderMount error:', error);
+        }
+      });
+    }
+  }
 
   if (shouldEnter) {
     const cleanText = String(instructionVisible ? instructionState.text : cardState.text || '').trim();

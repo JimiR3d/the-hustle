@@ -105,6 +105,7 @@ const DEFAULT_STATE = {
     correctOptionIndex: null,
     selectedOptionIndex: null,
     answerRevealed: false,
+    teamId: null,
     nonce: 0,
   },
   gameInstructionCard: {
@@ -609,6 +610,23 @@ class GameStateStore {
     this.saveAndBroadcast('timer_expand');
   }
 
+  spotlightOnly(id) {
+    const target = this.state.groups.find((group) => group.id === id && !group.isDisqualified);
+    if (!target) return;
+    this.state.groups.forEach((group) => { group.isPopUp = group.id === id; });
+    this.saveAndBroadcast('spotlight_focus');
+  }
+
+  prepareContentTeam(id = null) {
+    const target = this.state.groups.find((group) => group.id === id && !group.isDisqualified) || null;
+    this.state.groups.forEach((group) => { group.isPopUp = Boolean(target && group.id === target.id); });
+    if (this.state.questionPromptCard?.isVisible) {
+      this.state.questionPromptCard.isVisible = false;
+      this.state.questionPromptCard.nonce = (this.state.questionPromptCard.nonce || 0) + 1;
+    }
+    this.saveAndBroadcast('content_team_prepare');
+  }
+
   updateIntermissionTimer(seconds, isRunning) {
     const timer = this.state.intermissionTimer;
     timer.seconds = Math.max(0, seconds);
@@ -692,7 +710,7 @@ class GameStateStore {
     this.saveAndBroadcast('presentation_cue');
   }
 
-  showQuestionPromptCard(type, text, options = [], correctOptionIndex = null) {
+  showQuestionPromptCard(type, text, options = [], correctOptionIndex = null, teamId = null) {
     const cleanType = type === 'prompt' ? 'prompt' : 'question';
     const cleanText = String(text || '').trim();
     if (!cleanText) return;
@@ -704,8 +722,10 @@ class GameStateStore {
       correctOptionIndex: cleanType === 'question' && Number.isInteger(correctOptionIndex) ? correctOptionIndex : null,
       selectedOptionIndex: null,
       answerRevealed: false,
+      teamId: this.state.groups.some((group) => group.id === teamId) ? teamId : null,
       nonce: (this.state.questionPromptCard?.nonce || 0) + 1,
     };
+    this.state.groups.forEach((group) => { group.isPopUp = false; });
     this.state.gameInstructionCard.isVisible = false;
     this.state.leaderboard.isVisible = false;
     this.saveAndBroadcast('question_prompt_show');

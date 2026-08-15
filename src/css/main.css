@@ -981,6 +981,8 @@ body.arena-performance-mode .parallax-intro-section *::after {
 .question-card-options > div.is-selected b { background:#d99d00; }
 .question-card-options > div.is-correct { border-color:#16a85d; background:#caffdf; box-shadow:0 0 0 6px rgba(31,206,111,.22),0 10px 28px rgba(11,104,54,.2); }
 .question-card-options > div.is-correct b { background:#12934f; }
+.question-card-options > div.is-correct-answer { border-color:#16a85d; background:#caffdf; box-shadow:0 0 0 6px rgba(31,206,111,.22),0 10px 28px rgba(11,104,54,.2); animation:correct-answer-breathe 1.45s ease-in-out infinite; }
+.question-card-options > div.is-correct-answer b { background:#12934f; }
 .question-card-options > div.is-wrong { border-color:#df284e; background:#ffd0d9; box-shadow:0 0 0 6px rgba(239,48,85,.2),0 10px 28px rgba(142,13,39,.2); }
 .question-card-options > div.is-wrong b { background:#c9183d; }
 .question-card-options b { display:grid; place-items:center; align-self:stretch; background:#870052; color:#fff7ef; font:900 35px 'Outfit',sans-serif; }
@@ -988,6 +990,11 @@ body.arena-performance-mode .parallax-intro-section *::after {
 .question-prompt-overlay.has-question-options .question-prompt-display-text { top:20%; bottom:51%; padding:28px 70px; font-size:48px; line-height:1.16; }
 .question-prompt-overlay.has-question-options .question-prompt-display-text.is-long { font-size:42px; }
 .question-prompt-overlay.has-question-options .question-prompt-display-text.is-very-long { font-size:36px; }
+@keyframes correct-answer-breathe { 0%,100% { opacity:.72; filter:brightness(.92); transform:scale(.985); } 50% { opacity:1; filter:brightness(1.12); transform:scale(1.015); } }
+.content-team-scoreboard { position:absolute; z-index:4; left:50%; bottom:-76px; display:flex; flex-direction:column; align-items:center; justify-content:center; width:330px; height:84px; padding:3px 24px; overflow:hidden; border:1px solid rgba(255,255,255,.2); border-radius:100px; background:#09090d url('/assets/score_board.png') no-repeat center/100% 100%; box-shadow:0 10px 25px rgba(0,0,0,.85); filter:drop-shadow(0 6px 16px rgba(0,0,0,.85)); color:#fff; transform:translateX(-50%); }
+.content-team-scoreboard[hidden] { display:none; }
+.content-team-scoreboard .group-name-text { width:290px; margin-top:2px; color:#fff; font-size:14px; letter-spacing:1.7px; }
+.content-team-scoreboard .score-led-value { color:#ff3399; font-size:42px; text-shadow:0 0 12px #ff0066,0 0 24px #ff0066; }
 .question-prompt-overlay.is-game-instruction .question-prompt-display-text {
   top: 23%;
   right: 12%;
