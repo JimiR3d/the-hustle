@@ -524,6 +524,7 @@ function renderLeaderboard(state, meta = {}) {
   if (meta.eventType === 'points_update') return;
 
   const nextRanks = new Map();
+  let movementSequence = 0;
   list.innerHTML = '';
 
   getRankedGroups(state.groups).forEach(({ group, rank }, index) => {
@@ -568,7 +569,13 @@ function renderLeaderboard(state, meta = {}) {
     list.appendChild(row);
 
     if (previousIndex != null && previousIndex !== index) {
-      gsap.fromTo(row, { y: (previousIndex - index) * 112 }, { y: 0, duration: 0.75, ease: 'power3.out' });
+      const staggerDelay = meta.eventType === 'leaderboard_delayed_reveal' ? movementSequence * 0.32 : 0;
+      movementSequence += 1;
+      gsap.fromTo(
+        row,
+        { y: (previousIndex - index) * 112, scale: 0.985, zIndex: 5 },
+        { y: 0, scale: 1, zIndex: 1, duration: 0.9, delay: staggerDelay, ease: 'power3.inOut' }
+      );
     } else if (previousIndex == null) {
       gsap.fromTo(row, { x: 80, opacity: 0 }, { x: 0, opacity: 1, duration: 0.55, delay: index * 0.07, ease: 'power3.out' });
     }
