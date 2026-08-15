@@ -483,50 +483,60 @@ function bindAdminEvents() {
     // Filter ONLY non-disqualified eligible teams
     const eligibleGroups = state.groups.filter((g) => !g.isDisqualified);
 
-    if (eligibleGroups.length === 0) {
-      winnerOptionsList.innerHTML = '<div style="padding: 16px; color: #ff1744; text-align: center; font-weight: 700;">No eligible teams remaining!</div>';
-      selectedWinner = null;
-      if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = true;
-      return;
-    }
-
     // Verify currently selected team is still eligible
     if (selectedWinner && !eligibleGroups.some((g) => g.id === selectedWinner.groupId)) {
       selectedWinner = null;
       if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = true;
     }
 
-    const appendOption = (group, target, title, subtitle, badge) => {
+    const makeWinnerSection = (title, className) => {
+      const section = document.createElement('section');
+      section.className = 'winner-option-section';
+      section.innerHTML = `<h4>${title}</h4><div class="winner-options-grid ${className}"></div>`;
+      winnerOptionsList.appendChild(section);
+      return section.querySelector('.winner-options-grid');
+    };
+
+    const teamsGrid = makeWinnerSection('TEAMS', 'winner-teams-grid');
+    const playersGrid = makeWinnerSection('PLAYERS', 'winner-players-grid');
+
+    const appendOption = (targetContainer, group, target, title, subtitle, badge) => {
       const opt = document.createElement('div');
+      const isEliminated = Boolean(group.isDisqualified);
       const isSelected = selectedWinner && selectedWinner.type === target.type &&
         selectedWinner.groupId === target.groupId && selectedWinner.playerName === target.playerName;
-      opt.className = `winner-option-card ${isSelected ? 'selected' : ''}`;
+      opt.className = `winner-option-card ${isSelected ? 'selected' : ''} ${isEliminated ? 'is-eliminated' : ''}`;
+      opt.setAttribute('role', 'button');
+      opt.setAttribute('aria-disabled', String(isEliminated));
       opt.innerHTML = `
         <div>
           <div class="winner-opt-team-name">${escapeHtml(title)}</div>
           <div class="winner-opt-players">${escapeHtml(subtitle)}</div>
         </div>
-        <div class="winner-opt-score">${escapeHtml(badge)}</div>
+        <div class="winner-opt-score">${escapeHtml(isEliminated ? 'ELIMINATED' : badge)}</div>
       `;
 
       opt.addEventListener('click', () => {
+        if (isEliminated) return;
         selectedWinner = target;
-        Array.from(winnerOptionsList.children).forEach((c) => c.classList.remove('selected'));
+        winnerOptionsList.querySelectorAll('.winner-option-card').forEach((card) => card.classList.remove('selected'));
         opt.classList.add('selected');
         if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = false;
       });
 
-      winnerOptionsList.appendChild(opt);
+      targetContainer.appendChild(opt);
     };
 
-    eligibleGroups.forEach((group) => {
-      appendOption(group, { type: 'group', groupId: group.id, playerName: null }, group.name,
+    state.groups.forEach((group) => {
+      appendOption(teamsGrid, group, { type: 'group', groupId: group.id, playerName: null }, group.name,
         `${group.player1?.name || ''} & ${group.player2?.name || ''}`, `${group.points} PTS · GROUP`);
       [group.player1, group.player2].forEach((player) => {
-        appendOption(group, { type: 'player', groupId: group.id, playerName: player.name }, player.name,
+        appendOption(playersGrid, group, { type: 'player', groupId: group.id, playerName: player.name }, player.name,
           `Individual winner · ${group.name}`, 'PLAYER');
       });
     });
+
+    if (eligibleGroups.length === 0) selectedWinner = null;
 
     if (btnProceedWinnerConfirm) {
       btnProceedWinnerConfirm.disabled = !selectedWinner;

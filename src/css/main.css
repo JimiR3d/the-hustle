@@ -1577,7 +1577,14 @@ html, body {
 .group-panel-wrapper.is-individual-winner.winner-player-p1 .slot-p2,
 .group-panel-wrapper.is-individual-winner.winner-player-p2 .slot-p1 { opacity: 0; }
 .group-panel-wrapper.is-individual-winner.winner-player-p1 .slot-p1,
-.group-panel-wrapper.is-individual-winner.winner-player-p2 .slot-p2 { left: 155px; transform: rotate(0deg) scale(1.08); z-index: 20; }
+.group-panel-wrapper.is-individual-winner.winner-player-p2 .slot-p2 {
+  position: absolute;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%) scale(1.08);
+  animation: none;
+  z-index: 20;
+}
 
 /* Reusable round and Match/No Match arena graphics */
 .presentation-cue-overlay { position: absolute; inset: 0; z-index: 10020; display: grid; place-items: center; overflow: hidden; pointer-events: none; }
