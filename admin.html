@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/css/admin.css">
 </head>
-<body>
+<body class="controller-mode-live">
 
   <!-- Admin Control Panel Header -->
   <header class="admin-header">
@@ -29,6 +29,17 @@
       </button>
     </div>
   </header>
+
+  <nav class="controller-mode-switch" aria-label="Controller mode">
+    <div>
+      <span class="mode-switch-eyebrow">CONTROL WORKSPACE</span>
+      <strong id="controller-mode-title">Live Show</strong>
+    </div>
+    <div class="mode-switch-buttons">
+      <button class="mode-switch-btn" type="button" data-controller-mode="setup">SETUP</button>
+      <button class="mode-switch-btn active" type="button" data-controller-mode="live">LIVE SHOW</button>
+    </div>
+  </nav>
 
   <!-- Timer Controls Section (Start, Pause, Stop, Reset Timer) -->
   <section class="timer-control-panel">
@@ -63,9 +74,12 @@
         <h2>Team Groups (5 Teams of 2 Players)</h2>
         <span style="font-size: 12px; color: #ffd700; opacity: 0.8;">Instant Sync via BroadcastChannel + Storage</span>
       </div>
+      <div class="panel-live-actions">
+      <button class="btn btn-undo-score" id="btn-undo-score" type="button" disabled>UNDO LAST SCORE</button>
       <button class="btn btn-reset-spotlights" id="btn-reset-spotlights" title="Clear all active spotlights at once">
         🎯 RESET SPOTLIGHTS
       </button>
+      </div>
     </div>
 
     <div class="competitors-list" id="competitors-list">
@@ -82,6 +96,7 @@
       <button class="btn btn-leaderboard" id="btn-toggle-leaderboard">
         SHOW LEADERBOARD
       </button>
+      </div>
     </div>
 
     <div class="show-tools-grid">

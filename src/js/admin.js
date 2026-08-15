@@ -3,6 +3,26 @@ import { gameStateStore, ALL_PLAYERS } from './state.js';
 let pendingDisqualifyId = null;
 let selectedWinner = null;
 let renderWinnerOptions = () => {};
+let lastScoreUndo = null;
+
+function refreshUndoButton() {
+  const button = document.getElementById('btn-undo-score');
+  if (!button) return;
+  button.disabled = !lastScoreUndo;
+  button.textContent = lastScoreUndo ? `UNDO ${lastScoreUndo.label}` : 'UNDO LAST SCORE';
+}
+
+function applyControllerMode(mode) {
+  const resolvedMode = mode === 'setup' ? 'setup' : 'live';
+  document.body.classList.toggle('controller-mode-setup', resolvedMode === 'setup');
+  document.body.classList.toggle('controller-mode-live', resolvedMode === 'live');
+  document.querySelectorAll('[data-controller-mode]').forEach((button) => {
+    button.classList.toggle('active', button.dataset.controllerMode === resolvedMode);
+  });
+  const title = document.getElementById('controller-mode-title');
+  if (title) title.textContent = resolvedMode === 'setup' ? 'Contestant Setup' : 'Live Show';
+  localStorage.setItem('hustle-controller-mode', resolvedMode);
+}
 
 // Persistent Countdown & Time's Up audio elements on Admin Panel
 const timerStartAudio = new Audio('/assets/Timer_start.mp3');
@@ -235,6 +255,19 @@ function bindAdminEvents() {
   const confirmDisqualifyBtn = document.getElementById('btn-confirm-disqualify');
   const cancelDisqualifyBtn = document.getElementById('btn-cancel-disqualify');
 
+  document.querySelectorAll('[data-controller-mode]').forEach((button) => {
+    button.addEventListener('click', () => applyControllerMode(button.dataset.controllerMode));
+  });
+  applyControllerMode(localStorage.getItem('hustle-controller-mode') || 'live');
+
+  document.getElementById('btn-undo-score')?.addEventListener('click', () => {
+    if (!lastScoreUndo) return;
+    const action = lastScoreUndo;
+    lastScoreUndo = null;
+    gameStateStore.setGroupPoints(action.groupId, action.previousPoints);
+    refreshUndoButton();
+  });
+
   // Launch Arena Window Button
   const btnLaunch = document.getElementById('btn-launch-display');
   if (btnLaunch) {
@@ -353,6 +386,8 @@ function bindAdminEvents() {
   const btnResetAll = document.getElementById('btn-reset-all');
   if (btnResetAll) {
     btnResetAll.addEventListener('click', () => {
+      lastScoreUndo = null;
+      refreshUndoButton();
       gameStateStore.resetAll();
     });
   }
@@ -367,7 +402,16 @@ function bindAdminEvents() {
 
       if (action === 'pts') {
         const delta = parseInt(target.dataset.delta, 10);
+        const group = gameStateStore.getState().groups.find((item) => item.id === id);
+        if (group && !group.isDisqualified) {
+          lastScoreUndo = {
+            groupId: id,
+            previousPoints: group.points,
+            label: `${delta > 0 ? '+' : ''}${delta} ON ${group.name}`,
+          };
+        }
         gameStateStore.updateGroupPoints(id, delta);
+        refreshUndoButton();
       } else if (action === 'spotlight') {
         gameStateStore.togglePopUp(id);
       } else if (action === 'disqualify-prompt') {
@@ -385,7 +429,16 @@ function bindAdminEvents() {
     container.addEventListener('change', (e) => {
       if (e.target.classList.contains('pts-input')) {
         const id = e.target.dataset.id;
+        const group = gameStateStore.getState().groups.find((item) => item.id === id);
+        if (group && !group.isDisqualified) {
+          lastScoreUndo = {
+            groupId: id,
+            previousPoints: group.points,
+            label: `SCORE EDIT ON ${group.name}`,
+          };
+        }
         gameStateStore.setGroupPoints(id, e.target.value);
+        refreshUndoButton();
       } else if (e.target.classList.contains('player-select')) {
         const id = e.target.dataset.id;
         const slot = e.target.dataset.slot;

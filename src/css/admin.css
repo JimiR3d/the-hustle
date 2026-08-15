@@ -59,6 +59,14 @@ body {
   flex-wrap: wrap;
 }
 
+.controller-mode-switch { position: sticky; top: 8px; z-index: 120; display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 16px; padding: 10px 14px; border: 1px solid rgba(255,215,0,.32); border-radius: 12px; background: rgba(22,4,17,.94); box-shadow: 0 10px 30px rgba(0,0,0,.45); backdrop-filter: blur(14px); }
+.controller-mode-switch > div:first-child { display: flex; flex-direction: column; gap: 2px; }
+.mode-switch-eyebrow { color: #a98c56; font-size: 9px; font-weight: 900; letter-spacing: 2px; }
+.controller-mode-switch strong { color: #fff3c7; font-size: 16px; }
+.mode-switch-buttons { display: flex; gap: 6px; padding: 4px; border-radius: 9px; background: rgba(0,0,0,.35); }
+.mode-switch-btn { padding: 7px 16px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #9d8b99; font: 800 11px/1 var(--admin-font); letter-spacing: 1px; cursor: pointer; }
+.mode-switch-btn.active { color: #1a1000; border-color: #ffe06c; background: linear-gradient(135deg,#ffe878,#e9ad11); box-shadow: 0 0 16px rgba(255,215,0,.25); }
+
 /* Timer Control Panel Bar */
 .timer-control-panel {
   display: flex;
@@ -178,6 +186,8 @@ body {
 
 /* Competitors Panel */
 .competitors-panel {
+  display: flex;
+  flex-direction: column;
   background: var(--admin-card-bg);
   border: 1px solid var(--admin-border);
   border-radius: 14px;
@@ -467,6 +477,11 @@ body {
   background: linear-gradient(120deg, rgba(255, 190, 0, 0.08), rgba(43, 9, 35, 0.55));
 }
 
+.panel-live-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.btn-undo-score { border: 1px solid rgba(77,200,255,.45); background: rgba(40,157,210,.13); color: #79d8ff; font-size: 11px; letter-spacing: .4px; }
+.btn-undo-score:hover:not(:disabled) { background: #43bde9; color: #06141b; }
+.btn-undo-score:disabled { opacity: .35; cursor: not-allowed; }
+
 .leaderboard-control-copy {
   display: grid;
   grid-template-columns: auto auto;
@@ -665,6 +680,28 @@ body {
 .tool-control-row .timer-input { width: 92px; }
 .btn-match { background: linear-gradient(135deg, #4cf0a4, #15975b); color: #04130b; }
 .btn-no-match { background: linear-gradient(135deg, #ff5b78, #a70c2d); color: #fff; }
+
+.quick-pts-btn[data-delta="1"],
+.quick-pts-btn[data-delta="-1"] { min-width: 46px; padding: 8px 13px; font-size: 14px; font-weight: 900; }
+.quick-pts-btn[data-delta="5"],
+.quick-pts-btn[data-delta="-5"] { opacity: .72; }
+.btn-disqualify { margin-left: 8px; opacity: .62; }
+.btn-disqualify:hover { opacity: 1; }
+
+body.controller-mode-live .player-select-group { display: none; }
+body.controller-mode-live .comp-info { flex: 0 1 245px; min-width: 190px; }
+body.controller-mode-live .leaderboard-control-section { order: 1; margin-top: 0; margin-bottom: 14px; }
+body.controller-mode-live .show-tools-grid { order: 2; margin-top: 0; margin-bottom: 14px; }
+body.controller-mode-live .winner-control-section { order: 3; margin: 0 0 14px; padding: 12px 0; }
+body.controller-mode-live .competitors-list { order: 4; }
+body.controller-mode-setup .timer-control-panel,
+body.controller-mode-setup .panel-live-actions,
+body.controller-mode-setup .points-control-group,
+body.controller-mode-setup .row-actions-group,
+body.controller-mode-setup .leaderboard-control-section,
+body.controller-mode-setup .show-tools-grid,
+body.controller-mode-setup .winner-control-section { display: none; }
+body.controller-mode-setup .competitors-list { order: 1; }
 
 @media (max-width: 1100px) {
   .show-tools-grid { grid-template-columns: 1fr; }
