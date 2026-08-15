@@ -875,3 +875,9 @@ body {
   background: #ffe57f;
   transform: translateY(-1px);
 }
+
+.question-prompt-actions .btn-card-hide:hover {
+  background: linear-gradient(135deg, #ff637c, #bd0b32);
+  color: #fff;
+  box-shadow: 0 6px 22px rgba(255, 45, 83, .42);
+}
