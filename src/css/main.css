@@ -1550,6 +1550,22 @@ html, body {
   padding: 0 10px;
 }
 
+.mobile-control-pin {
+  display: flex;
+  align-items: center;
+  padding: 5px 8px;
+  border: 1px solid rgba(255, 215, 0, 0.28);
+  border-radius: 7px;
+  background: rgba(12, 2, 10, 0.72);
+  white-space: nowrap;
+}
+
+.mobile-control-pin strong {
+  color: rgba(255, 215, 0, 0.86);
+  font: 900 13px/1 monospace;
+  letter-spacing: 2px;
+}
+
 .arena-status-badge {
   font-size: 12px;
   letter-spacing: 2px;
