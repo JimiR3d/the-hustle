@@ -43,6 +43,7 @@ let completedDisqualifiedIds = new Set();
 let timesUpTriggerCount = 0;
 let timesUpTriggeredForCurrentRun = false;
 let previousTimerSeconds = null;
+let showSfxContext = null;
 
 // Pre-instantiated Countdown and Time's Up audio elements
 const timerStartAudio = new Audio('/assets/Timer_start.mp3');
@@ -397,6 +398,69 @@ function getSpotlightTransform(groupId, spotlightedGroups, winnerGroupId, state)
   };
 }
 
+function getShowSfxContext() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+  if (!showSfxContext || showSfxContext.state === 'closed') {
+    showSfxContext = new AudioContextClass();
+  }
+  if (showSfxContext.state === 'suspended') {
+    showSfxContext.resume().catch(() => {});
+  }
+  return showSfxContext;
+}
+
+function playScoreSfx(kind) {
+  try {
+    const ctx = getShowSfxContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(kind === 'eliminated' ? 0.24 : 0.13, now + 0.012);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + (kind === 'eliminated' ? 0.72 : 0.34));
+    master.connect(ctx.destination);
+
+    if (kind === 'added') {
+      [0, 0.09].forEach((delay, index) => {
+        const note = ctx.createOscillator();
+        note.type = index === 0 ? 'sine' : 'triangle';
+        note.frequency.setValueAtTime(index === 0 ? 660 : 990, now + delay);
+        note.connect(master);
+        note.start(now + delay);
+        note.stop(now + 0.3);
+      });
+    } else if (kind === 'deducted') {
+      const note = ctx.createOscillator();
+      note.type = 'triangle';
+      note.frequency.setValueAtTime(440, now);
+      note.frequency.exponentialRampToValueAtTime(165, now + 0.3);
+      note.connect(master);
+      note.start(now);
+      note.stop(now + 0.34);
+    } else {
+      const impact = ctx.createOscillator();
+      impact.type = 'sawtooth';
+      impact.frequency.setValueAtTime(150, now);
+      impact.frequency.exponentialRampToValueAtTime(42, now + 0.68);
+      impact.connect(master);
+      impact.start(now);
+      impact.stop(now + 0.72);
+
+      const alarm = ctx.createOscillator();
+      alarm.type = 'square';
+      alarm.frequency.setValueAtTime(310, now);
+      alarm.frequency.setValueAtTime(235, now + 0.16);
+      alarm.frequency.setValueAtTime(170, now + 0.32);
+      alarm.connect(master);
+      alarm.start(now);
+      alarm.stop(now + 0.54);
+    }
+  } catch (err) {
+    console.warn('[Display Audio] Show sound unavailable:', err);
+  }
+}
+
 function getRankedGroups(groups) {
   const sortedGroups = [...groups].sort((a, b) => {
     if (a.isDisqualified !== b.isDisqualified) return a.isDisqualified ? 1 : -1;
@@ -432,6 +496,8 @@ function renderLeaderboard(state, meta = {}) {
   if (viewportBackdrop) viewportBackdrop.classList.toggle('active', isVisible);
   overlay.setAttribute('aria-hidden', String(!isVisible));
   if (title) title.textContent = state.leaderboard?.title || 'CURRENT STANDINGS';
+  // The hidden board keeps its last on-air snapshot. Rankings and movement are
+  // recalculated only while the leaderboard is actually being shown.
   if (!isVisible) return;
 
   const nextRanks = new Map();
@@ -783,6 +849,7 @@ function renderDisplay(state, meta = {}) {
     if (!groupWrapper) return;
 
     activeAnimationIds.add(group.id);
+    playScoreSfx('eliminated');
     if (groupWrapper.classList.contains('is-popup') || group.isPopUp) {
       animatingSpotlightIds.add(group.id);
     }
@@ -891,6 +958,8 @@ function triggerPointAnimation(groupId, delta) {
   const container = document.getElementById(`group-container-${groupId}`);
   const scorePill = document.getElementById(`group-score-pill-${groupId}`);
 
+  playScoreSfx(delta > 0 ? 'added' : 'deducted');
+
   if (container) {
     const popup = document.createElement('div');
     const isPositive = delta > 0;
@@ -929,7 +998,8 @@ function triggerPresentationCue(cue) {
   const arenaSection = document.getElementById('main-arena-section') || document.body;
   const container = document.createElement('div');
   container.id = 'presentation-cue-overlay';
-  container.className = `presentation-cue-overlay cue-${cue.kind || 'round'}`;
+  const cueTone = cue.label === 'MATCH' ? 'is-match' : cue.label === 'NO MATCH' ? 'is-no-match' : '';
+  container.className = `presentation-cue-overlay cue-${cue.kind || 'round'} ${cueTone}`;
   container.innerHTML = `
     <div class="presentation-cue-backdrop"></div>
     <div class="presentation-cue-graphic">

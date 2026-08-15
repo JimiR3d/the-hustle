@@ -1576,3 +1576,11 @@ html, body {
 .presentation-cue-rule { display: block; width: 240px; height: 5px; margin: 25px auto 0; border-radius: 99px; background: linear-gradient(90deg, transparent, #ffd84f, transparent); }
 .cue-match .presentation-cue-graphic { min-width: 800px; border-radius: 999px; }
 .cue-match .presentation-cue-graphic strong { font-size: 118px; }
+.cue-match.is-match .presentation-cue-graphic { border-color: #54f3a4; background: radial-gradient(circle at 50% 0%, rgba(50,255,156,.28), transparent 48%), linear-gradient(145deg, #052b20, #020d09 72%); box-shadow: 0 0 85px rgba(31,255,143,.38), inset 0 0 42px rgba(84,243,164,.11); }
+.cue-match.is-match .presentation-cue-kicker { color: #8effc5; }
+.cue-match.is-match .presentation-cue-graphic strong { color: #eafff3; text-shadow: 0 5px 0 #087346, 0 0 40px rgba(67,255,165,.72); }
+.cue-match.is-match .presentation-cue-rule { background: linear-gradient(90deg, transparent, #54f3a4, transparent); }
+.cue-match.is-no-match .presentation-cue-graphic { border-color: #ff526d; background: radial-gradient(circle at 50% 0%, rgba(255,42,77,.29), transparent 48%), linear-gradient(145deg, #350812, #100205 72%); box-shadow: 0 0 85px rgba(255,38,76,.4), inset 0 0 42px rgba(255,82,109,.12); }
+.cue-match.is-no-match .presentation-cue-kicker { color: #ff91a3; }
+.cue-match.is-no-match .presentation-cue-graphic strong { color: #fff0f3; text-shadow: 0 5px 0 #9d0925, 0 0 40px rgba(255,62,96,.72); }
+.cue-match.is-no-match .presentation-cue-rule { background: linear-gradient(90deg, transparent, #ff526d, transparent); }
