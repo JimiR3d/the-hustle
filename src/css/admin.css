@@ -59,6 +59,20 @@ body {
   flex-wrap: wrap;
 }
 
+.cloud-sync-panel { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; padding: 10px 14px; border: 1px solid rgba(74,205,255,.28); border-radius: 12px; background: linear-gradient(120deg,rgba(20,104,138,.13),rgba(30,7,25,.88)); }
+.cloud-sync-copy, .cloud-sync-actions { display: flex; align-items: center; gap: 10px; }
+.cloud-sync-copy > div { display: flex; flex-direction: column; gap: 1px; }
+.cloud-sync-copy strong { color: #bdefff; font-size: 11px; letter-spacing: 1.2px; }
+.cloud-sync-copy span:not(.cloud-status-dot) { color: #7191a0; font-size: 9px; font-weight: 800; letter-spacing: 1px; }
+.cloud-status-dot { width: 10px; height: 10px; border-radius: 50%; background: #e5a62b; box-shadow: 0 0 12px currentColor; }
+.cloud-status-dot[data-status="connected"] { background: #52d8ff; }
+.cloud-status-dot[data-status="host"] { background: #42ef9b; }
+.cloud-status-dot[data-status="offline"] { background: #ff5b78; }
+.cloud-pin-input { width: 145px; padding: 8px 10px; border: 1px solid rgba(74,205,255,.35); border-radius: 7px; background: #09030a; color: #fff; font: 800 11px var(--admin-font); letter-spacing: 1px; text-align: center; }
+.btn-cloud-connect { border: 1px solid rgba(74,205,255,.55); background: rgba(39,171,220,.2); color: #9ee9ff; font-size: 11px; }
+.btn-cloud-connect:hover:not(:disabled) { background: #55d4ff; color: #06141a; }
+.btn-cloud-connect:disabled { opacity: .7; cursor: default; }
+
 /* Timer Control Panel Bar */
 .timer-control-panel {
   display: flex;
@@ -603,21 +617,21 @@ body {
 }
 
 .winner-option-section { display: flex; flex-direction: column; gap: 8px; }
-.winner-option-section h4 { color: #d8bd68; font-size: 11px; font-weight: 900; letter-spacing: 2.4px; text-align: left; }
+.winner-option-section h4 { color: #ffe36f; font-size: 15px; font-weight: 900; letter-spacing: 3px; text-align: center; }
 .winner-options-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 9px; }
 
 .winner-option-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 82px;
+  min-height: 66px;
   padding: 10px 12px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 215, 0, 0.2);
   cursor: pointer;
   transition: all 0.2s ease;
-  text-align: left;
+  text-align: center;
 }
 
 .winner-option-card:hover {
@@ -637,6 +651,8 @@ body {
   font-size: 13px;
   font-weight: 800;
   color: #ffd700;
+  width: 100%;
+  text-align: center;
 }
 
 .winner-opt-players {

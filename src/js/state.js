@@ -2,6 +2,9 @@
 
 const STORAGE_KEY = 'ellis_game_show_state_v4';
 const CHANNEL_NAME = 'ellis_game_show_channel_v4';
+const SUPABASE_URL = 'https://bnawjxemtqxtyelayzja.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_dD8L23d5oWUOFDIogayrXw_G-h19nK7';
+const REMOTE_SHOW_CODE = 'HUSTLE-ELLIS';
 
 export const ALL_PLAYERS = {
   'Adrian': '/assets/Adrian.png',
@@ -100,6 +103,10 @@ class GameStateStore {
     this.listeners = new Set();
     this.lastProcessedTxId = null;
     this.broadcastChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : null;
+    this.remoteClient = null;
+    this.remoteChannel = null;
+    this.remoteHostPin = sessionStorage.getItem('hustle_remote_host_pin') || '';
+    this.remoteStatus = 'connecting';
     
     this.state = this.normalizeState(this.loadStateFromStorage());
 
@@ -125,6 +132,7 @@ class GameStateStore {
       const resolvedEventType = (eventType === 'storage_update' && pointsChanged) ? 'points_update' : (eventType || 'update');
       this.notifyListeners({ source, eventType: resolvedEventType });
     };
+    this.handleIncomingState = handleIncomingState;
 
     if (this.broadcastChannel) {
       this.broadcastChannel.onmessage = (event) => {
@@ -144,6 +152,99 @@ class GameStateStore {
         }
       }
     });
+
+    this.initializeRemoteSync();
+  }
+
+  setRemoteStatus(status, message = '') {
+    this.remoteStatus = status;
+    window.dispatchEvent(new CustomEvent('hustle-remote-status', {
+      detail: { status, message, showCode: REMOTE_SHOW_CODE, isHost: Boolean(this.remoteHostPin) },
+    }));
+  }
+
+  async initializeRemoteSync() {
+    if (!window.supabase?.createClient) {
+      this.setRemoteStatus('offline', 'Cloud library unavailable; local sync is still active.');
+      return;
+    }
+
+    try {
+      this.remoteClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: { persistSession: false },
+      });
+      const { data, error } = await this.remoteClient
+        .from('hustle_show_sessions')
+        .select('state,event_type')
+        .eq('show_code', REMOTE_SHOW_CODE)
+        .single();
+      if (error) throw error;
+      if (data?.state?.lastTxId) {
+        this.handleIncomingState(data.state, data.event_type || 'remote_init', 'supabase');
+      }
+
+      this.remoteChannel = this.remoteClient
+        .channel(`hustle-show-${REMOTE_SHOW_CODE}`)
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'hustle_show_sessions',
+          filter: `show_code=eq.${REMOTE_SHOW_CODE}`,
+        }, (payload) => {
+          if (payload.new?.state) {
+            this.handleIncomingState(payload.new.state, payload.new.event_type || 'remote_update', 'supabase');
+          }
+        })
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') this.setRemoteStatus('connected', 'Cloud display sync is live.');
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') this.setRemoteStatus('offline', 'Cloud connection lost; local sync remains active.');
+        });
+    } catch (error) {
+      console.warn('Supabase sync unavailable:', error);
+      this.setRemoteStatus('offline', 'Cloud connection unavailable; local sync remains active.');
+    }
+  }
+
+  async connectRemoteHost(pin) {
+    const cleanPin = String(pin || '').trim();
+    if (!/^\d{6}$/.test(cleanPin)) throw new Error('Enter the 6-digit host PIN.');
+    this.remoteHostPin = cleanPin;
+    const response = await this.pushRemoteState('host_connect');
+    if (!response.ok) {
+      this.remoteHostPin = '';
+      throw new Error(response.error || 'Could not connect the controller.');
+    }
+    sessionStorage.setItem('hustle_remote_host_pin', cleanPin);
+    this.setRemoteStatus('host', 'Phone controller is connected.');
+    return true;
+  }
+
+  async pushRemoteState(eventType = 'update') {
+    if (!this.remoteHostPin) return { ok: false, skipped: true };
+    try {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/hustle-state`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_KEY,
+        },
+        body: JSON.stringify({
+          showCode: REMOTE_SHOW_CODE,
+          hostPin: this.remoteHostPin,
+          state: this.state,
+          eventType,
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+      return response.ok ? { ok: true } : { ok: false, error: result.error || 'Remote update failed.' };
+    } catch (error) {
+      this.setRemoteStatus('offline', 'Cloud update failed; local sync remains active.');
+      return { ok: false, error: error.message };
+    }
+  }
+
+  getRemoteInfo() {
+    return { status: this.remoteStatus, showCode: REMOTE_SHOW_CODE, isHost: Boolean(this.remoteHostPin) };
   }
 
   loadStateFromStorage() {
@@ -210,6 +311,8 @@ class GameStateStore {
         timestamp: Date.now(),
       });
     }
+
+    if (this.remoteHostPin) this.pushRemoteState(eventType);
 
     this.notifyListeners({ source: 'local', eventType });
   }

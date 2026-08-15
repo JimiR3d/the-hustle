@@ -30,6 +30,17 @@
     </div>
   </header>
 
+  <section class="cloud-sync-panel" aria-label="Cross-device control">
+    <div class="cloud-sync-copy">
+      <span class="cloud-status-dot" id="cloud-status-dot"></span>
+      <div><strong id="cloud-status-label">CONNECTING</strong><span>SHOW CODE: HUSTLE-ELLIS</span></div>
+    </div>
+    <div class="cloud-sync-actions">
+      <input type="password" inputmode="numeric" maxlength="6" id="cloud-host-pin" class="cloud-pin-input" placeholder="6-DIGIT HOST PIN" aria-label="Host PIN" />
+      <button class="btn btn-cloud-connect" id="btn-cloud-connect" type="button">CONNECT PHONE CONTROL</button>
+    </div>
+  </section>
+
   <!-- Timer Controls Section (Start, Pause, Stop, Reset Timer) -->
   <section class="timer-control-panel">
     <div class="timer-display-box">
@@ -185,6 +196,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script type="module" src="/src/js/admin.js"></script>
 </body>
 </html>

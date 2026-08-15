@@ -243,6 +243,38 @@ function bindAdminEvents() {
   const confirmDisqualifyBtn = document.getElementById('btn-confirm-disqualify');
   const cancelDisqualifyBtn = document.getElementById('btn-cancel-disqualify');
 
+  const cloudStatusLabel = document.getElementById('cloud-status-label');
+  const cloudStatusDot = document.getElementById('cloud-status-dot');
+  const cloudPinInput = document.getElementById('cloud-host-pin');
+  const cloudConnectButton = document.getElementById('btn-cloud-connect');
+  const renderCloudStatus = ({ status, isHost }) => {
+    const resolved = isHost ? 'host' : status;
+    if (cloudStatusLabel) {
+      cloudStatusLabel.textContent = resolved === 'host' ? 'PHONE CONTROL READY' :
+        resolved === 'connected' ? 'DISPLAY SYNC ONLINE' : resolved === 'offline' ? 'LOCAL MODE' : 'CONNECTING';
+    }
+    if (cloudStatusDot) cloudStatusDot.dataset.status = resolved;
+    if (cloudConnectButton && resolved === 'host') {
+      cloudConnectButton.textContent = 'CONNECTED';
+      cloudConnectButton.disabled = true;
+    }
+    if (cloudPinInput && resolved === 'host') cloudPinInput.style.display = 'none';
+  };
+  window.addEventListener('hustle-remote-status', (event) => renderCloudStatus(event.detail));
+  renderCloudStatus(gameStateStore.getRemoteInfo());
+
+  cloudConnectButton?.addEventListener('click', async () => {
+    cloudConnectButton.disabled = true;
+    cloudConnectButton.textContent = 'CONNECTING...';
+    try {
+      await gameStateStore.connectRemoteHost(cloudPinInput?.value);
+    } catch (error) {
+      cloudConnectButton.disabled = false;
+      cloudConnectButton.textContent = 'CONNECT PHONE CONTROL';
+      if (cloudStatusLabel) cloudStatusLabel.textContent = error.message.toUpperCase();
+    }
+  });
+
   document.getElementById('btn-undo-score')?.addEventListener('click', () => {
     if (!lastScoreUndo) return;
     const action = lastScoreUndo;
@@ -509,11 +541,7 @@ function bindAdminEvents() {
       opt.setAttribute('role', 'button');
       opt.setAttribute('aria-disabled', String(isEliminated));
       opt.innerHTML = `
-        <div>
-          <div class="winner-opt-team-name">${escapeHtml(title)}</div>
-          <div class="winner-opt-players">${escapeHtml(subtitle)}</div>
-        </div>
-        <div class="winner-opt-score">${escapeHtml(isEliminated ? 'ELIMINATED' : badge)}</div>
+        <div class="winner-opt-team-name">${escapeHtml(title)}</div>
       `;
 
       opt.addEventListener('click', () => {
