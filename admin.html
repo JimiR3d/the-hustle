@@ -41,8 +41,13 @@
     </div>
   </section>
 
+  <nav class="control-workspace-tabs" aria-label="Controller workspace">
+    <button class="control-workspace-tab active" type="button" data-workspace-target="live">LIVE GAME CONTROLS</button>
+    <button class="control-workspace-tab" type="button" data-workspace-target="questions-prompts">QUESTIONS &amp; PROMPTS</button>
+  </nav>
+
   <!-- Timer Controls Section (Start, Pause, Stop, Reset Timer) -->
-  <section class="timer-control-panel">
+  <section class="timer-control-panel" data-control-workspace="live">
     <div class="timer-display-box">
       <span style="font-size: 12px; color: #a090a0; font-weight: 700; letter-spacing: 1px;">HUD TIMER</span>
       <div class="timer-val" id="admin-timer-val">05:00</div>
@@ -67,8 +72,47 @@
     </div>
   </section>
 
+  <section class="question-prompt-panel" data-control-workspace="questions-prompts" hidden>
+    <div class="question-prompt-heading">
+      <div>
+        <span class="leaderboard-control-label">CARD CONTROL</span>
+        <h2>Questions &amp; Prompts</h2>
+        <p>Select the card type, enter its text, then send it to the arena.</p>
+      </div>
+      <span class="question-prompt-air-status" id="question-prompt-air-status">OFF AIR</span>
+    </div>
+
+    <div class="question-prompt-type-tabs" role="group" aria-label="Card type">
+      <button class="question-prompt-type active" type="button" data-card-type="question">QUESTION</button>
+      <button class="question-prompt-type" type="button" data-card-type="prompt">PROMPT</button>
+    </div>
+
+    <div class="question-prompt-composer">
+      <label for="question-prompt-text">CARD TEXT</label>
+      <textarea id="question-prompt-text" maxlength="420" placeholder="Enter the question here..."></textarea>
+      <div class="question-prompt-composer-footer">
+        <span id="question-prompt-character-count">0 / 420</span>
+        <div class="question-prompt-actions">
+          <button class="btn btn-outline" id="btn-retract-question-prompt" type="button">RETRACT CARD</button>
+          <button class="btn btn-gold-solid" id="btn-show-question-prompt" type="button">SHOW QUESTION</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="question-prompt-library">
+      <section>
+        <h3>QUESTIONS</h3>
+        <div class="question-prompt-library-empty">Questions supplied later will appear here.</div>
+      </section>
+      <section>
+        <h3>PROMPTS</h3>
+        <div class="question-prompt-library-empty">Prompts supplied later will appear here.</div>
+      </section>
+    </div>
+  </section>
+
   <!-- Competitor Teams Control Panel -->
-  <main class="competitors-panel">
+  <main class="competitors-panel" data-control-workspace="live">
     <div class="controller-split-layout">
       <section class="team-control-column">
     <div class="panel-heading">

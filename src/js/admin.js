@@ -4,6 +4,7 @@ let pendingDisqualifyId = null;
 let selectedWinner = null;
 let renderWinnerOptions = () => {};
 let lastScoreUndo = null;
+let selectedQuestionPromptType = 'question';
 
 function refreshUndoButton() {
   const button = document.getElementById('btn-undo-score');
@@ -32,6 +33,16 @@ function renderAdminPanel(state) {
     intermissionVal.textContent = `${mins}:${secs}`;
     intermissionVal.classList.toggle('is-running', state.intermissionTimer.isRunning);
   }
+
+  const cardStatus = document.getElementById('question-prompt-air-status');
+  const retractCardButton = document.getElementById('btn-retract-question-prompt');
+  if (cardStatus) {
+    cardStatus.textContent = state.questionPromptCard?.isVisible
+      ? `${String(state.questionPromptCard.type || 'question').toUpperCase()} ON AIR`
+      : 'OFF AIR';
+    cardStatus.classList.toggle('active', Boolean(state.questionPromptCard?.isVisible));
+  }
+  if (retractCardButton) retractCardButton.disabled = !state.questionPromptCard?.isVisible;
 
   if (!container) return;
   container.innerHTML = '';
@@ -164,6 +175,42 @@ function bindAdminEvents() {
   };
   window.addEventListener('hustle-remote-status', (event) => renderCloudStatus(event.detail));
   renderCloudStatus(gameStateStore.getRemoteInfo());
+
+  document.querySelectorAll('[data-workspace-target]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = button.dataset.workspaceTarget;
+      document.querySelectorAll('[data-workspace-target]').forEach((tab) => tab.classList.toggle('active', tab === button));
+      document.querySelectorAll('[data-control-workspace]').forEach((workspace) => {
+        workspace.hidden = workspace.dataset.controlWorkspace !== target;
+      });
+    });
+  });
+
+  const cardTextInput = document.getElementById('question-prompt-text');
+  const cardCount = document.getElementById('question-prompt-character-count');
+  const showCardButton = document.getElementById('btn-show-question-prompt');
+  const syncCardComposer = () => {
+    const length = cardTextInput?.value.length || 0;
+    if (cardCount) cardCount.textContent = `${length} / 420`;
+    if (showCardButton) showCardButton.textContent = `SHOW ${selectedQuestionPromptType.toUpperCase()}`;
+    if (cardTextInput) cardTextInput.placeholder = `Enter the ${selectedQuestionPromptType} here...`;
+  };
+
+  document.querySelectorAll('[data-card-type]').forEach((button) => {
+    button.addEventListener('click', () => {
+      selectedQuestionPromptType = button.dataset.cardType === 'prompt' ? 'prompt' : 'question';
+      document.querySelectorAll('[data-card-type]').forEach((tab) => tab.classList.toggle('active', tab === button));
+      syncCardComposer();
+    });
+  });
+  cardTextInput?.addEventListener('input', syncCardComposer);
+  showCardButton?.addEventListener('click', () => {
+    gameStateStore.showQuestionPromptCard(selectedQuestionPromptType, cardTextInput?.value);
+  });
+  document.getElementById('btn-retract-question-prompt')?.addEventListener('click', () => {
+    gameStateStore.hideQuestionPromptCard();
+  });
+  syncCardComposer();
 
   cloudConnectButton?.addEventListener('click', async () => {
     cloudConnectButton.disabled = true;

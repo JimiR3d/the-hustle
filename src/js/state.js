@@ -91,6 +91,12 @@ const DEFAULT_STATE = {
     label: '',
     nonce: 0,
   },
+  questionPromptCard: {
+    isVisible: false,
+    type: 'question',
+    text: '',
+    nonce: 0,
+  },
   winner: null,
   winnerGroupId: null,
   lastUpdated: Date.now(),
@@ -297,6 +303,10 @@ class GameStateStore {
       presentationCue: {
         ...DEFAULT_STATE.presentationCue,
         ...(savedState.presentationCue || {}),
+      },
+      questionPromptCard: {
+        ...DEFAULT_STATE.questionPromptCard,
+        ...(savedState.questionPromptCard || {}),
       },
       winner: savedState.winner || (savedState.winnerGroupId ? {
         type: 'group',
@@ -605,6 +615,30 @@ class GameStateStore {
       nonce: (this.state.presentationCue?.nonce || 0) + 1,
     };
     this.saveAndBroadcast('presentation_cue');
+  }
+
+  showQuestionPromptCard(type, text) {
+    const cleanType = type === 'prompt' ? 'prompt' : 'question';
+    const cleanText = String(text || '').trim();
+    if (!cleanText) return;
+    this.state.questionPromptCard = {
+      isVisible: true,
+      type: cleanType,
+      text: cleanText,
+      nonce: (this.state.questionPromptCard?.nonce || 0) + 1,
+    };
+    this.state.leaderboard.isVisible = false;
+    this.saveAndBroadcast('question_prompt_show');
+  }
+
+  hideQuestionPromptCard() {
+    if (!this.state.questionPromptCard?.isVisible) return;
+    this.state.questionPromptCard = {
+      ...this.state.questionPromptCard,
+      isVisible: false,
+      nonce: (this.state.questionPromptCard?.nonce || 0) + 1,
+    };
+    this.saveAndBroadcast('question_prompt_hide');
   }
 
   showLeaderboard() {

@@ -37,6 +37,7 @@ let previousLeaderboardVisible = false;
 let previousWinnerGroupId = null;
 let previousArenaFocusNonce = gameStateStore.getState().arenaFocusNonce || 0;
 let previousPresentationCueNonce = gameStateStore.getState().presentationCue?.nonce || 0;
+let previousQuestionPromptNonce = gameStateStore.getState().questionPromptCard?.nonce || 0;
 let activeAnimationIds = new Set();
 let animatingSpotlightIds = new Set();
 let completedDisqualifiedIds = new Set();
@@ -473,6 +474,52 @@ function playPresentationCueSfx(cue) {
   }
 }
 
+function playCardFlipSfx(direction = 'in') {
+  try {
+    const ctx = getShowSfxContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const duration = 0.5;
+    const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * duration), ctx.sampleRate);
+    const channel = buffer.getChannelData(0);
+    for (let index = 0; index < channel.length; index += 1) {
+      const fade = 1 - index / channel.length;
+      channel[index] = (Math.random() * 2 - 1) * fade;
+    }
+    const noise = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+    noise.buffer = buffer;
+    filter.type = 'bandpass';
+    filter.Q.value = 0.8;
+    filter.frequency.setValueAtTime(direction === 'in' ? 520 : 1100, now);
+    filter.frequency.exponentialRampToValueAtTime(direction === 'in' ? 1800 : 420, now + duration);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.16, now + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    noise.start(now);
+    noise.stop(now + duration);
+
+    const snap = ctx.createOscillator();
+    const snapGain = ctx.createGain();
+    snap.type = 'triangle';
+    snap.frequency.setValueAtTime(direction === 'in' ? 180 : 260, now + 0.22);
+    snap.frequency.exponentialRampToValueAtTime(direction === 'in' ? 520 : 120, now + 0.32);
+    snapGain.gain.setValueAtTime(0.0001, now + 0.2);
+    snapGain.gain.exponentialRampToValueAtTime(0.12, now + 0.23);
+    snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.37);
+    snap.connect(snapGain);
+    snapGain.connect(ctx.destination);
+    snap.start(now + 0.2);
+    snap.stop(now + 0.38);
+  } catch (err) {
+    console.warn('[Display Audio] Card flip cue unavailable:', err);
+  }
+}
+
 function playLeaderboardUpdateSfx() {
   try {
     const ctx = getShowSfxContext();
@@ -714,6 +761,7 @@ function renderDisplay(state, meta = {}) {
   const isLeaderboardVisible = Boolean(state.leaderboard?.isVisible && !state.winnerGroupId);
   renderLeaderboard(state, meta);
   renderIntermissionTimer(state.intermissionTimer);
+  renderQuestionPromptCard(state.questionPromptCard, meta);
 
   if ((state.arenaFocusNonce || 0) > previousArenaFocusNonce) {
     focusArena();
@@ -1136,6 +1184,77 @@ function renderIntermissionTimer(timerState) {
   clock.textContent = `${mins}:${secs}`;
   clock.classList.toggle('is-running', timerState.isRunning);
   callout?.classList.toggle('is-active', Boolean(timerState.isRunning));
+}
+
+function renderQuestionPromptCard(cardState, meta = {}) {
+  const overlay = document.getElementById('question-prompt-overlay');
+  const backdrop = overlay?.querySelector('.question-prompt-backdrop');
+  const card = document.getElementById('question-prompt-display-card');
+  const image = document.getElementById('question-prompt-card-image');
+  const text = document.getElementById('question-prompt-display-text');
+  if (!overlay || !backdrop || !card || !image || !text) return;
+
+  const isVisible = Boolean(cardState?.isVisible && cardState.text);
+  const nonce = cardState?.nonce || 0;
+  const shouldEnter = isVisible && (nonce !== previousQuestionPromptNonce || !overlay.classList.contains('active'));
+  const shouldExit = !isVisible && overlay.classList.contains('active');
+  previousQuestionPromptNonce = nonce;
+
+  if (shouldEnter) {
+    const type = cardState.type === 'prompt' ? 'prompt' : 'question';
+    const cleanText = String(cardState.text || '').trim();
+    image.src = type === 'prompt'
+      ? '/assets/questions-prompts/PromptCard.png'
+      : '/assets/questions-prompts/QuestionCard.png';
+    image.alt = `${type} card`;
+    text.textContent = cleanText;
+    text.classList.toggle('is-long', cleanText.length > 120 && cleanText.length <= 220);
+    text.classList.toggle('is-very-long', cleanText.length > 220);
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+    gsap.killTweensOf([overlay, backdrop, card]);
+    gsap.set(overlay, { opacity: 1 });
+    gsap.fromTo(backdrop, { opacity: 0 }, { opacity: 1, duration: 0.38, ease: 'power2.out' });
+    gsap.fromTo(card, {
+      x: 650,
+      y: -360,
+      scale: 0.06,
+      rotationY: -105,
+      rotationZ: 8,
+      opacity: 0,
+    }, {
+      x: 0,
+      y: 0,
+      scale: 1,
+      rotationY: 0,
+      rotationZ: 0,
+      opacity: 1,
+      duration: 0.82,
+      ease: 'back.out(1.25)',
+    });
+    playCardFlipSfx('in');
+    focusArena();
+  } else if (shouldExit) {
+    gsap.killTweensOf([backdrop, card]);
+    playCardFlipSfx('out');
+    gsap.to(backdrop, { opacity: 0, duration: 0.42, ease: 'power2.in' });
+    gsap.to(card, {
+      x: 650,
+      y: -360,
+      scale: 0.06,
+      rotationY: 105,
+      rotationZ: -8,
+      opacity: 0,
+      duration: 0.68,
+      ease: 'back.in(1.35)',
+      onComplete: () => {
+        overlay.classList.remove('active');
+        overlay.setAttribute('aria-hidden', 'true');
+        gsap.set(overlay, { opacity: 0 });
+        image.removeAttribute('src');
+      },
+    });
+  }
 }
 
 function triggerPresentationCue(cue) {

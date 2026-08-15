@@ -891,6 +891,66 @@ body.arena-performance-mode .parallax-intro-section *::after {
   opacity: 1;
 }
 
+/* Questions & Prompts arena card */
+.question-prompt-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 720;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.question-prompt-overlay.active { visibility: visible; }
+
+.question-prompt-backdrop {
+  position: absolute;
+  inset: -50vh -50vw;
+  background: rgba(5, 0, 5, 0.76);
+  opacity: 0;
+}
+
+.question-prompt-display-card {
+  position: relative;
+  z-index: 1;
+  width: 1420px;
+  aspect-ratio: 3 / 2;
+  transform-origin: 100% 0%;
+  filter: drop-shadow(0 34px 70px rgba(0,0,0,.72));
+  will-change: transform, opacity;
+}
+
+.question-prompt-display-card > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.question-prompt-display-text {
+  position: absolute;
+  top: 21%;
+  right: 10.5%;
+  bottom: 15.5%;
+  left: 10.5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 32px 50px;
+  color: #7c064e;
+  font: 900 62px/1.18 'Outfit', sans-serif;
+  letter-spacing: -.8px;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.question-prompt-display-text.is-long { font-size: 50px; line-height: 1.2; }
+.question-prompt-display-text.is-very-long { font-size: 40px; line-height: 1.24; }
+
 /* Dim all non-spotlighted teams to let highlighted team stand out */
 #app-stage.has-spotlight .group-panel-wrapper:not(.is-popup) {
   opacity: 0.35;

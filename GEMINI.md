@@ -71,6 +71,11 @@ git checkout v2-redesign      # Switch back to v2 redesign development
   - Alternates direction each trigger: 1st (Left &rarr; Center &rarr; Right), 2nd (Right &rarr; Center &rarr; Left), 3rd (Left &rarr; Center &rarr; Right), etc.
   - Dynamic 3-phase sequence: Fast entrance (small &rarr; moderate) &rarr; dramatic slow-down center moment (sharp crystal-clear reading) &rarr; fast exit acceleration (moderate &rarr; small).
   - Dark backdrop smoothly fades out (`0.35s`) as the logo exits, returning the stage to its previous brightness without altering active spotlights or layout.
+- **Questions & Prompts Workspace:**
+  - The controller switches between Live Game Controls and a dedicated Questions & Prompts composer without rearranging either workspace.
+  - Hosts choose Question or Prompt, enter up to 420 characters, show the synchronized arena card, and retract it from the same panel.
+  - `QuestionCard.png` and `PromptCard.png` appear over a darkened arena with bounded centered purple text, a top-right scale/flip entrance, matching exit, and synthesized card-flip audio.
+  - Empty Questions and Prompts library regions are intentionally reserved for the final supplied content lists.
 - **Winner Eligibility & Filtering:**
   - Disqualified teams are strictly excluded from "SELECT YOUR WINNER" modal.
   - If a team is disqualified while the winner modal is open, options update dynamically without page refresh.
