@@ -18,22 +18,16 @@ export function initParallax() {
     orientation: 'vertical',
   });
 
-  let introIsVisible = true;
   const lenisTicker = (time) => {
-    if (introIsVisible) lenis.raf(time * 1000);
+    lenis.raf(time * 1000);
   };
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add(lenisTicker);
   gsap.ticker.lagSmoothing(0);
 
   const visibilityObserver = new IntersectionObserver(([entry]) => {
-    introIsVisible = Boolean(entry?.isIntersecting);
+    const introIsVisible = Boolean(entry?.isIntersecting);
     document.body.classList.toggle('arena-performance-mode', !introIsVisible);
-    if (introIsVisible) {
-      lenis.start();
-    } else {
-      lenis.stop();
-    }
   }, { threshold: 0.01 });
   visibilityObserver.observe(parallaxContainer);
 
@@ -66,6 +60,17 @@ export function initParallax() {
           easing: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
         });
       }
+    });
+  }
+
+  const scrollToTopButton = document.getElementById('scroll-to-top-btn');
+  if (scrollToTopButton) {
+    scrollToTopButton.addEventListener('click', () => {
+      lenis.start();
+      lenis.scrollTo(0, {
+        duration: 2.4,
+        easing: (t) => 1 - Math.pow(1 - t, 4),
+      });
     });
   }
 

@@ -19,12 +19,18 @@ window.addEventListener('resize', fitStageToWindow);
 window.addEventListener('DOMContentLoaded', () => {
   fitStageToWindow();
   initParallax();
+  document.getElementById('scroll-to-arena-btn')?.addEventListener('click', () => {
+    if (!programmaticArenaFocus) gameStateStore.enterArena();
+  });
 });
 
+let programmaticArenaFocus = false;
 function focusArena() {
   const arenaButton = document.getElementById('scroll-to-arena-btn');
   if (arenaButton) {
+    programmaticArenaFocus = true;
     arenaButton.click();
+    programmaticArenaFocus = false;
   } else {
     document.getElementById('main-arena-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -36,6 +42,15 @@ let leaderboardMovementState = new Map();
 let previousLeaderboardVisible = false;
 let previousWinnerGroupId = null;
 let previousArenaFocusNonce = gameStateStore.getState().arenaFocusNonce || 0;
+let previousCardsDealt = Boolean(gameStateStore.getState().arenaSetup?.cardsDealt);
+let dealStartTimer = null;
+let activeDealTimeline = null;
+const revealedPlayerSlots = new Set(
+  gameStateStore.getState().groups.flatMap((group) => [
+    group.player1?.isRevealed ? `${group.id}:player1` : null,
+    group.player2?.isRevealed ? `${group.id}:player2` : null,
+  ]).filter(Boolean),
+);
 let previousPresentationCueNonce = gameStateStore.getState().presentationCue?.nonce || 0;
 let previousQuestionPromptNonce = gameStateStore.getState().questionPromptCard?.nonce || 0;
 let activeAnimationIds = new Set();
@@ -712,8 +727,13 @@ function renderDisplay(state, meta = {}) {
 
   if (!topRow || !bottomRow) return;
 
+  const cardsDealt = Boolean(state.arenaSetup?.cardsDealt);
+  if (stage) {
+    stage.classList.toggle('cards-not-dealt', !cardsDealt);
+  }
+
   // Handle Full Reset Action
-  if (meta && meta.eventType === 'reset') {
+  if (meta && (meta.eventType === 'reset' || meta.eventType === 'clear_all_data')) {
     completedDisqualifiedIds.clear();
     activeAnimationIds.clear();
     animatingSpotlightIds.clear();
@@ -894,7 +914,7 @@ function renderDisplay(state, meta = {}) {
     groupWrapper.classList.toggle('active-group', true);
     groupWrapper.classList.remove('phase1-breaking', 'phase2-tearing', 'phase3-flight');
 
-    const renderPlayerCard = (player, slotClass) => {
+    const renderPlayerCard = (player, slotClass, slotKey, dealOrder) => {
       const shimmerDuration = 7 + Math.random() * 9;
       const shimmerStyle = [
         `--shimmer-duration:${shimmerDuration.toFixed(2)}s`,
@@ -903,8 +923,9 @@ function renderDisplay(state, meta = {}) {
         `--shimmer-x:${(-28 + Math.random() * 56).toFixed(1)}%`,
       ].join(';');
       return `
-      <div class="player-card-slot ${slotClass}">
+      <div class="player-card-slot ${slotClass} ${player.isRevealed ? 'is-revealed' : ''}" data-player-slot="${slotKey}" data-deal-order="${dealOrder}">
         <img src="${player.image}" alt="${escapeHtml(player.name)}" class="player-card-img card-full-face" />
+        <img src="/assets/cards/CardBack.png" alt="" class="player-card-img player-card-back" aria-hidden="true" />
         <div class="card-shimmer-mask" aria-hidden="true">
           <div class="card-white-light-reflection" style="${shimmerStyle}"></div>
         </div>
@@ -927,10 +948,10 @@ function renderDisplay(state, meta = {}) {
         <div class="team-container-top-overlay"></div>
       </div>
       <div class="group-panel-container" id="group-container-${group.id}">
-        ${renderPlayerCard(group.player1, 'slot-p1')}
-        ${renderPlayerCard(group.player2, 'slot-p2')}
+        ${renderPlayerCard(group.player1, 'slot-p1', `${group.id}:player1`, teamNum - 1)}
+        ${renderPlayerCard(group.player2, 'slot-p2', `${group.id}:player2`, teamNum + 4)}
 
-        <div class="group-score-pill" id="group-score-pill-${group.id}">
+        <div class="group-score-pill" id="group-score-pill-${group.id}" style="--score-pop-order:${teamNum - 1}">
           <div class="score-pill-shader" id="score-shader-${group.id}"></div>
           <span class="group-name-text">${escapeHtml(individualWinnerName || group.name)}</span>
           <span class="score-led-value" id="score-led-${group.id}">${group.points}</span>
@@ -939,10 +960,26 @@ function renderDisplay(state, meta = {}) {
     `;
 
     // Exclude isPopUp and points from structureKey so DOM is persistent and never destroyed during spotlight
-    const structureKey = `${group.name}_${group.player1.name}_${group.player2.name}_${group.player1.image}_${group.player2.image}_${individualWinnerName || ''}`;
+    const structureKey = `${group.name}_${group.player1.name}_${group.player2.name}_${group.player1.image}_${group.player2.image}_${group.player1.isRevealed}_${group.player2.isRevealed}_${individualWinnerName || ''}`;
     if (groupWrapper.dataset.renderedStructure !== structureKey) {
       groupWrapper.innerHTML = innerHTML;
       groupWrapper.dataset.renderedStructure = structureKey;
+
+      [group.player1, group.player2].forEach((player, slotIndex) => {
+        const slotKey = `${group.id}:player${slotIndex + 1}`;
+        if (player.isRevealed && !revealedPlayerSlots.has(slotKey)) {
+          const slot = groupWrapper.querySelector(`[data-player-slot="${slotKey}"]`);
+          slot?.classList.remove('is-revealed');
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              slot?.classList.add('is-revealed');
+              playCardFlipSfx('in');
+            });
+          });
+        }
+        if (player.isRevealed) revealedPlayerSlots.add(slotKey);
+        else revealedPlayerSlots.delete(slotKey);
+      });
 
       // Mount Liquid Metal WebGL Shader from @paper-design/shaders
       requestAnimationFrame(() => {
@@ -1093,6 +1130,77 @@ function renderDisplay(state, meta = {}) {
   if (timerBadge) timerBadge.classList.toggle('timer-expanded', isExpanded);
 
   renderTimer(state.timer);
+
+  if (cardsDealt && !previousCardsDealt) {
+    scheduleOpeningCardDeal();
+  } else if (!cardsDealt && previousCardsDealt) {
+    cancelOpeningCardDeal();
+  }
+  previousCardsDealt = cardsDealt;
+}
+
+function cancelOpeningCardDeal() {
+  if (dealStartTimer) clearTimeout(dealStartTimer);
+  dealStartTimer = null;
+  activeDealTimeline?.kill();
+  activeDealTimeline = null;
+  document.querySelectorAll('.opening-deal-card').forEach((card) => card.remove());
+  const stage = document.getElementById('app-stage');
+  stage?.classList.remove('cards-dealing');
+  stage?.classList.remove('scoreboards-popping');
+  stage?.querySelectorAll('.dealt-arrived').forEach((slot) => slot.classList.remove('dealt-arrived'));
+}
+
+function scheduleOpeningCardDeal() {
+  cancelOpeningCardDeal();
+  const stage = document.getElementById('app-stage');
+  if (!stage) return;
+  stage.classList.add('cards-dealing');
+
+  dealStartTimer = setTimeout(() => {
+    dealStartTimer = null;
+    const slots = [...stage.querySelectorAll('[data-deal-order]')]
+      .sort((a, b) => Number(a.dataset.dealOrder) - Number(b.dataset.dealOrder));
+    const stageRect = stage.getBoundingClientRect();
+    const stageScale = stageRect.width / 1920 || 1;
+    const timeline = gsap.timeline({
+      onComplete: () => {
+        stage.classList.remove('cards-dealing');
+        stage.querySelectorAll('.dealt-arrived').forEach((slot) => slot.classList.remove('dealt-arrived'));
+        stage.classList.add('scoreboards-popping');
+        setTimeout(() => stage.classList.remove('scoreboards-popping'), 1500);
+        activeDealTimeline = null;
+      },
+    });
+    activeDealTimeline = timeline;
+
+    slots.forEach((slot, index) => {
+      const rect = slot.getBoundingClientRect();
+      const card = document.createElement('img');
+      card.src = '/assets/cards/CardBack.png';
+      card.alt = '';
+      card.className = 'opening-deal-card';
+      stage.appendChild(card);
+      const targetX = (rect.left - stageRect.left) / stageScale;
+      const targetY = (rect.top - stageRect.top) / stageScale;
+      const targetWidth = rect.width / stageScale;
+      const targetHeight = rect.height / stageScale;
+
+      gsap.set(card, { x: 1900, y: 18, width: targetWidth, height: targetHeight, scale: 0.18, rotation: 10 });
+      timeline.to(card, {
+        x: targetX,
+        y: targetY,
+        scale: 1,
+        rotation: index < 5 ? -4.5 : 4.5,
+        duration: 0.62,
+        ease: 'power2.out',
+        onComplete: () => {
+          slot.classList.add('dealt-arrived');
+          card.remove();
+        },
+      }, index * 0.16);
+    });
+  }, 2100);
 }
 
 function renderDisqualifiedStack(disqualifiedGroups) {

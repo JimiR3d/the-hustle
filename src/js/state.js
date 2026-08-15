@@ -22,45 +22,45 @@ export const ALL_PLAYERS = {
 const DEFAULT_GROUPS = [
   {
     id: 'group-1',
-    name: 'TESLIM & CHIDERA',
-    player1: { name: 'Teslim', image: ALL_PLAYERS['Teslim'] },
-    player2: { name: 'Chidera', image: ALL_PLAYERS['Chidera'] },
+    name: 'GROUP 1',
+    player1: { name: 'Teslim', image: ALL_PLAYERS['Teslim'], isRevealed: false },
+    player2: { name: 'Chidera', image: ALL_PLAYERS['Chidera'], isRevealed: false },
     points: 0,
     isPopUp: false,
     isDisqualified: false,
   },
   {
     id: 'group-2',
-    name: 'ADRIAN & TAYO',
-    player1: { name: 'Adrian', image: ALL_PLAYERS['Adrian'] },
-    player2: { name: 'Tayo', image: ALL_PLAYERS['Tayo'] },
+    name: 'GROUP 2',
+    player1: { name: 'Adrian', image: ALL_PLAYERS['Adrian'], isRevealed: false },
+    player2: { name: 'Tayo', image: ALL_PLAYERS['Tayo'], isRevealed: false },
     points: 0,
     isPopUp: false,
     isDisqualified: false,
   },
   {
     id: 'group-3',
-    name: 'EZ & APHRO',
-    player1: { name: 'EZ', image: ALL_PLAYERS['EZ'] },
-    player2: { name: 'Aphro', image: ALL_PLAYERS['Aphro'] },
+    name: 'GROUP 3',
+    player1: { name: 'EZ', image: ALL_PLAYERS['EZ'], isRevealed: false },
+    player2: { name: 'Aphro', image: ALL_PLAYERS['Aphro'], isRevealed: false },
     points: 0,
     isPopUp: false,
     isDisqualified: false,
   },
   {
     id: 'group-4',
-    name: 'CHINAZOM & MARTY',
-    player1: { name: 'Chinazom', image: ALL_PLAYERS['Chinazom'] },
-    player2: { name: 'Marty', image: ALL_PLAYERS['Marty'] },
+    name: 'GROUP 4',
+    player1: { name: 'Chinazom', image: ALL_PLAYERS['Chinazom'], isRevealed: false },
+    player2: { name: 'Marty', image: ALL_PLAYERS['Marty'], isRevealed: false },
     points: 0,
     isPopUp: false,
     isDisqualified: false,
   },
   {
     id: 'group-5',
-    name: 'KIA & KITAN',
-    player1: { name: 'kIA', image: ALL_PLAYERS['kIA'] },
-    player2: { name: 'Kitan', image: ALL_PLAYERS['Kitan'] },
+    name: 'GROUP 5',
+    player1: { name: 'kIA', image: ALL_PLAYERS['kIA'], isRevealed: false },
+    player2: { name: 'Kitan', image: ALL_PLAYERS['Kitan'], isRevealed: false },
     points: 0,
     isPopUp: false,
     isDisqualified: false,
@@ -86,6 +86,10 @@ const DEFAULT_STATE = {
     targetEndTime: null,
   },
   arenaFocusNonce: 0,
+  arenaSetup: {
+    cardsDealt: false,
+    dealNonce: 0,
+  },
   presentationCue: {
     kind: null,
     label: '',
@@ -123,8 +127,8 @@ class GameStateStore {
       if (!newState || !newState.lastTxId) return;
       if (newState.lastTxId === this.lastProcessedTxId) return; // Deduplicate
       const isStale = (Number(newState.revision) || 0) < (Number(this.state?.revision) || 0);
-      const isControllerCloudEcho = source === 'supabase' && Boolean(this.remoteHostPin);
-      if (isStale && (source !== 'supabase' || isControllerCloudEcho)) return;
+      const isAuthoritativeClear = eventType === 'clear_all_data';
+      if (isStale && !isAuthoritativeClear) return;
       
       // Check if points changed compared to current state
       let pointsChanged = false;
@@ -284,10 +288,27 @@ class GameStateStore {
       return JSON.parse(JSON.stringify(DEFAULT_STATE));
     }
 
+    const isLegacyAssignmentState = !savedState.arenaSetup;
     return {
       ...DEFAULT_STATE,
       ...savedState,
-      groups: Array.isArray(savedState.groups) ? savedState.groups : JSON.parse(JSON.stringify(DEFAULT_GROUPS)),
+      groups: Array.isArray(savedState.groups)
+        ? savedState.groups.map((group) => ({
+          ...group,
+          player1: {
+            ...group.player1,
+            isRevealed: typeof group.player1?.isRevealed === 'boolean'
+              ? group.player1.isRevealed
+              : isLegacyAssignmentState,
+          },
+          player2: {
+            ...group.player2,
+            isRevealed: typeof group.player2?.isRevealed === 'boolean'
+              ? group.player2.isRevealed
+              : isLegacyAssignmentState,
+          },
+        }))
+        : JSON.parse(JSON.stringify(DEFAULT_GROUPS)),
       timer: {
         ...DEFAULT_STATE.timer,
         ...(savedState.timer || {}),
@@ -299,6 +320,10 @@ class GameStateStore {
       intermissionTimer: {
         ...DEFAULT_STATE.intermissionTimer,
         ...(savedState.intermissionTimer || {}),
+      },
+      arenaSetup: {
+        ...DEFAULT_STATE.arenaSetup,
+        ...(savedState.arenaSetup || {}),
       },
       presentationCue: {
         ...DEFAULT_STATE.presentationCue,
@@ -418,12 +443,15 @@ class GameStateStore {
     if (!group || !ALL_PLAYERS[newPlayerName]) return;
 
     if (slot === 'player1') {
-      group.player1 = { name: newPlayerName, image: ALL_PLAYERS[newPlayerName] };
+      group.player1 = { name: newPlayerName, image: ALL_PLAYERS[newPlayerName], isRevealed: true };
     } else if (slot === 'player2') {
-      group.player2 = { name: newPlayerName, image: ALL_PLAYERS[newPlayerName] };
+      group.player2 = { name: newPlayerName, image: ALL_PLAYERS[newPlayerName], isRevealed: true };
     }
 
-    group.name = `${group.player1.name} & ${group.player2.name}`.toUpperCase();
+    const revealedNames = [group.player1, group.player2]
+      .filter((player) => player?.isRevealed)
+      .map((player) => player.name);
+    group.name = revealedNames.length ? revealedNames.join(' & ').toUpperCase() : group.id.replace('-', ' ').toUpperCase();
     this.saveAndBroadcast('player_reshuffle');
   }
 
@@ -605,6 +633,18 @@ class GameStateStore {
 
   enterArena() {
     this.state.arenaFocusNonce = (this.state.arenaFocusNonce || 0) + 1;
+    if (!this.state.arenaSetup?.cardsDealt) {
+      this.state.groups = this.state.groups.map((group, index) => ({
+        ...group,
+        name: `GROUP ${index + 1}`,
+        player1: { ...group.player1, isRevealed: false },
+        player2: { ...group.player2, isRevealed: false },
+      }));
+      this.state.arenaSetup = {
+        cardsDealt: true,
+        dealNonce: (this.state.arenaSetup?.dealNonce || 0) + 1,
+      };
+    }
     this.saveAndBroadcast('arena_focus');
   }
 
@@ -682,6 +722,14 @@ class GameStateStore {
     this.state = JSON.parse(JSON.stringify(DEFAULT_STATE));
     this.state.revision = currentRevision;
     this.saveAndBroadcast('reset');
+  }
+
+  clearAllData() {
+    const currentRevision = Number(this.state.revision) || 0;
+    localStorage.removeItem(STORAGE_KEY);
+    this.state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    this.state.revision = currentRevision;
+    this.saveAndBroadcast('clear_all_data');
   }
 }
 

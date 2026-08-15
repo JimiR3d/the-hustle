@@ -52,9 +52,10 @@ function renderAdminPanel(state) {
   if (!container) return;
   container.innerHTML = '';
 
-  const playerOptionsHTML = (selectedName) => {
-    return Object.keys(ALL_PLAYERS).map((name) => {
-      const isSel = name.toLowerCase() === (selectedName || '').toLowerCase();
+  const playerOptionsHTML = (selectedName, isRevealed) => {
+    const placeholder = isRevealed ? '' : '<option value="" selected disabled>SELECT PLAYER</option>';
+    return placeholder + Object.keys(ALL_PLAYERS).map((name) => {
+      const isSel = Boolean(isRevealed) && name.toLowerCase() === (selectedName || '').toLowerCase();
       return `<option value="${escapeHtml(name)}" ${isSel ? 'selected' : ''}>${escapeHtml(name)}</option>`;
     }).join('');
   };
@@ -66,15 +67,15 @@ function renderAdminPanel(state) {
     row.innerHTML = `
       <div class="comp-info">
         <div class="comp-team-header">
-          <span class="comp-team-label">GROUP ${index + 1} — ${escapeHtml(group.name)}</span>
+          <span class="comp-team-label">GROUP ${index + 1}${group.player1?.isRevealed || group.player2?.isRevealed ? ` — ${escapeHtml(group.name)}` : ''}</span>
         </div>
         <div class="player-select-group">
           <select class="player-select" data-id="${group.id}" data-slot="player1" ${group.isDisqualified ? 'disabled' : ''}>
-            ${playerOptionsHTML(group.player1 ? group.player1.name : '')}
+            ${playerOptionsHTML(group.player1 ? group.player1.name : '', group.player1?.isRevealed)}
           </select>
           <span style="font-size: 11px; color: #ffd700;">&amp;</span>
           <select class="player-select" data-id="${group.id}" data-slot="player2" ${group.isDisqualified ? 'disabled' : ''}>
-            ${playerOptionsHTML(group.player2 ? group.player2.name : '')}
+            ${playerOptionsHTML(group.player2 ? group.player2.name : '', group.player2?.isRevealed)}
           </select>
         </div>
       </div>
@@ -230,6 +231,16 @@ function bindAdminEvents() {
       cloudConnectButton.textContent = 'CONNECT PHONE CONTROL';
       if (cloudStatusLabel) cloudStatusLabel.textContent = error.message.toUpperCase();
     }
+  });
+
+  document.getElementById('btn-clear-all-data')?.addEventListener('click', () => {
+    const confirmed = window.confirm(
+      'Clear every player assignment, score, timer, winner, spotlight, and saved arena value? This cannot be undone.'
+    );
+    if (!confirmed) return;
+    selectedWinner = null;
+    lastScoreUndo = null;
+    gameStateStore.clearAllData();
   });
 
   document.getElementById('btn-undo-score')?.addEventListener('click', () => {
@@ -466,10 +477,17 @@ function bindAdminEvents() {
     winnerOptionsList.innerHTML = '';
 
     // Filter ONLY non-disqualified eligible teams
-    const eligibleGroups = state.groups.filter((g) => !g.isDisqualified);
+    const eligibleGroups = state.groups.filter((g) => !g.isDisqualified && g.player1?.isRevealed && g.player2?.isRevealed);
 
     // Verify currently selected team is still eligible
-    if (selectedWinner && !eligibleGroups.some((g) => g.id === selectedWinner.groupId)) {
+    const selectedWinnerGroup = selectedWinner
+      ? state.groups.find((group) => group.id === selectedWinner.groupId && !group.isDisqualified)
+      : null;
+    const selectedWinnerIsEligible = !selectedWinner || (selectedWinner.type === 'group'
+      ? eligibleGroups.some((group) => group.id === selectedWinner.groupId)
+      : [selectedWinnerGroup?.player1, selectedWinnerGroup?.player2]
+        .some((player) => player?.isRevealed && player.name === selectedWinner.playerName));
+    if (selectedWinner && !selectedWinnerIsEligible) {
       selectedWinner = null;
       if (btnProceedWinnerConfirm) btnProceedWinnerConfirm.disabled = true;
     }
@@ -509,15 +527,19 @@ function bindAdminEvents() {
     };
 
     state.groups.forEach((group) => {
-      appendOption(teamsGrid, group, { type: 'group', groupId: group.id, playerName: null }, group.name,
-        `${group.player1?.name || ''} & ${group.player2?.name || ''}`, `${group.points} PTS · GROUP`);
-      [group.player1, group.player2].forEach((player) => {
+      if (group.player1?.isRevealed && group.player2?.isRevealed) {
+        appendOption(teamsGrid, group, { type: 'group', groupId: group.id, playerName: null }, group.name,
+          `${group.player1?.name || ''} & ${group.player2?.name || ''}`, `${group.points} PTS · GROUP`);
+      }
+      [group.player1, group.player2].filter((player) => player?.isRevealed).forEach((player) => {
         appendOption(playersGrid, group, { type: 'player', groupId: group.id, playerName: player.name }, player.name,
           `Individual winner · ${group.name}`, 'PLAYER');
       });
     });
 
-    if (eligibleGroups.length === 0) selectedWinner = null;
+    const hasAnyEligiblePlayer = state.groups.some((group) => !group.isDisqualified &&
+      (group.player1?.isRevealed || group.player2?.isRevealed));
+    if (eligibleGroups.length === 0 && !hasAnyEligiblePlayer) selectedWinner = null;
 
     if (btnProceedWinnerConfirm) {
       btnProceedWinnerConfirm.disabled = !selectedWinner;
